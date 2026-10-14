@@ -1,6 +1,6 @@
 # Changelog
 
-## Round 2 — after the first release (in progress)
+## Round 2 — released 15 Oct 2026 (PR #2)
 
 Everything requested after PR #1 was merged (14 Oct 2026). Ships together as the
 next deployment.
