@@ -290,7 +290,7 @@
       return (multi ? '<li class="group-head" role="presentation">' + esc(groupTitle(r)) + ' <small>' + games(gs.length) + '</small></li>' : '') +
         gs.map(fxRow).join('');
     }).join('');
-    var actions = '<div class="head-actions"><button type="button" class="share-btn" data-share-round>' + SHARE_ICON + 'Dalīties</button>' + CAL_LINK + '</div>';
+    var actions = '<div class="head-actions">' + (posterRound(nr) ? '<button type="button" class="share-btn" data-share-round>' + SHARE_ICON + 'Dalīties</button>' : '') + CAL_LINK + '</div>';
     el.innerHTML = head('next-title', title, sub, actions) +
       '<div class="ticket">' +
       '<div class="stub" aria-label="' + esc(cap(dateLong(nr.date))) + '"><span class="stub-day">' + x.getDate() + '</span>' +
@@ -984,6 +984,14 @@
         navigator.canShare({ files: [new File(['x'], 'x.jpg', { type: 'image/jpeg' })] }));
     } catch (e) { return false; }
   }
+  // This poster template covers the Dobele group stage and K group (incl. Hope
+  // Cup games) and the Jelgava 1/8 and 1/4 finals. Semifinals and finals of
+  // both cups will get their own template later, so no button there yet.
+  function posterRound(nr) {
+    return !!nr && nr.games.length > 0 && nr.games.every(function (g) {
+      return g.comp === 'dbck' ? ['group', 'k', 'hope'].indexOf(g.stage) >= 0 : /^(R16|QF)/.test(g.tie || '');
+    });
+  }
   // Same photo for everyone during a round; consecutive rounds get the next one.
   function posterPhoto(date) {
     var list = POSTER_DATA.photos || [];
@@ -997,16 +1005,17 @@
   function posterSpec(nr) {
     var pr = primaryRound(nr.rounds), x = parse(nr.date);
     var v = ctx.venue(nr.games[0].venue);
-    var finals = pr.stage === 'Fināli';
     return {
       cup: state.cup, seed: state.cup + nr.date,
       title: CUPS[state.cup].name,
       date: x.getDate() + '. ' + MONTH_NOM[x.getMonth()],
       hall: v ? v.name : '',
-      stage: pr.stage + (pr.label && !finals ? ' · ' + pr.label : ''),
+      stage: pr.stage + (pr.label ? ' · ' + pr.label : ''),
+      names: ctx.teams().map(function (t) { return t.name; }),
       games: sortGames(nr.games).map(function (g) {
         var h = side(g.comp, g.home, false), a = side(g.comp, g.away, false);
-        var tag = g.round !== pr.id ? groupTitle(ctx.round(g.round)) : finals ? gameTag(g) : '';
+        // A Hope Cup game inside a K group round gets a label over its row.
+        var tag = g.round !== pr.id ? groupTitle(ctx.round(g.round)) : '';
         return {
           time: g.time, tag: tag,
           home: h.team ? team(h.team).name : refLabel(g.comp, g.home),
@@ -1023,7 +1032,7 @@
   }
   function openShare(trigger) {
     var nr = ctx.nextRound(state.cup);
-    if (!nr || typeof window.Poster === 'undefined') return;
+    if (!posterRound(nr) || typeof window.Poster === 'undefined') return;
     releaseShare();
     var token = share.token;
     var pr = primaryRound(nr.rounds), p = roundParts(pr), v = ctx.venue(nr.games[0].venue);

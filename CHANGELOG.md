@@ -9,9 +9,15 @@ next deployment.
   posters for that round: a 4:5 feed post and a 9:16 Story/Reel. They follow
   last season's Dobele poster: action photo, jagged edge, coloured panel with the
   cup name, date and hall, stage, the games (home · time · away), sponsor
-  logos and the photo/video notice. The Jelgava cup uses its own colours. Hope Cup
-  games in a K group round and the bronze/gold finals get a label. Phones
+  logos and the photo/video notice. The Jelgava cup uses its own colours; the
+  three header lines are black (Dobele) / white (Jelgava). Hope Cup games in a
+  K group round get a label. Team names use one size for the whole season (set
+  by the longest names); the time box is deliberately smaller. Font: DIN
+  Condensed where available (iPhone, Mac), otherwise Barlow Condensed. Phones
   share directly to Instagram/Facebook; computers download the JPG.
+- **Where the posters apply.** Dobele group stage and K group (incl. Hope Cup
+  games), Jelgava 1/8 and 1/4 finals. Semifinals and finals of both cups get a
+  separate template later; no share button there for now.
 - **Photo pool.** One shared pool for both cups; the system picks the photo
   per round, cycling through the pool. Stand-in photo from last season until
   the new photos arrive.

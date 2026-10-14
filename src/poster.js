@@ -7,12 +7,16 @@
      cup: 'dbck' | 'jssc', format: 'feed' (1080×1350) | 'story' (1080×1920),
      seed, title, date, hall, stage,
      games: [{ time, home, away, tag }],
+     names: every team name in the cup (the name size is set by the longest,
+            so all posters of the season use the same size),
      photo: { img, focus } | null, sponsors: [{ img, w, h, scale }], notice }
    Text is passed in already; this file only knows how to draw. */
 (function () {
   'use strict';
 
-  var FONT = '"Bebas Neue", "Barlow Condensed", "Arial Narrow", sans-serif';
+  // DIN Condensed (built into iPhones and Macs); elsewhere Barlow Condensed,
+  // a free DIN-style face with all Latvian letters, loaded from Google Fonts.
+  var FONT = '"DIN Condensed", "Barlow Condensed", "Arial Narrow", sans-serif';
 
   // Sizes in poster pixels. The story format keeps everything inside a
   // centre column (side) because Instagram trims the edges on tall phones
@@ -20,25 +24,26 @@
   var FORMATS = {
     feed: {
       w: 1080, h: 1350, side: 64, photo: 384, ridge: 46, sponsorTop: 1066, bar: 54,
-      title: 54, titleMin: 44, date: 35, stage: 27, team: 54, timeBox: [196, 84], row: [96, 122],
+      title: 54, titleMin: 38, date: 35, stage: 28, team: 54, timeBox: [150, 62], row: [96, 122],
       logoRows: [7, 6], logoArea: 7600, logoMax: [150, 92], logoGap: 26, notice: 25
     },
     story: {
       w: 1080, h: 1920, side: 104, photo: 500, ridge: 50, sponsorTop: 1446, bar: 62,
-      title: 62, titleMin: 50, date: 39, stage: 29, team: 58, timeBox: [176, 84], row: [112, 150],
+      title: 62, titleMin: 50, date: 39, stage: 30, team: 58, timeBox: [144, 64], row: [130, 160],
       logoRows: [4, 5, 4], logoArea: 8600, logoMax: [180, 100], logoGap: 34, notice: 26
     }
   };
 
-  // Colours per cup. Dobele is last season's poster; Jelgava uses its site colours.
+  // Colours per cup. Dobele is last season's poster; Jelgava uses its site
+  // colours. The three header lines share one colour: black / white.
   var THEMES = {
     dbck: {
-      panel: '#E9B716', title: '#111111', sub: '#111111', stage: '#01509F',
+      panel: '#E9B716', head: '#111111',
       team: '#01509F', box: '#01509F', boxText: '#E9B716', line: '#111111', tag: '#111111'
     },
     jssc: {
-      panel: '#9C213D', title: '#FFFFFF', sub: '#FFFFFF', stage: '#B7CAFF',
-      team: '#FFFFFF', box: '#1E47B5', boxText: '#FFFFFF', line: 'rgba(255,255,255,0.55)', tag: '#B7CAFF'
+      panel: '#9C213D', head: '#FFFFFF',
+      team: '#FFFFFF', box: '#1E47B5', boxText: '#FFFFFF', line: 'rgba(255,255,255,0.55)', tag: '#FFFFFF'
     }
   };
 
@@ -50,7 +55,7 @@
     return function () { s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; };
   }
   function up(t) { return String(t || '').toLocaleUpperCase('lv'); }
-  function font(g, px) { g.font = '400 ' + px + 'px ' + FONT; }
+  function font(g, px) { g.font = '700 ' + px + 'px ' + FONT; }
   function width(g, text, px) { font(g, px); return g.measureText(text).width; }
   // Largest size ≤ px at which text fits maxW (never below min).
   function fit(g, text, px, maxW, min) {
@@ -165,7 +170,7 @@
     // Short names stay on one line; only long ones (sponsor names) wrap.
     if (lines.length < 2 || single >= F.team * 0.8) return single;
     var two = Math.min.apply(null, lines.map(function (l) { return fit(g, l, F.team, maxW, 1); }));
-    return Math.max(single, Math.min(two, Math.floor(rowH * 0.4)));
+    return Math.max(single, Math.min(two, Math.floor(rowH * 0.38)));
   }
   // All names on a poster share one size (like last season's posters); long
   // names that don't fit on one line at that size wrap onto two lines.
@@ -209,7 +214,7 @@
     var stage = up(spec.stage);
     var stPx = stage ? fit(g, stage, F.stage, maxW, 18) : 0;
     var tLh = tPx * 1.02;
-    var headH = tLines.length * tLh + 12 + sPx + (stage ? 14 + stPx : 0);
+    var headH = tLines.length * tLh + 8 + sPx + (stage ? 10 + stPx : 0);
 
     // Game rows fill the rest of the panel, centred as one block.
     var list = spec.games || [];
@@ -227,20 +232,21 @@
     var block = headH + gapHead + rowH * list.length + tagged * tagExtra;
     var y = zoneTop + Math.max(0, (zoneBottom - zoneTop - block) / 2);
 
-    tLines.forEach(function (l, i) { text(g, l, W / 2, y + tLh * i + tPx / 2, tPx, T.title); });
-    y += tLines.length * tLh + 12;
-    text(g, sub, W / 2, y + sPx / 2, sPx, T.sub);
+    tLines.forEach(function (l, i) { text(g, l, W / 2, y + tLh * i + tPx / 2, tPx, T.head); });
+    y += tLines.length * tLh + 8;
+    text(g, sub, W / 2, y + sPx / 2, sPx, T.head);
     y += sPx;
-    if (stage) { y += 14; text(g, stage, W / 2, y + stPx / 2, stPx, T.stage); y += stPx; }
+    if (stage) { y += 10; text(g, stage, W / 2, y + stPx / 2, stPx, T.head); y += stPx; }
     y += gapHead;
 
-    var bw = F.timeBox[0], bh = Math.min(F.timeBox[1], rowH * 0.74);
+    // The time box is one of the elements, not the biggest one.
+    var bw = F.timeBox[0], bh = Math.min(F.timeBox[1], rowH * 0.6);
     var nameW = (W - bw) / 2 - F.side + (spec.format === 'story' ? 6 : 0) - 26;
-    var namePx = list.reduce(function (px, gm) {
-      return Math.min(px, nameFit(g, up(gm.home), F, nameW, rowH), nameFit(g, up(gm.away), F, nameW, rowH));
-    }, F.team);
-    // Names never outgrow the time digits when rows get tight.
-    namePx = Math.max(Math.min(namePx, Math.round(bh * 0.85)), 24);
+    // One name size for the whole season and both cups: the longest names set
+    // it (at the standard row height), not only the teams playing this round.
+    var names = (spec.names || []).concat(list.map(function (gm) { return gm.home; }), list.map(function (gm) { return gm.away; }));
+    var namePx = names.reduce(function (px, nm) { return Math.min(px, nameFit(g, up(nm), F, nameW, F.row[0])); }, F.team);
+    namePx = Math.max(namePx, 24);
     var top = y;
     list.forEach(function (gm, i) {
       if (i > 0) {
@@ -257,7 +263,8 @@
       g.fillStyle = T.box;
       g.fillRect(W / 2 - bw / 2, cy - bh / 2, bw, bh);
       var tm = String(gm.time || '');
-      text(g, tm, W / 2, cy, fit(g, tm, Math.round(bh * 0.8), bw - 24, 20), T.boxText);
+      // Time digits about the size of the team names.
+      text(g, tm, W / 2, cy, fit(g, tm, Math.min(Math.round(bh * 0.66), Math.round(namePx * 1.05)), bw - 24, 20), T.boxText);
       // teams
       drawTeam(g, teamLayout(g, up(gm.home), namePx, nameW), W / 2 - bw / 2 - 26, cy, 'right', T.team);
       drawTeam(g, teamLayout(g, up(gm.away), namePx, nameW), W / 2 + bw / 2 + 26, cy, 'left', T.team);
@@ -285,7 +292,7 @@
   // Waits for the poster font (incl. Latvian letters) and the given images.
   function prepare(srcs) {
     var fonts = document.fonts && document.fonts.load
-      ? document.fonts.load('400 60px "Bebas Neue"', 'ĀČĒĢĪĶĻŅŠŪŽāčēģīķļņšūž0123456789:/').catch(function () { return []; })
+      ? document.fonts.load('700 60px "Barlow Condensed"', 'ĀČĒĢĪĶĻŅŠŪŽāčēģīķļņšūž0123456789:/').catch(function () { return []; })
       : Promise.resolve();
     var timeout = new Promise(function (r) { setTimeout(r, 4000); });
     return Promise.all([Promise.race([fonts, timeout])].concat(srcs.map(loadImage)))
