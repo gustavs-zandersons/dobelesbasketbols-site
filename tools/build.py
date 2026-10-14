@@ -46,14 +46,44 @@ def ridge(seed, base=34, amp=22):
     return 'M0,60 ' + ' '.join(f'L{px:.0f},{py:.0f}' for px, py in pts) + ' L1440,60 Z'
 
 
+def as_json(obj):
+    return json.dumps(obj, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
+
+
+def logo_size(s, area=5000, max_w=150, max_h=64):
+    """Footer size for a logo so every sponsor gets about the same visual area."""
+    r = s['w'] / s['h']
+    h = (area / r) ** 0.5 * s.get('scale', 1)
+    w = h * r
+    if h > max_h:
+        h, w = max_h, max_h * r
+    if w > max_w:
+        w, h = max_w, max_w / r
+    return round(w), round(h)
+
+
+def sponsors_html(sponsors):
+    rows = []
+    for s in sponsors:
+        w, h = logo_size(s)
+        rows.append(f'      <img src="{s["src"]}" alt="{s["name"]}" width="{w}" height="{h}" '
+                    f'style="--w:{w};--h:{h}" loading="lazy">')
+    return '\n'.join(rows)
+
+
 def render(preview):
     tpl = (SRC / 'template.html').read_text()
     data = json.loads((SRC / 'sample-data.json').read_text())
+    sponsors = json.loads((SRC / 'sponsors.json').read_text())
+    photos = json.loads((SRC / 'poster-photos.json').read_text())
     page = (tpl
             .replace('{{STYLE}}', (SRC / 'styles.css').read_text())
             .replace('{{ENGINE}}', (SRC / 'engine.js').read_text())
+            .replace('{{POSTER}}', (SRC / 'poster.js').read_text())
             .replace('{{APP}}', (SRC / 'app.js').read_text())
-            .replace('{{DATA}}', json.dumps(data, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/'))
+            .replace('{{DATA}}', as_json(data))
+            .replace('{{POSTER_DATA}}', as_json({'sponsors': sponsors, 'photos': photos}))
+            .replace('{{SPONSORS_HTML}}', sponsors_html(sponsors))
             .replace('{{RIDGE_A}}', ridge(7))
             .replace('{{RIDGE_B}}', ridge(11, base=36, amp=24))
             .replace('{{NOTICE}}', '' if preview else NOTICE))

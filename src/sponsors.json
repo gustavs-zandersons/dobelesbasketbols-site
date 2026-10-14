@@ -1,0 +1,106 @@
+[
+ {
+  "id": "dobeles-novads",
+  "name": "Dobeles novada pašvaldība",
+  "src": "assets/sponsors/dobeles-novads.webp",
+  "w": 400,
+  "h": 176,
+  "scale": 1.0
+ },
+ {
+  "id": "jelgava",
+  "name": "Jelgava",
+  "src": "assets/sponsors/jelgava.webp",
+  "w": 400,
+  "h": 198,
+  "scale": 1.15
+ },
+ {
+  "id": "jssc",
+  "name": "Jelgavas Sporta servisa centrs",
+  "src": "assets/sponsors/jssc.webp",
+  "w": 196,
+  "h": 200,
+  "scale": 1.0
+ },
+ {
+  "id": "tervete",
+  "name": "Tērvetes alus darītava",
+  "src": "assets/sponsors/tervete.webp",
+  "w": 329,
+  "h": 200,
+  "scale": 1.0
+ },
+ {
+  "id": "jaunpils",
+  "name": "Jaunpils pienotava",
+  "src": "assets/sponsors/jaunpils.webp",
+  "w": 274,
+  "h": 200,
+  "scale": 1.0
+ },
+ {
+  "id": "dobeles-dzirnavnieks",
+  "name": "Dobeles dzirnavnieks",
+  "src": "assets/sponsors/dobeles-dzirnavnieks.webp",
+  "w": 400,
+  "h": 111,
+  "scale": 1.0
+ },
+ {
+  "id": "nakotne",
+  "name": "Nākotne",
+  "src": "assets/sponsors/nakotne.webp",
+  "w": 346,
+  "h": 200,
+  "scale": 1.0
+ },
+ {
+  "id": "nordcrunch",
+  "name": "Nordcrunch",
+  "src": "assets/sponsors/nordcrunch.webp",
+  "w": 400,
+  "h": 169,
+  "scale": 1.0
+ },
+ {
+  "id": "ozols-pub",
+  "name": "Ozols Pub",
+  "src": "assets/sponsors/ozols-pub.webp",
+  "w": 240,
+  "h": 200,
+  "scale": 1.0
+ },
+ {
+  "id": "garage-barber",
+  "name": "Garage Barber",
+  "src": "assets/sponsors/garage-barber.webp",
+  "w": 200,
+  "h": 200,
+  "scale": 1.0
+ },
+ {
+  "id": "sporta-bode",
+  "name": "Sporta bode — sportabode.eu",
+  "src": "assets/sponsors/sporta-bode.webp",
+  "w": 319,
+  "h": 200,
+  "scale": 1.0
+ },
+ {
+  "id": "balevich-media",
+  "name": "Balevich Media",
+  "src": "assets/sponsors/balevich-media.webp",
+  "w": 200,
+  "h": 200,
+  "scale": 1.0
+ },
+ {
+  "id": "kebabmix",
+  "name": "Kebabmix",
+  "src": "assets/sponsors/kebabmix.webp",
+  "w": 400,
+  "h": 114,
+  "scale": 1.0
+ }
+]

@@ -290,7 +290,8 @@
       return (multi ? '<li class="group-head" role="presentation">' + esc(groupTitle(r)) + ' <small>' + games(gs.length) + '</small></li>' : '') +
         gs.map(fxRow).join('');
     }).join('');
-    el.innerHTML = head('next-title', title, sub, CAL_LINK) +
+    var actions = '<div class="head-actions"><button type="button" class="share-btn" data-share-round>' + SHARE_ICON + 'Dalīties</button>' + CAL_LINK + '</div>';
+    el.innerHTML = head('next-title', title, sub, actions) +
       '<div class="ticket">' +
       '<div class="stub" aria-label="' + esc(cap(dateLong(nr.date))) + '"><span class="stub-day">' + x.getDate() + '</span>' +
       '<span class="stub-txt"><span class="stub-month">' + MONTH_NOM[x.getMonth()] + '</span><span class="stub-wd">' + WEEKDAY_NOM[x.getDay()] + '</span></span>' + CAL_ICON + '</div>' +
@@ -903,6 +904,7 @@
   function openSheet(ds, trigger) {
     state.cal.open = ds; state.cal.showAll = false;
     sheetReturn = trigger || null;
+    $('sheet').classList.remove('sheet--share');
     renderSheet();
     $('sheet').hidden = false; $('sheet-scrim').hidden = false;
     document.body.classList.add('no-scroll');
@@ -913,6 +915,8 @@
     if ($('sheet').hidden) return;
     state.cal.open = null;
     $('sheet').hidden = true; $('sheet-scrim').hidden = true; $('sheet').innerHTML = '';
+    $('sheet').classList.remove('sheet--share');
+    releaseShare();
     document.body.classList.remove('no-scroll');
     if (sheetReturn && document.body.contains(sheetReturn)) sheetReturn.focus();
     sheetReturn = null;
@@ -959,6 +963,125 @@
       '<div class="sheet-head"><h2 id="sheet-title">' + esc(cap(dateLong(ds))) + '</h2>' +
       '<button type="button" class="icon-btn" data-sheet-close aria-label="Aizvērt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>' +
       '<div class="sheet-body">' + body + more + '</div>';
+  }
+
+  // ---------- Round posters (share pop-up) ----------
+  // Two posters for the next round, drawn by poster.js: a 4:5 feed post and
+  // a 9:16 Story/Reel. Phones get the system share sheet, others a download.
+  var POSTER_DATA = JSON.parse(document.getElementById('poster-data').textContent);
+  var NOTICE = 'Čempionāts var tikt fotografēts un/vai filmēts, foto/video var tikt izmantoti publicitātes vajadzībām';
+  var SHARE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3.5M7.5 8 12 3.5 16.5 8"/><path d="M5 11.5v8A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-8"/></svg>';
+  var DL_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5V15M7.5 10.5 12 15l4.5-4.5"/><path d="M4.5 19.5h15"/></svg>';
+  var POSTERS = [
+    { key: 'feed', name: 'Ieraksts', hint: 'Facebook, Instagram · 4:5', file: 'ieraksts' },
+    { key: 'story', name: 'Stāsts / Reels', hint: 'Instagram, Facebook · 9:16', file: 'stasts' }
+  ];
+  var share = { token: 0, files: {}, urls: [] };
+
+  function canShareFiles() {
+    try {
+      return !!(navigator.canShare && navigator.share &&
+        navigator.canShare({ files: [new File(['x'], 'x.jpg', { type: 'image/jpeg' })] }));
+    } catch (e) { return false; }
+  }
+  // Same photo for everyone during a round; consecutive rounds get the next one.
+  function posterPhoto(date) {
+    var list = POSTER_DATA.photos || [];
+    if (!list.length) return null;
+    var dates = [];
+    DATA.rounds.forEach(function (r) { if (dates.indexOf(r.date) < 0) dates.push(r.date); });
+    dates.sort();
+    var i = Math.max(0, dates.indexOf(date));
+    return list[i % list.length];
+  }
+  function posterSpec(nr) {
+    var pr = primaryRound(nr.rounds), x = parse(nr.date);
+    var v = ctx.venue(nr.games[0].venue);
+    var finals = pr.stage === 'Fināli';
+    return {
+      cup: state.cup, seed: state.cup + nr.date,
+      title: CUPS[state.cup].name,
+      date: x.getDate() + '. ' + MONTH_NOM[x.getMonth()],
+      hall: v ? v.name : '',
+      stage: pr.stage + (pr.label && !finals ? ' · ' + pr.label : ''),
+      games: sortGames(nr.games).map(function (g) {
+        var h = side(g.comp, g.home, false), a = side(g.comp, g.away, false);
+        var tag = g.round !== pr.id ? groupTitle(ctx.round(g.round)) : finals ? gameTag(g) : '';
+        return {
+          time: g.time, tag: tag,
+          home: h.team ? team(h.team).name : refLabel(g.comp, g.home),
+          away: a.team ? team(a.team).name : refLabel(g.comp, g.away)
+        };
+      }),
+      notice: NOTICE
+    };
+  }
+  function releaseShare() {
+    share.token++;
+    share.urls.forEach(function (u) { URL.revokeObjectURL(u); });
+    share.urls = []; share.files = {};
+  }
+  function openShare(trigger) {
+    var nr = ctx.nextRound(state.cup);
+    if (!nr || typeof window.Poster === 'undefined') return;
+    releaseShare();
+    var token = share.token;
+    var pr = primaryRound(nr.rounds), p = roundParts(pr), v = ctx.venue(nr.games[0].venue);
+    var canShare = canShareFiles();
+    var base = CUPS[state.cup].hash + '-' + nr.date + '-';
+    var cards = POSTERS.map(function (f) {
+      return '<figure class="poster-card poster-card--' + f.key + '">' +
+        '<div class="poster-frame" data-poster-frame="' + f.key + '"><span class="poster-wait">Gatavo plakātu…</span></div>' +
+        '<figcaption><span class="poster-name">' + esc(f.name) + '</span><span class="poster-hint">' + esc(f.hint) + '</span></figcaption>' +
+        '<div class="poster-actions">' +
+        (canShare ? '<button type="button" class="btn btn--fill" data-poster-share="' + f.key + '" disabled>' + SHARE_ICON + 'Dalīties</button>' : '') +
+        '<a class="btn' + (canShare ? '' : ' btn--fill') + '" data-poster-dl="' + f.key + '" download="' + esc(base + f.file + '.jpg') + '" aria-disabled="true">' + DL_ICON + 'Lejupielādēt</a>' +
+        '</div></figure>';
+    }).join('');
+    sheetReturn = trigger || null;
+    $('sheet').classList.add('sheet--share');
+    $('sheet').innerHTML = '<div class="sheet-grip" aria-hidden="true"></div>' +
+      '<div class="sheet-head"><h2 id="sheet-title">Kārtas plakāti</h2>' +
+      '<button type="button" class="icon-btn" data-sheet-close aria-label="Aizvērt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>' +
+      '<div class="sheet-body"><p class="block-sub"><span class="chip">' + esc(p.chip) + '</span><span>' + esc([p.rest, dateLong(nr.date), v ? v.name : ''].filter(Boolean).join(' · ')) + '</span></p>' +
+      '<div class="poster-grid">' + cards + '</div>' +
+      '<p class="poster-note">' + (canShare ? 'Spied „Dalīties”, lai publicētu Instagram vai Facebook, vai saglabā attēlu.' : 'Lejupielādē plakātu un publicē to Instagram vai Facebook.') + '</p></div>';
+    $('sheet').hidden = false; $('sheet-scrim').hidden = false;
+    document.body.classList.add('no-scroll');
+    var cl = $('sheet').querySelector('[data-sheet-close]');
+    if (cl) cl.focus();
+
+    var spec = posterSpec(nr), photo = posterPhoto(nr.date), logos = POSTER_DATA.sponsors || [];
+    var srcs = (photo ? [photo.src] : []).concat(logos.map(function (s) { return s.src; }));
+    window.Poster.prepare(srcs).then(function (imgs) {
+      if (token !== share.token) return;
+      spec.photo = photo ? { img: imgs[0], focus: photo.focus } : null;
+      var li = imgs.slice(photo ? 1 : 0);
+      spec.sponsors = logos.map(function (s, i) { return { img: li[i], w: s.w, h: s.h, scale: s.scale }; });
+      POSTERS.forEach(function (f) {
+        var canvas = window.Poster.render(Object.assign({}, spec, { format: f.key }));
+        // Preview as a data URL (works in every viewer); the file itself as a blob.
+        var preview = canvas.toDataURL('image/jpeg', 0.85);
+        canvas.toBlob(function (blob) {
+          if (token !== share.token || !blob) return;
+          var name = base + f.file + '.jpg';
+          share.files[f.key] = new File([blob], name, { type: 'image/jpeg' });
+          var url = URL.createObjectURL(blob);
+          share.urls.push(url);
+          var frame = $('sheet').querySelector('[data-poster-frame="' + f.key + '"]');
+          if (frame) frame.innerHTML = '<img src="' + preview + '" alt="' + esc(f.name + ' — ' + CUPS[state.cup].short + ', ' + dateDay(nr.date)) + '">';
+          var dl = $('sheet').querySelector('[data-poster-dl="' + f.key + '"]');
+          if (dl) { dl.href = url; dl.removeAttribute('aria-disabled'); }
+          var sb = $('sheet').querySelector('[data-poster-share="' + f.key + '"]');
+          if (sb) sb.disabled = false;
+        }, 'image/jpeg', 0.92);
+      });
+    });
+  }
+  function sharePoster(key) {
+    var file = share.files[key];
+    if (!file) return;
+    navigator.share({ files: [file], title: CUPS[state.cup].short }).catch(function () { /* cancelled */ });
   }
 
   // ---------- Kopvērtējums (standings) page ----------
@@ -1164,6 +1287,12 @@
     if (day) { openSheet(day.getAttribute('data-day'), day); return; }
     if (e.target.closest('[data-sheet-close]') || e.target.id === 'sheet-scrim') { closeSheet(); return; }
     if (e.target.closest('[data-sheet-all]')) { state.cal.showAll = true; renderSheet(); return; }
+    var sr = e.target.closest('[data-share-round]');
+    if (sr) { openShare(sr); return; }
+    var ps = e.target.closest('[data-poster-share]');
+    if (ps) { sharePoster(ps.getAttribute('data-poster-share')); return; }
+    var pd = e.target.closest('[data-poster-dl]');
+    if (pd && pd.getAttribute('aria-disabled') === 'true') { e.preventDefault(); return; }
     var tab = e.target.closest('[data-bk]');
     if (tab) {
       var tid = tab.getAttribute('data-tree'), key = tab.getAttribute('data-bk');

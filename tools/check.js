@@ -1,7 +1,8 @@
 // Sanity checks run in CI before every deploy:
 //   node tools/check.js
 // 1) the built page's inline scripts parse, 2) the engine runs at several
-// points of the season, 3) every box score adds up to its final score.
+// points of the season, 3) every box score adds up to its final score,
+// 4) sponsor logos and poster photos exist.
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -49,6 +50,15 @@ data.games.filter(g => g.box).forEach(g => {
     rows.forEach(r => check(r[3] === 2 * r[4] + 3 * r[6] + r[8], g.id + ': shot split does not match points'));
   });
 });
+
+// 4. Sponsor logos and poster photos referenced by the page exist
+const root = path.join(__dirname, '..');
+const sponsors = require('../src/sponsors.json');
+const photos = require('../src/poster-photos.json');
+check(sponsors.length > 0, 'sponsor list is empty');
+check(photos.length > 0, 'poster photo pool is empty');
+sponsors.concat(photos).forEach(a => check(fs.existsSync(path.join(root, a.src)), 'missing file ' + a.src));
+check(html.includes('id="poster-data"') && html.includes('window.Poster'), 'poster script and data are in the page');
 
 if (failures) { console.error(failures + ' check(s) failed'); process.exit(1); }
 console.log('All checks passed (' + data.games.length + ' games).');

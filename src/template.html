@@ -2,7 +2,7 @@
 <meta name="description" content="Dobeles Basketbola čempionu kauss un Jelgavas SSC Izaicinājuma kauss — rezultāti, spēļu kalendārs, tabulas un izspēles shēma.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&family=Bebas+Neue&display=swap">
 <style>
 {{STYLE}}
 </style>
@@ -56,15 +56,7 @@
   <div class="wrap">
     <h2>Atbalstītāji</h2>
     <div class="sponsor-row">
-      <img src="assets/sponsors/s01.png" alt="Dobeles novada pašvaldība" loading="lazy">
-      <img src="assets/sponsors/s02.png" alt="Garage Barber" loading="lazy">
-      <img src="assets/sponsors/s03.png" alt="Jaunpils pienotava" loading="lazy">
-      <img src="assets/sponsors/s04.png" alt="Sporta bode — sportabode.eu" loading="lazy">
-      <img src="assets/sponsors/s05.png" alt="Balevich Media" loading="lazy">
-      <img src="assets/sponsors/s06.png" alt="Kebabmix" loading="lazy">
-      <img src="assets/sponsors/s07.png" alt="Perwoll" loading="lazy">
-      <img src="assets/sponsors/s08.png" alt="Dobeles dzirnavnieks" loading="lazy">
-      <img src="assets/sponsors/s09.png" alt="Tērvetes alus darītava" loading="lazy">
+{{SPONSORS_HTML}}
     </div>
     <div class="foot">
       <p>Sacensības organizē biedrība „SK Dobele” sadarbībā ar Dobeles novada sporta pārvaldi un Jelgavas sporta servisa centru.</p>
@@ -118,8 +110,12 @@
 </div>
 
 <script id="season-data" type="application/json">{{DATA}}</script>
+<script id="poster-data" type="application/json">{{POSTER_DATA}}</script>
 <script>
 {{ENGINE}}
+</script>
+<script>
+{{POSTER}}
 </script>
 <script>
 {{APP}}
