@@ -1,0 +1,126 @@
+<title>Dobeles basketbols</title>
+<meta name="description" content="Dobeles Basketbola čempionu kauss un Jelgavas SSC Izaicinājuma kauss — rezultāti, spēļu kalendārs, tabulas un izspēles shēma.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<style>
+{{STYLE}}
+</style>
+<!--BODY-->
+{{NOTICE}}
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <button class="icon-btn" id="menu-open" type="button" aria-label="Atvērt izvēlni" aria-controls="drawer" aria-expanded="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav class="cup-switch" aria-label="Izvēlies kausu">
+      <a class="cup-btn" href="#dobele" data-cup="dbck" aria-label="Dobeles Basketbola čempionu kauss" title="Dobeles Basketbola čempionu kauss">
+        <img src="assets/dbck-mark.webp" alt="" width="46" height="46"><span class="cup-btn-label">Čempionu kauss</span>
+      </a>
+      <a class="cup-btn" href="#jelgava" data-cup="jssc" aria-label="Jelgavas Sporta servisa centra Izaicinājuma kauss" title="Jelgavas Sporta servisa centra Izaicinājuma kauss">
+        <img src="assets/jssc-mark.webp" alt="" width="46" height="46"><span class="cup-btn-label">Izaicinājuma kauss</span>
+      </a>
+    </nav>
+    <span aria-hidden="true"></span>
+  </div>
+</header>
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="wrap hero-inner">
+    <img class="hero-logo" id="hero-logo" src="assets/dbck-logo.webp" alt="" width="168" height="168">
+    <div class="hero-copy">
+      <p class="eyebrow">Sezona 2026/27</p>
+      <h1 class="hero-title" id="hero-title">Dobeles Basketbola čempionu kauss</h1>
+    </div>
+    <div class="hero-stage" id="hero-stage"></div>
+  </div>
+  <svg class="ridge" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true"><path d="{{RIDGE_A}}"/></svg>
+</section>
+
+<main class="wrap main" id="main">
+  <section class="block" id="block-last" aria-labelledby="last-title"></section>
+  <section class="block" id="block-mvp" aria-labelledby="mvp-title" hidden></section>
+  <section class="block" id="block-next" aria-labelledby="next-title"></section>
+  <section class="block" id="block-stage" aria-labelledby="stage-title"></section>
+  <section class="block" id="block-extra" aria-labelledby="extra-title" hidden></section>
+</main>
+
+<main class="wrap game-view" id="game-view" hidden></main>
+<main class="wrap cal-view" id="calendar-view" hidden></main>
+<main class="wrap std-view" id="standings-view" hidden></main>
+<div class="sheet-scrim" id="sheet-scrim" hidden></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden></div>
+
+<footer class="sponsors">
+  <svg class="ridge" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true"><path d="{{RIDGE_B}}"/></svg>
+  <div class="wrap">
+    <h2>Atbalstītāji</h2>
+    <div class="sponsor-row">
+      <img src="assets/sponsors/s01.png" alt="Dobeles novada pašvaldība" loading="lazy">
+      <img src="assets/sponsors/s02.png" alt="Garage Barber" loading="lazy">
+      <img src="assets/sponsors/s03.png" alt="Jaunpils pienotava" loading="lazy">
+      <img src="assets/sponsors/s04.png" alt="Sporta bode — sportabode.eu" loading="lazy">
+      <img src="assets/sponsors/s05.png" alt="Balevich Media" loading="lazy">
+      <img src="assets/sponsors/s06.png" alt="Kebabmix" loading="lazy">
+      <img src="assets/sponsors/s07.png" alt="Perwoll" loading="lazy">
+      <img src="assets/sponsors/s08.png" alt="Dobeles dzirnavnieks" loading="lazy">
+      <img src="assets/sponsors/s09.png" alt="Tērvetes alus darītava" loading="lazy">
+    </div>
+    <div class="foot">
+      <p>Sacensības organizē biedrība „SK Dobele” sadarbībā ar Dobeles novada sporta pārvaldi un Jelgavas sporta servisa centru.</p>
+      <div class="socials">
+        <a class="social" href="https://www.facebook.com/" target="_blank" rel="noopener" aria-label="Facebook">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H7.8v3h2.6V21h3.1z"/></svg>
+        </a>
+        <a class="social" href="https://www.instagram.com/" target="_blank" rel="noopener" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7.3a4.7 4.7 0 1 0 0 9.4 4.7 4.7 0 0 0 0-9.4zm0 7.7a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm6-7.9a1.1 1.1 0 1 1-2.2 0 1.1 1.1 0 0 1 2.2 0zM16.8 3H7.2A4.2 4.2 0 0 0 3 7.2v9.6A4.2 4.2 0 0 0 7.2 21h9.6a4.2 4.2 0 0 0 4.2-4.2V7.2A4.2 4.2 0 0 0 16.8 3zm2.5 13.8a2.5 2.5 0 0 1-2.5 2.5H7.2a2.5 2.5 0 0 1-2.5-2.5V7.2a2.5 2.5 0 0 1 2.5-2.5h9.6a2.5 2.5 0 0 1 2.5 2.5v9.6z"/></svg>
+        </a>
+        <a class="social" href="https://www.youtube.com/" target="_blank" rel="noopener" aria-label="YouTube">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2C2 8.8 2 12 2 12s0 3.2.4 4.8a2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8c.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8zM10 15V9l5.2 3L10 15z"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" aria-label="Izvēlne" aria-hidden="true" inert>
+  <div class="drawer-head">
+    <span class="eyebrow">Izvēlne</span>
+    <button class="icon-btn" id="menu-close" type="button" aria-label="Aizvērt izvēlni">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <nav class="drawer-sec" aria-label="Lapas">
+    <button class="nav-item" type="button" data-nav="home" aria-current="page">Sākums</button>
+    <a class="nav-item" href="#kalendars" data-nav="cal">Kalendārs</a>
+    <a class="nav-item" href="#dobele-kopvertejums" data-nav="std" id="nav-std">Kopvērtējums</a>
+    <span class="nav-item" aria-disabled="true">Iepriekšējās sezonas <span class="soon">Drīzumā</span></span>
+    <span class="nav-item" aria-disabled="true">Komandas <span class="soon">Drīzumā</span></span>
+    <span class="nav-item" aria-disabled="true">Statistika <span class="soon">Drīzumā</span></span>
+    <span class="nav-item" aria-disabled="true">Nolikums <span class="soon">Drīzumā</span></span>
+    <span class="nav-item" aria-disabled="true">Kontakti <span class="soon">Drīzumā</span></span>
+  </nav>
+  <nav class="drawer-sec" aria-label="Kausi">
+    <p class="eyebrow">Kausi</p>
+    <a class="nav-item nav-cup" href="#dobele" data-cup="dbck"><img src="assets/dbck-mark.webp" alt="" width="34" height="34">Dobeles čempionu kauss</a>
+    <a class="nav-item nav-cup" href="#jelgava" data-cup="jssc"><img src="assets/jssc-mark.webp" alt="" width="34" height="34">Jelgavas Izaicinājuma kauss</a>
+  </nav>
+</aside>
+
+<div class="demo" role="group" aria-label="Prototips: sezonas posms">
+  <span class="demo-tag">Prototips</span>
+  <button type="button" data-demo="pre"><span class="lg">Pirms sezonas</span><span class="sm">Pirms</span></button>
+  <button type="button" data-demo="group"><span class="lg">Grupu turnīrs</span><span class="sm">Grupas</span></button>
+  <button type="button" data-demo="k">K grupa</button>
+  <button type="button" data-demo="playoff"><span class="lg">Izslēgšanas spēles</span><span class="sm">Pusfināli</span></button>
+  <button type="button" data-demo="done"><span class="lg">Noslēgums</span><span class="sm">Beigas</span></button>
+</div>
+
+<script id="season-data" type="application/json">{{DATA}}</script>
+<script>
+{{ENGINE}}
+</script>
+<script>
+{{APP}}
+</script>
