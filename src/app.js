@@ -141,12 +141,6 @@
   }
 
   // ---------- round naming ----------
-  function roundParts(r) {
-    if (r.comp === 'jssc') return { chip: r.stage, rest: r.label };
-    if (r.stage === 'Pusfināli') return { chip: r.label, rest: 'Pusfināli' };
-    if (r.stage === 'Fināli') return { chip: 'Fināli', rest: 'Zelta un bronzas fināls' };
-    return { chip: r.label, rest: r.stage };
-  }
   function primaryRound(rounds) {
     return rounds.filter(function (r) { return r.stage !== 'Cerību kauss'; })[0] || rounds[0];
   }
@@ -217,16 +211,13 @@
     // No results yet: the block is not shown at all.
     if (!lr) { el.hidden = true; el.innerHTML = ''; return; }
     el.hidden = false;
-    var pr = primaryRound(lr.rounds), p = roundParts(pr);
-    var venue = ctx.venue(lr.games[0].venue);
-    var sub = '<span class="chip">' + esc(p.chip) + '</span><span>' + esc([p.rest, dateLong(lr.date), venue ? venue.name : ''].filter(Boolean).join(' · ')) + '</span>';
     var multi = lr.rounds.length > 1;
     var body = lr.rounds.map(function (r) {
       var list = sortGames(lr.games.filter(function (g) { return g.round === r.id; }));
       return (multi ? '<h3 class="group-head">' + esc(groupTitle(r)) + ' <small>' + games(list.length) + '</small></h3>' : '') +
         list.map(resRow).join('');
     }).join('');
-    el.innerHTML = head('last-title', 'Iepriekšējās kārtas rezultāti', sub) + '<div class="results">' + body + '</div>';
+    el.innerHTML = head('last-title', 'Iepriekšējās kārtas rezultāti') + '<div class="results">' + body + '</div>';
   }
 
   // ---------- Block 2: round MVP ----------
@@ -234,10 +225,9 @@
     var el = $('block-mvp');
     if (!lr || !lr.mvp) { el.hidden = true; el.innerHTML = ''; return; }
     var m = lr.mvp, sp = CUPS[state.cup].mvpSponsor;
-    var p = roundParts(primaryRound(lr.rounds));
     el.hidden = false;
-    el.innerHTML = head('mvp-title', 'Kārtas MVP', '<span class="chip">' + esc(p.chip) + '</span><span>' + esc(p.rest) + '</span>') +
-      '<div class="mvp-wrap">' +
+    // Part of the previous-round section: no heading of its own.
+    el.innerHTML = '<div class="mvp-wrap">' +
       '<div class="mvp-sponsor"><p>Kārtas MVP balvu pasniedz</p><img src="' + esc(sp.logo) + '" alt="' + esc(sp.name) + '"></div>' +
       '<article class="mvp" aria-label="Kārtas vērtīgākais spēlētājs">' +
       '<p class="mvp-k">Vērtīgākais spēlētājs</p>' +
@@ -280,8 +270,6 @@
       el.innerHTML = head('next-title', title) + '<div class="empty"><strong>Sezona noslēgusies.</strong>Paldies visām komandām un skatītājiem!</div>';
       return;
     }
-    var pr = primaryRound(nr.rounds), p = roundParts(pr);
-    var sub = '<span class="chip">' + esc(p.chip) + '</span><span>' + esc(p.rest) + '</span>';
     var v = ctx.venue(nr.games[0].venue);
     var x = parse(nr.date);
     var multi = nr.rounds.length > 1;
@@ -290,14 +278,19 @@
       return (multi ? '<li class="group-head" role="presentation">' + esc(groupTitle(r)) + ' <small>' + games(gs.length) + '</small></li>' : '') +
         gs.map(fxRow).join('');
     }).join('');
-    el.innerHTML = head('next-title', title, sub, CAL_LINK) +
+    // Desktop: share + calendar next to the title. Phones: share above the
+    // schedule card, calendar link below it, both on the right.
+    var shareBtn = posterRound(nr) ? '<button type="button" class="share-btn" data-share-round>' + SHARE_ICON + 'Dalīties</button>' : '';
+    el.innerHTML = head('next-title', title, '', '<div class="head-actions">' + shareBtn + CAL_LINK + '</div>') +
+      (shareBtn ? '<div class="next-share-m">' + shareBtn + '</div>' : '') +
       '<div class="ticket">' +
       '<div class="stub" aria-label="' + esc(cap(dateLong(nr.date))) + '"><span class="stub-day">' + x.getDate() + '</span>' +
       '<span class="stub-txt"><span class="stub-month">' + MONTH_NOM[x.getMonth()] + '</span><span class="stub-wd">' + WEEKDAY_NOM[x.getDay()] + '</span></span>' + CAL_ICON + '</div>' +
       '<div class="ticket-main"><div class="venue-bar"><div><h3 class="venue-name">' + esc(v.name) + '</h3><p class="venue-addr">' + esc(v.address) + '</p></div>' +
       '<a class="map-link" href="' + esc(mapsUrl(v)) + '" target="_blank" rel="noopener" aria-label="' + esc(v.name) + ' — atvērt Google Maps">' +
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>Kā nokļūt</a></div>' +
-      '<ul class="fx-list">' + list + '</ul></div></div>';
+      '<ul class="fx-list">' + list + '</ul></div></div>' +
+      '<div class="next-cal-m">' + CAL_LINK + '</div>';
   }
 
   function lastGroupDate() {
@@ -404,13 +397,19 @@
       '<div class="tie-foot"><span>' + esc(left) + '</span><span>' + esc(right) + '</span></div>' + champ + '</' + tag + '>';
   }
 
+  // A1, B2, B1, A2 go straight to the quarterfinal. Same build as a game box
+  // (two rows + footer) so both are the same size; footer = their 1/4 dates.
+  var BYE_QF = { A1: 'QF1', B2: 'QF2', B1: 'QF3', A2: 'QF4' };
   function byeCard(seed, project) {
     var r = ctx.resolve('jssc', seed, { project: project });
     var label = r.team ? team(r.team).short : refLabel('jssc', seed, r);
-    return '<article class="tie tie--bye' + (r.projected ? ' is-projected' : '') + '" aria-label="' + esc(seed) + ' — bez pretinieka">' +
+    var qf = ctx.tieState('jssc', BYE_QF[seed], { project: project });
+    var dates = qf.games.map(function (g) { return dateShort(g.date); }).join(' / ');
+    return '<article class="tie tie--bye' + (r.projected ? ' is-projected' : '') + '" aria-label="' + esc(seed + ' ' + label) + ' — automātiski kvalificējas ceturtdaļfinālam">' +
       '<div class="t-row' + (r.team ? '' : ' is-tbd') + '"><span class="seed">' + esc(seed) + '</span>' + badge(r.team, 'sm') +
-      '<span class="tname">' + esc(label) + '</span><span class="bye-tag">Brīvs</span></div>' +
-      '<div class="tie-foot"><span>Bez pretinieka — tieši ceturtdaļfinālā</span></div></article>';
+      '<span class="tname">' + esc(label) + '</span></div>' +
+      '<div class="t-row t-note"><span>Automātiski kvalificējas ceturtdaļfinālam</span></div>' +
+      '<div class="tie-foot"><span>' + esc(dates ? 'Ceturtdaļfināls ' + dates : '') + '</span></div></article>';
   }
 
   // Phone tab bar for a bracket. On wider screens the full bracket shows.
@@ -538,33 +537,12 @@
   }
 
   // ---------- Hero ----------
-  var STAGE_NAME = { preseason: 'Pirms sezonas', group: 'Grupu turnīrs', k: 'K grupa', playoff: 'Izslēgšanas spēles', done: 'Sezona noslēgusies' };
   function renderHero() {
     var cup = CUPS[state.cup];
     $('hero-logo').src = cup.logo;
     $('hero-title').textContent = cup.name;
-    var nr = ctx.nextRound(state.cup);
-    var pill, lines = [];
-    if (state.cup === 'dbck') {
-      var s = ctx.dbckStage();
-      pill = STAGE_NAME[s];
-      if (nr) lines.push((s === 'preseason' ? 'Sezona sākas ' : 'Nākamā kārta ') + dateLong(nr.date));
-    } else {
-      var js = ctx.jsscStage();
-      if (js === 'projected') {
-        pill = 'Drīzumā';
-        lines.push('Sāksies pēc Dobeles kausa grupu turnīra');
-        if (nr) lines.push('Pirmās spēles plānotas ' + dateLong(nr.date));
-      } else if (js === 'done') {
-        pill = 'Kauss izcīnīts';
-      } else {
-        pill = nr ? primaryRound(nr.rounds).stage : 'Izaicinājuma kauss';
-        if (nr) lines.push('Nākamā kārta ' + dateLong(nr.date));
-      }
-    }
-    $('hero-stage').innerHTML = '<span class="pill">' + esc(pill) + '</span>' +
-      lines.map(function (l, i) { return '<span class="line' + (i ? ' sub' : '') + '">' + esc(l) + '</span>'; }).join('');
   }
+
 
   // ---------- Game page ----------
   // Box row layout: [rosterIdx, starter, seconds, pts, 2pm, 2pa, 3pm, 3pa, ftm, fta, oreb, dreb, ast, stl, blk, tov, pf, eff, +/-]
@@ -577,6 +555,11 @@
   function playerName(teamId, idx) { return team(teamId).players[idx].name; }
   function playerNo(teamId, idx) { return team(teamId).players[idx].no; }
 
+  // "1. pusfināls · 1. spēle", "Grupu turnīrs · 4. kārta · A grupa", "Astotdaļfināls · 1. spēle" …
+  function gameStage(g, rnd) {
+    if (g.comp === 'dbck' && g.stage === 'playoff') return gameTag(g);
+    return groupTitle(rnd) + (g.stage === 'group' ? ' · ' + gameTag(g) : '');
+  }
   function renderGame(id) {
     var raw = RAW[id];
     var g = ctx.games().filter(function (x) { return x.id === id; })[0];
@@ -602,19 +585,13 @@
           if (x.final) return '<a href="' + gameHref(x.id) + '">' + esc(label) + '</a>';
           return '<span>' + esc(label) + '</span>';
         });
-        if (st.type === 'twoleg' && st.decided) {
-          chips.push('<span><b>Summā</b> ' + esc(team(st.a.team).short) + ' ' + st.aggA + ':' + st.aggB + ' ' + esc(team(st.b.team).short) + '</span>');
-        }
-        if (st.type === 'bo3') {
-          chips.push('<span><b>Sērija</b> ' + esc(team(st.a.team).short) + ' ' + st.winsA + '–' + st.winsB + ' ' + esc(team(st.b.team).short) + '</span>');
-        }
         tieStrip = '<div class="gh-tie">' + chips.join('') + '</div>';
       }
     }
     var note = resNote(g);
     html += '<section class="gh" aria-label="Spēles rezultāts">' +
-      '<p class="gh-meta"><span class="tag">' + esc(CUPS[comp].short) + '</span><span>' + esc(groupTitle(rnd)) + '</span>' +
-      (g.stage === 'group' ? '<span>' + esc(gameTag(g)) + '</span>' : '') + '</p>' +
+      // Centred, top to bottom: cup, stage + game, result, when/where, status, series games.
+      '<div class="gh-meta"><p class="gh-cup">' + esc(CUPS[comp].short) + '</p><p class="gh-stage">' + esc(gameStage(g, rnd)) + '</p></div>' +
       '<div class="gh-board">' +
       '<div class="gh-team' + (hw ? ' is-win' : '') + '">' + badge(hId, 'lg') + '<span>' + esc(team(hId).name) + '</span></div>' +
       '<div class="gh-score"><span' + (hw ? ' class="w"' : '') + '>' + g.hs + '</span><span class="sep">:</span><span' + (hw ? '' : ' class="w"') + '>' + g.as + '</span></div>' +
@@ -653,7 +630,9 @@
     ];
     html += '<section aria-labelledby="g-l"><h2 class="g-title" id="g-l">Spēles līderi</h2><div class="leaders">' + LEAD.map(function (l) {
       var b = topBy(l.fn);
-      return '<div class="ldr"><p class="ldr-k">' + esc(l.k) + '</p><p class="ldr-who">' + badge(b.team, 'sm') + '<span class="nm">' + esc(playerName(b.team, b.r[0])) + '</span></p><p class="ldr-v">' + l.fn(b.r) + '</p></div>';
+      var pn = playerName(b.team, b.r[0]), sp = pn.indexOf(' ');
+      var nm = sp > 0 ? '<span class="fn">' + esc(pn.slice(0, sp)) + '</span> <span class="ln">' + esc(pn.slice(sp + 1)) + '</span>' : esc(pn);
+      return '<div class="ldr"><p class="ldr-k">' + esc(l.k) + '</p><p class="ldr-who">' + badge(b.team, 'sm') + '<span class="nm">' + nm + '</span></p><p class="ldr-v">' + l.fn(b.r) + '</p></div>';
     }).join('') + '</div></section>';
 
     // Team comparison
@@ -686,7 +665,7 @@
       var sum = Math.abs(hn) + Math.abs(an) || 1;
       var hp = Math.max(4, Math.round(100 * Math.abs(hn) / sum)), ap = Math.max(4, 100 - hp);
       return '<div class="cmp-row"><span class="cmp-v h' + (hl ? ' lead' : '') + '">' + hs + '</span><span class="cmp-l">' + esc(c.l) + '</span><span class="cmp-v a' + (al ? ' lead' : '') + '">' + as + '</span>' +
-        '<span class="cmp-bar" aria-hidden="true"><i class="h" style="width:' + hp + '%"></i><i class="a" style="width:' + ap + '%"></i></span></div>';
+        '<span class="cmp-bar" aria-hidden="true"><i class="h' + (hl ? ' lead' : '') + '" style="width:' + hp + '%"></i><i class="a' + (al ? ' lead' : '') + '" style="width:' + ap + '%"></i></span></div>';
     }).join('');
     html += '<section aria-labelledby="g-c"><h2 class="g-title" id="g-c">Komandu salīdzinājums</h2><div class="cmp">' +
       '<div class="cmp-head"><span>' + badge(hId, 'sm') + nameHtml(hId) + '</span><span></span><span>' + nameHtml(aId) + badge(aId, 'sm') + '</span></div>' +
@@ -703,8 +682,8 @@
         return '<tr class="' + cls + '"><td class="pl"><span class="row"><span class="no">' + esc(playerNo(tid, r[0])) + '</span><span class="nm">' + esc(playerName(tid, r[0])) + '</span>' + (isMvp ? '<span class="mvp-chip" title="Kārtas MVP">MVP</span>' : '') + '</span></td>' +
           '<td>' + mins(r[2]) + '</td><td class="pts">' + r[3] + '</td>' +
           '<td>' + r[4] + '/' + r[5] + '</td><td>' + r[6] + '/' + r[7] + '</td><td>' + r[8] + '/' + r[9] + '</td>' +
-          '<td>' + r[10] + '</td><td>' + r[11] + '</td><td>' + (r[10] + r[11]) + '</td>' +
-          '<td>' + r[12] + '</td><td>' + r[13] + '</td><td>' + r[14] + '</td><td>' + r[15] + '</td><td>' + r[16] + '</td>' +
+          '<td>' + r[10] + '</td><td>' + r[11] + '</td><td class="pts">' + (r[10] + r[11]) + '</td>' +
+          '<td class="pts">' + r[12] + '</td><td>' + r[13] + '</td><td>' + r[14] + '</td><td>' + r[15] + '</td><td>' + r[16] + '</td>' +
           '<td>' + r[17] + '</td><td>' + (r[18] > 0 ? '+' : '') + r[18] + '</td></tr>';
       }
       var body = st.map(function (r) { return tr(r, 'st'); }).join('') +
@@ -714,8 +693,8 @@
         }).join('') +
         '<tr class="tot"><td class="pl">Komanda kopā</td><td>' + Math.round(t[2] / 60) + '</td><td class="pts">' + t[3] + '</td>' +
         '<td>' + t[4] + '/' + t[5] + '</td><td>' + t[6] + '/' + t[7] + '</td><td>' + t[8] + '/' + t[9] + '</td>' +
-        '<td>' + t[10] + '</td><td>' + t[11] + '</td><td>' + (t[10] + t[11]) + '</td>' +
-        '<td>' + t[12] + '</td><td>' + t[13] + '</td><td>' + t[14] + '</td><td>' + t[15] + '</td><td>' + t[16] + '</td><td>' + t[17] + '</td><td></td></tr>' +
+        '<td>' + t[10] + '</td><td>' + t[11] + '</td><td class="pts">' + (t[10] + t[11]) + '</td>' +
+        '<td class="pts">' + t[12] + '</td><td>' + t[13] + '</td><td>' + t[14] + '</td><td>' + t[15] + '</td><td>' + t[16] + '</td><td>' + t[17] + '</td><td></td></tr>' +
         '<tr class="pct"><td class="pl">Precizitāte</td><td></td><td></td><td>' + pct(t[4], t[5]) + '</td><td>' + pct(t[6], t[7]) + '</td><td>' + pct(t[8], t[9]) + '</td><td colspan="10"></td></tr>';
       return '<div class="bx-card"><h3>' + badge(tid, 'sm') + esc(team(tid).name) + '<span class="sc">' + score + '</span></h3>' +
         '<div class="bx-scroll"><table class="bx"><thead><tr>' +
@@ -849,7 +828,7 @@
       if (c.team && dg.length === 1) {
         var tv = teamView(dg[0], c.team);
         cls += ' tv';
-        info = '<span class="cal-opp">' + (tv.opp ? badge(tv.opp, 'sm') : '') + '<span class="cal-oppn">' + esc(tv.opp ? 'pret ' + team(tv.opp).short : 'Pretinieks vēl nav zināms') + '</span></span>' +
+        info = '<span class="cal-opp">' + (tv.opp ? '<span class="cal-vs">VS</span>' + badge(tv.opp, 'sm') : '<span class="cal-oppn">Pretinieks vēl nav zināms</span>') + '</span>' +
           (tv.res ? '<span class="cal-res' + (tv.won ? ' w' : '') + '">' + esc(tv.res) + '</span>' : '');
       } else {
         info = '<span class="cal-count">' + games(dg.length) + '</span>';
@@ -903,6 +882,7 @@
   function openSheet(ds, trigger) {
     state.cal.open = ds; state.cal.showAll = false;
     sheetReturn = trigger || null;
+    $('sheet').classList.remove('sheet--share');
     renderSheet();
     $('sheet').hidden = false; $('sheet-scrim').hidden = false;
     document.body.classList.add('no-scroll');
@@ -913,6 +893,8 @@
     if ($('sheet').hidden) return;
     state.cal.open = null;
     $('sheet').hidden = true; $('sheet-scrim').hidden = true; $('sheet').innerHTML = '';
+    $('sheet').classList.remove('sheet--share');
+    releaseShare();
     document.body.classList.remove('no-scroll');
     if (sheetReturn && document.body.contains(sheetReturn)) sheetReturn.focus();
     sheetReturn = null;
@@ -959,6 +941,133 @@
       '<div class="sheet-head"><h2 id="sheet-title">' + esc(cap(dateLong(ds))) + '</h2>' +
       '<button type="button" class="icon-btn" data-sheet-close aria-label="Aizvērt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>' +
       '<div class="sheet-body">' + body + more + '</div>';
+  }
+
+  // ---------- Round posters (share pop-up) ----------
+  // Two posters for the next round, drawn by poster.js: a 4:5 feed post and
+  // a 9:16 Story/Reel. Phones get the system share sheet, others a download.
+  var POSTER_DATA = JSON.parse(document.getElementById('poster-data').textContent);
+  var NOTICE = 'Čempionāts var tikt fotografēts un/vai filmēts, foto/video var tikt izmantoti publicitātes vajadzībām';
+  var SHARE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3.5M7.5 8 12 3.5 16.5 8"/><path d="M5 11.5v8A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-8"/></svg>';
+  var DL_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5V15M7.5 10.5 12 15l4.5-4.5"/><path d="M4.5 19.5h15"/></svg>';
+  var POSTERS = [
+    { key: 'feed', name: 'Ieraksts', hint: 'Facebook, Instagram · 4:5', file: 'ieraksts' },
+    { key: 'story', name: 'Stāsts / Reels', hint: 'Instagram, Facebook · 9:16', file: 'stasts' }
+  ];
+  var share = { token: 0, files: {}, urls: [] };
+
+  function canShareFiles() {
+    try {
+      return !!(navigator.canShare && navigator.share &&
+        navigator.canShare({ files: [new File(['x'], 'x.jpg', { type: 'image/jpeg' })] }));
+    } catch (e) { return false; }
+  }
+  // This poster template covers the Dobele group stage and K group (incl. Hope
+  // Cup games) and the Jelgava 1/8 and 1/4 finals. Semifinals and finals of
+  // both cups will get their own template later, so no button there yet.
+  function posterRound(nr) {
+    return !!nr && nr.games.length > 0 && nr.games.every(function (g) {
+      return g.comp === 'dbck' ? ['group', 'k', 'hope'].indexOf(g.stage) >= 0 : /^(R16|QF)/.test(g.tie || '');
+    });
+  }
+  // Same photo for everyone during a round; consecutive rounds get the next one.
+  function posterPhoto(date) {
+    var list = POSTER_DATA.photos || [];
+    if (!list.length) return null;
+    var dates = [];
+    DATA.rounds.forEach(function (r) { if (dates.indexOf(r.date) < 0) dates.push(r.date); });
+    dates.sort();
+    var i = Math.max(0, dates.indexOf(date));
+    return list[i % list.length];
+  }
+  function posterSpec(nr) {
+    var pr = primaryRound(nr.rounds), x = parse(nr.date);
+    var v = ctx.venue(nr.games[0].venue);
+    return {
+      cup: state.cup, seed: state.cup + nr.date,
+      title: CUPS[state.cup].name,
+      date: x.getDate() + '. ' + MONTH_NOM[x.getMonth()],
+      hall: v ? v.name : '',
+      stage: pr.stage + (pr.label ? ' · ' + pr.label : ''),
+      names: ctx.teams().map(function (t) { return t.name; }),
+      // Hope Cup games always go last, below the K group games.
+      games: sortGames(nr.games).sort(function (x, y) { return (x.round !== pr.id) - (y.round !== pr.id); }).map(function (g) {
+        var h = side(g.comp, g.home, false), a = side(g.comp, g.away, false);
+        // A Hope Cup game inside a K group round gets a label over its row.
+        var tag = g.round !== pr.id ? groupTitle(ctx.round(g.round)) : '';
+        return {
+          time: g.time, tag: tag,
+          home: h.team ? team(h.team).name : refLabel(g.comp, g.home),
+          away: a.team ? team(a.team).name : refLabel(g.comp, g.away)
+        };
+      }),
+      notice: NOTICE
+    };
+  }
+  function releaseShare() {
+    share.token++;
+    share.urls.forEach(function (u) { URL.revokeObjectURL(u); });
+    share.urls = []; share.files = {};
+  }
+  function openShare(trigger) {
+    var nr = ctx.nextRound(state.cup);
+    if (!posterRound(nr) || typeof window.Poster === 'undefined') return;
+    releaseShare();
+    var token = share.token;
+    var canShare = canShareFiles();
+    var base = CUPS[state.cup].hash + '-' + nr.date + '-';
+    var cards = POSTERS.map(function (f) {
+      return '<figure class="poster-card poster-card--' + f.key + '">' +
+        '<div class="poster-frame" data-poster-frame="' + f.key + '"><span class="poster-wait">Gatavo plakātu…</span></div>' +
+        '<figcaption class="poster-hint">' + esc(f.hint) + '</figcaption>' +
+        '<div class="poster-actions">' +
+        (canShare ? '<button type="button" class="btn btn--fill" data-poster-share="' + f.key + '" disabled>' + SHARE_ICON + 'Dalīties</button>' : '') +
+        '<a class="btn' + (canShare ? '' : ' btn--fill') + '" data-poster-dl="' + f.key + '" download="' + esc(base + f.file + '.jpg') + '" aria-disabled="true">' + DL_ICON + 'Lejupielādēt</a>' +
+        '</div></figure>';
+    }).join('');
+    sheetReturn = trigger || null;
+    $('sheet').classList.add('sheet--share');
+    $('sheet').innerHTML = '<div class="sheet-grip" aria-hidden="true"></div>' +
+      '<div class="sheet-head"><h2 id="sheet-title">Kārtas plakāti</h2>' +
+      '<button type="button" class="icon-btn" data-sheet-close aria-label="Aizvērt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>' +
+      '<div class="sheet-body"><div class="poster-grid">' + cards + '</div>' +
+      '<p class="poster-note">' + (canShare ? 'Spied „Dalīties”, lai publicētu plakātu sociālajos tīklos, vai lejupielādē to.' : 'Lejupielādē plakātu un publicē to sociālajos tīklos.') + '</p></div>';
+    $('sheet').hidden = false; $('sheet-scrim').hidden = false;
+    document.body.classList.add('no-scroll');
+    var cl = $('sheet').querySelector('[data-sheet-close]');
+    if (cl) cl.focus();
+
+    var spec = posterSpec(nr), photo = posterPhoto(nr.date), logos = POSTER_DATA.sponsors || [];
+    var srcs = (photo ? [photo.src] : []).concat(logos.map(function (s) { return s.src; }));
+    window.Poster.prepare(srcs).then(function (imgs) {
+      if (token !== share.token) return;
+      spec.photo = photo ? { img: imgs[0], focus: photo.focus } : null;
+      var li = imgs.slice(photo ? 1 : 0);
+      spec.sponsors = logos.map(function (s, i) { return { img: li[i], w: s.w, h: s.h, scale: s.scale }; });
+      POSTERS.forEach(function (f) {
+        var canvas = window.Poster.render(Object.assign({}, spec, { format: f.key }));
+        // Preview as a data URL (works in every viewer); the file itself as a blob.
+        var preview = canvas.toDataURL('image/jpeg', 0.85);
+        canvas.toBlob(function (blob) {
+          if (token !== share.token || !blob) return;
+          var name = base + f.file + '.jpg';
+          share.files[f.key] = new File([blob], name, { type: 'image/jpeg' });
+          var url = URL.createObjectURL(blob);
+          share.urls.push(url);
+          var frame = $('sheet').querySelector('[data-poster-frame="' + f.key + '"]');
+          if (frame) frame.innerHTML = '<img src="' + preview + '" alt="' + esc(f.name + ' — ' + CUPS[state.cup].short + ', ' + dateDay(nr.date)) + '">';
+          var dl = $('sheet').querySelector('[data-poster-dl="' + f.key + '"]');
+          if (dl) { dl.href = url; dl.removeAttribute('aria-disabled'); }
+          var sb = $('sheet').querySelector('[data-poster-share="' + f.key + '"]');
+          if (sb) sb.disabled = false;
+        }, 'image/jpeg', 0.92);
+      });
+    });
+  }
+  function sharePoster(key) {
+    var file = share.files[key];
+    if (!file) return;
+    navigator.share({ files: [file], title: CUPS[state.cup].short }).catch(function () { /* cancelled */ });
   }
 
   // ---------- Kopvērtējums (standings) page ----------
@@ -1164,6 +1273,12 @@
     if (day) { openSheet(day.getAttribute('data-day'), day); return; }
     if (e.target.closest('[data-sheet-close]') || e.target.id === 'sheet-scrim') { closeSheet(); return; }
     if (e.target.closest('[data-sheet-all]')) { state.cal.showAll = true; renderSheet(); return; }
+    var sr = e.target.closest('[data-share-round]');
+    if (sr) { openShare(sr); return; }
+    var ps = e.target.closest('[data-poster-share]');
+    if (ps) { sharePoster(ps.getAttribute('data-poster-share')); return; }
+    var pd = e.target.closest('[data-poster-dl]');
+    if (pd && pd.getAttribute('aria-disabled') === 'true') { e.preventDefault(); return; }
     var tab = e.target.closest('[data-bk]');
     if (tab) {
       var tid = tab.getAttribute('data-tree'), key = tab.getAttribute('data-bk');

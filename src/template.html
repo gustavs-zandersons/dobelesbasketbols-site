@@ -32,14 +32,13 @@
       <p class="eyebrow">Sezona 2026/27</p>
       <h1 class="hero-title" id="hero-title">Dobeles Basketbola čempionu kauss</h1>
     </div>
-    <div class="hero-stage" id="hero-stage"></div>
   </div>
   <svg class="ridge" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true"><path d="{{RIDGE_A}}"/></svg>
 </section>
 
 <main class="wrap main" id="main">
   <section class="block" id="block-last" aria-labelledby="last-title"></section>
-  <section class="block" id="block-mvp" aria-labelledby="mvp-title" hidden></section>
+  <section class="block" id="block-mvp" aria-label="Kārtas MVP" hidden></section>
   <section class="block" id="block-next" aria-labelledby="next-title"></section>
   <section class="block" id="block-stage" aria-labelledby="stage-title"></section>
   <section class="block" id="block-extra" aria-labelledby="extra-title" hidden></section>
@@ -56,15 +55,7 @@
   <div class="wrap">
     <h2>Atbalstītāji</h2>
     <div class="sponsor-row">
-      <img src="assets/sponsors/s01.png" alt="Dobeles novada pašvaldība" loading="lazy">
-      <img src="assets/sponsors/s02.png" alt="Garage Barber" loading="lazy">
-      <img src="assets/sponsors/s03.png" alt="Jaunpils pienotava" loading="lazy">
-      <img src="assets/sponsors/s04.png" alt="Sporta bode — sportabode.eu" loading="lazy">
-      <img src="assets/sponsors/s05.png" alt="Balevich Media" loading="lazy">
-      <img src="assets/sponsors/s06.png" alt="Kebabmix" loading="lazy">
-      <img src="assets/sponsors/s07.png" alt="Perwoll" loading="lazy">
-      <img src="assets/sponsors/s08.png" alt="Dobeles dzirnavnieks" loading="lazy">
-      <img src="assets/sponsors/s09.png" alt="Tērvetes alus darītava" loading="lazy">
+{{SPONSORS_HTML}}
     </div>
     <div class="foot">
       <p>Sacensības organizē biedrība „SK Dobele” sadarbībā ar Dobeles novada sporta pārvaldi un Jelgavas sporta servisa centru.</p>
@@ -118,8 +109,12 @@
 </div>
 
 <script id="season-data" type="application/json">{{DATA}}</script>
+<script id="poster-data" type="application/json">{{POSTER_DATA}}</script>
 <script>
 {{ENGINE}}
+</script>
+<script>
+{{POSTER}}
 </script>
 <script>
 {{APP}}
