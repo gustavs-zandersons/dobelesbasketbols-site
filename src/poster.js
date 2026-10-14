@@ -19,13 +19,13 @@
   // and puts its buttons on the right.
   var FORMATS = {
     feed: {
-      w: 1080, h: 1350, side: 64, photo: 400, ridge: 46, sponsorTop: 1052, bar: 54,
-      title: 66, titleMin: 44, date: 40, stage: 30, team: 54, timeBox: [196, 84], row: [96, 122],
+      w: 1080, h: 1350, side: 64, photo: 384, ridge: 46, sponsorTop: 1066, bar: 54,
+      title: 54, titleMin: 44, date: 35, stage: 27, team: 54, timeBox: [196, 84], row: [96, 122],
       logoRows: [7, 6], logoArea: 7600, logoMax: [150, 92], logoGap: 26, notice: 25
     },
     story: {
       w: 1080, h: 1920, side: 104, photo: 500, ridge: 50, sponsorTop: 1446, bar: 62,
-      title: 66, titleMin: 52, date: 42, stage: 31, team: 58, timeBox: [176, 84], row: [112, 150],
+      title: 62, titleMin: 50, date: 39, stage: 29, team: 58, timeBox: [176, 84], row: [112, 150],
       logoRows: [4, 5, 4], logoArea: 8600, logoMax: [180, 100], logoGap: 34, notice: 26
     }
   };
@@ -165,7 +165,7 @@
     // Short names stay on one line; only long ones (sponsor names) wrap.
     if (lines.length < 2 || single >= F.team * 0.8) return single;
     var two = Math.min.apply(null, lines.map(function (l) { return fit(g, l, F.team, maxW, 1); }));
-    return Math.max(single, Math.min(two, Math.floor(rowH * 0.44)));
+    return Math.max(single, Math.min(two, Math.floor(rowH * 0.4)));
   }
   // All names on a poster share one size (like last season's posters); long
   // names that don't fit on one line at that size wrap onto two lines.
@@ -234,12 +234,13 @@
     if (stage) { y += 14; text(g, stage, W / 2, y + stPx / 2, stPx, T.stage); y += stPx; }
     y += gapHead;
 
-    var bw = F.timeBox[0], bh = Math.min(F.timeBox[1], rowH * 0.7);
+    var bw = F.timeBox[0], bh = Math.min(F.timeBox[1], rowH * 0.74);
     var nameW = (W - bw) / 2 - F.side + (spec.format === 'story' ? 6 : 0) - 26;
     var namePx = list.reduce(function (px, gm) {
       return Math.min(px, nameFit(g, up(gm.home), F, nameW, rowH), nameFit(g, up(gm.away), F, nameW, rowH));
     }, F.team);
-    namePx = Math.max(namePx, 24);
+    // Names never outgrow the time digits when rows get tight.
+    namePx = Math.max(Math.min(namePx, Math.round(bh * 0.85)), 24);
     var top = y;
     list.forEach(function (gm, i) {
       if (i > 0) {
