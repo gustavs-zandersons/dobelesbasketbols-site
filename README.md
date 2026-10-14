@@ -6,8 +6,9 @@ calendar, standings, brackets and game box scores. Latvian only, mobile first.
 
 > **Status: test version with made-up data.** Team names and logos are real;
 > every score, player and statistic is invented. The site uses a fixed mock
-> date (10 March 2027 — Dobele semifinals after game 1, Challenge Cup
-> semifinals after the first leg). The real data sync from basket.lv comes later.
+> date (5 January 2027 — Dobele K group after round 1, next round brings K group
+> round 2 and the first Hope Cup semifinal; Challenge Cup after the first leg of
+> the 1/8 finals). The real data sync from basket.lv comes later.
 
 Live (once GitHub Pages is enabled): https://gustavs-zandersons.github.io/dobelesbasketbols-site/
 
@@ -27,8 +28,8 @@ system share sheet; computers download the image. (Sharing and downloading work
 on the live site, not inside the Claude preview.) This poster template is used
 for the Dobele group stage and K group (incl. Hope Cup games) and the Jelgava
 1/8 and 1/4 finals; semifinals and finals of both cups will get their own
-template, so the button is hidden there for now. With the test date (playoffs)
-open `/?demo#dobele` and pick *Grupu turnīrs* or *K grupa* to try it.
+template, so the button is hidden there for now. With the test date both cups
+show the button; `/?demo` adds the bar to jump between season stages.
 
 Add `?demo` to the address (e.g. `/?demo#dobele`) to show the prototype bar and
 jump between season stages: pre-season, group stage, K group, playoffs, season end.
