@@ -225,7 +225,7 @@
     var n = Math.max(1, list.length);
     // A labelled game (the Hope Cup game in a K group round) is its own section
     // at the bottom: extra space above it, no line, the label tight on top.
-    var tagPx = story ? 25 : 23, secGap = story ? 40 : 26, tagGap = 12;
+    var tagPx = story ? 25 : 23, secGap = story ? 40 : 26, tagGap = story ? 24 : 20;
     var tagged = list.filter(function (gm) { return gm.tag; }).length;
     var tagFixed = secGap + tagPx * 0.75 + tagGap + 10;
     // Rows use their preferred height when there is room and shrink (never

@@ -397,13 +397,19 @@
       '<div class="tie-foot"><span>' + esc(left) + '</span><span>' + esc(right) + '</span></div>' + champ + '</' + tag + '>';
   }
 
+  // A1, B2, B1, A2 go straight to the quarterfinal. Same build as a game box
+  // (two rows + footer) so both are the same size; footer = their 1/4 dates.
+  var BYE_QF = { A1: 'QF1', B2: 'QF2', B1: 'QF3', A2: 'QF4' };
   function byeCard(seed, project) {
     var r = ctx.resolve('jssc', seed, { project: project });
     var label = r.team ? team(r.team).short : refLabel('jssc', seed, r);
-    return '<article class="tie tie--bye' + (r.projected ? ' is-projected' : '') + '" aria-label="' + esc(seed) + ' — bez pretinieka">' +
+    var qf = ctx.tieState('jssc', BYE_QF[seed], { project: project });
+    var dates = qf.games.map(function (g) { return dateShort(g.date); }).join(' / ');
+    return '<article class="tie tie--bye' + (r.projected ? ' is-projected' : '') + '" aria-label="' + esc(seed + ' ' + label) + ' — automātiski kvalificējas ceturtdaļfinālam">' +
       '<div class="t-row' + (r.team ? '' : ' is-tbd') + '"><span class="seed">' + esc(seed) + '</span>' + badge(r.team, 'sm') +
-      '<span class="tname">' + esc(label) + '</span><span class="bye-tag">Brīvs</span></div>' +
-      '<div class="tie-foot"><span>Bez pretinieka — tieši ceturtdaļfinālā</span></div></article>';
+      '<span class="tname">' + esc(label) + '</span></div>' +
+      '<div class="t-row t-note"><span>Automātiski kvalificējas ceturtdaļfinālam</span></div>' +
+      '<div class="tie-foot"><span>' + esc(dates ? 'Ceturtdaļfināls ' + dates : '') + '</span></div></article>';
   }
 
   // Phone tab bar for a bracket. On wider screens the full bracket shows.
@@ -549,6 +555,11 @@
   function playerName(teamId, idx) { return team(teamId).players[idx].name; }
   function playerNo(teamId, idx) { return team(teamId).players[idx].no; }
 
+  // "1. pusfināls · 1. spēle", "Grupu turnīrs · 4. kārta · A grupa", "Astotdaļfināls · 1. spēle" …
+  function gameStage(g, rnd) {
+    if (g.comp === 'dbck' && g.stage === 'playoff') return gameTag(g);
+    return groupTitle(rnd) + (g.stage === 'group' ? ' · ' + gameTag(g) : '');
+  }
   function renderGame(id) {
     var raw = RAW[id];
     var g = ctx.games().filter(function (x) { return x.id === id; })[0];
@@ -574,19 +585,13 @@
           if (x.final) return '<a href="' + gameHref(x.id) + '">' + esc(label) + '</a>';
           return '<span>' + esc(label) + '</span>';
         });
-        if (st.type === 'twoleg' && st.decided) {
-          chips.push('<span><b>Summā</b> ' + esc(team(st.a.team).short) + ' ' + st.aggA + ':' + st.aggB + ' ' + esc(team(st.b.team).short) + '</span>');
-        }
-        if (st.type === 'bo3') {
-          chips.push('<span><b>Sērija</b> ' + esc(team(st.a.team).short) + ' ' + st.winsA + '–' + st.winsB + ' ' + esc(team(st.b.team).short) + '</span>');
-        }
         tieStrip = '<div class="gh-tie">' + chips.join('') + '</div>';
       }
     }
     var note = resNote(g);
     html += '<section class="gh" aria-label="Spēles rezultāts">' +
-      '<p class="gh-meta"><span class="tag">' + esc(CUPS[comp].short) + '</span><span>' + esc(groupTitle(rnd)) + '</span>' +
-      (g.stage === 'group' ? '<span>' + esc(gameTag(g)) + '</span>' : '') + '</p>' +
+      // Centred, top to bottom: cup, stage + game, result, when/where, status, series games.
+      '<div class="gh-meta"><p class="gh-cup">' + esc(CUPS[comp].short) + '</p><p class="gh-stage">' + esc(gameStage(g, rnd)) + '</p></div>' +
       '<div class="gh-board">' +
       '<div class="gh-team' + (hw ? ' is-win' : '') + '">' + badge(hId, 'lg') + '<span>' + esc(team(hId).name) + '</span></div>' +
       '<div class="gh-score"><span' + (hw ? ' class="w"' : '') + '>' + g.hs + '</span><span class="sep">:</span><span' + (hw ? '' : ' class="w"') + '>' + g.as + '</span></div>' +
@@ -625,7 +630,9 @@
     ];
     html += '<section aria-labelledby="g-l"><h2 class="g-title" id="g-l">Spēles līderi</h2><div class="leaders">' + LEAD.map(function (l) {
       var b = topBy(l.fn);
-      return '<div class="ldr"><p class="ldr-k">' + esc(l.k) + '</p><p class="ldr-who">' + badge(b.team, 'sm') + '<span class="nm">' + esc(playerName(b.team, b.r[0])) + '</span></p><p class="ldr-v">' + l.fn(b.r) + '</p></div>';
+      var pn = playerName(b.team, b.r[0]), sp = pn.indexOf(' ');
+      var nm = sp > 0 ? '<span class="fn">' + esc(pn.slice(0, sp)) + '</span> <span class="ln">' + esc(pn.slice(sp + 1)) + '</span>' : esc(pn);
+      return '<div class="ldr"><p class="ldr-k">' + esc(l.k) + '</p><p class="ldr-who">' + badge(b.team, 'sm') + '<span class="nm">' + nm + '</span></p><p class="ldr-v">' + l.fn(b.r) + '</p></div>';
     }).join('') + '</div></section>';
 
     // Team comparison
@@ -658,7 +665,7 @@
       var sum = Math.abs(hn) + Math.abs(an) || 1;
       var hp = Math.max(4, Math.round(100 * Math.abs(hn) / sum)), ap = Math.max(4, 100 - hp);
       return '<div class="cmp-row"><span class="cmp-v h' + (hl ? ' lead' : '') + '">' + hs + '</span><span class="cmp-l">' + esc(c.l) + '</span><span class="cmp-v a' + (al ? ' lead' : '') + '">' + as + '</span>' +
-        '<span class="cmp-bar" aria-hidden="true"><i class="h" style="width:' + hp + '%"></i><i class="a" style="width:' + ap + '%"></i></span></div>';
+        '<span class="cmp-bar" aria-hidden="true"><i class="h' + (hl ? ' lead' : '') + '" style="width:' + hp + '%"></i><i class="a' + (al ? ' lead' : '') + '" style="width:' + ap + '%"></i></span></div>';
     }).join('');
     html += '<section aria-labelledby="g-c"><h2 class="g-title" id="g-c">Komandu salīdzinājums</h2><div class="cmp">' +
       '<div class="cmp-head"><span>' + badge(hId, 'sm') + nameHtml(hId) + '</span><span></span><span>' + nameHtml(aId) + badge(aId, 'sm') + '</span></div>' +
@@ -675,8 +682,8 @@
         return '<tr class="' + cls + '"><td class="pl"><span class="row"><span class="no">' + esc(playerNo(tid, r[0])) + '</span><span class="nm">' + esc(playerName(tid, r[0])) + '</span>' + (isMvp ? '<span class="mvp-chip" title="Kārtas MVP">MVP</span>' : '') + '</span></td>' +
           '<td>' + mins(r[2]) + '</td><td class="pts">' + r[3] + '</td>' +
           '<td>' + r[4] + '/' + r[5] + '</td><td>' + r[6] + '/' + r[7] + '</td><td>' + r[8] + '/' + r[9] + '</td>' +
-          '<td>' + r[10] + '</td><td>' + r[11] + '</td><td>' + (r[10] + r[11]) + '</td>' +
-          '<td>' + r[12] + '</td><td>' + r[13] + '</td><td>' + r[14] + '</td><td>' + r[15] + '</td><td>' + r[16] + '</td>' +
+          '<td>' + r[10] + '</td><td>' + r[11] + '</td><td class="pts">' + (r[10] + r[11]) + '</td>' +
+          '<td class="pts">' + r[12] + '</td><td>' + r[13] + '</td><td>' + r[14] + '</td><td>' + r[15] + '</td><td>' + r[16] + '</td>' +
           '<td>' + r[17] + '</td><td>' + (r[18] > 0 ? '+' : '') + r[18] + '</td></tr>';
       }
       var body = st.map(function (r) { return tr(r, 'st'); }).join('') +
@@ -686,8 +693,8 @@
         }).join('') +
         '<tr class="tot"><td class="pl">Komanda kopā</td><td>' + Math.round(t[2] / 60) + '</td><td class="pts">' + t[3] + '</td>' +
         '<td>' + t[4] + '/' + t[5] + '</td><td>' + t[6] + '/' + t[7] + '</td><td>' + t[8] + '/' + t[9] + '</td>' +
-        '<td>' + t[10] + '</td><td>' + t[11] + '</td><td>' + (t[10] + t[11]) + '</td>' +
-        '<td>' + t[12] + '</td><td>' + t[13] + '</td><td>' + t[14] + '</td><td>' + t[15] + '</td><td>' + t[16] + '</td><td>' + t[17] + '</td><td></td></tr>' +
+        '<td>' + t[10] + '</td><td>' + t[11] + '</td><td class="pts">' + (t[10] + t[11]) + '</td>' +
+        '<td class="pts">' + t[12] + '</td><td>' + t[13] + '</td><td>' + t[14] + '</td><td>' + t[15] + '</td><td>' + t[16] + '</td><td>' + t[17] + '</td><td></td></tr>' +
         '<tr class="pct"><td class="pl">Precizitāte</td><td></td><td></td><td>' + pct(t[4], t[5]) + '</td><td>' + pct(t[6], t[7]) + '</td><td>' + pct(t[8], t[9]) + '</td><td colspan="10"></td></tr>';
       return '<div class="bx-card"><h3>' + badge(tid, 'sm') + esc(team(tid).name) + '<span class="sc">' + score + '</span></h3>' +
         '<div class="bx-scroll"><table class="bx"><thead><tr>' +
@@ -821,7 +828,7 @@
       if (c.team && dg.length === 1) {
         var tv = teamView(dg[0], c.team);
         cls += ' tv';
-        info = '<span class="cal-opp">' + (tv.opp ? badge(tv.opp, 'sm') : '') + '<span class="cal-oppn">' + esc(tv.opp ? 'pret ' + team(tv.opp).short : 'Pretinieks vēl nav zināms') + '</span></span>' +
+        info = '<span class="cal-opp">' + (tv.opp ? '<span class="cal-vs">VS</span>' + badge(tv.opp, 'sm') : '<span class="cal-oppn">Pretinieks vēl nav zināms</span>') + '</span>' +
           (tv.res ? '<span class="cal-res' + (tv.won ? ' w' : '') + '">' + esc(tv.res) + '</span>' : '');
       } else {
         info = '<span class="cal-count">' + games(dg.length) + '</span>';

@@ -560,7 +560,7 @@ a.res:hover .res-go { color: var(--fg); }
 /* ---------- Next round: outlined "ticket" with a big date stub ---------- */
 .ticket {
   display: grid;
-  border: 2px solid var(--accent-fill);
+  border: 4px solid var(--accent-fill);   /* thick outline: the card's inside matches the page colour */
   border-radius: 14px;
   overflow: hidden;
 }
@@ -785,6 +785,8 @@ a.res:hover .res-go { color: var(--fg); }
   color: var(--fg-muted);
 }
 .nm-full { display: none; }
+/* Phones: no A1/B2 tags in the K group table, so the short name has room. */
+@media (max-width: 559px) { .standings .origin { display: none; } }
 @media (min-width: 560px) {
   .nm-full { display: inline; }
   .nm-short { display: none; }
@@ -882,14 +884,7 @@ a.tie.is-final:hover { box-shadow: inset 0 4px 0 var(--accent-fill), 0 0 0 2px v
   color: var(--bk-dim);
 }
 .t-row.is-win .agg { color: var(--bk-ink); }
-.bye-tag {
-  font-family: var(--font-cond);
-  font-weight: 700;
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--bg-head);
-}
+.t-row.t-note { grid-template-columns: minmax(0, 1fr); min-height: 30px; font-style: italic; font-weight: 500; font-size: 0.86rem; line-height: 1.3; color: var(--bk-muted); }
 .tie-foot {
   display: flex;
   justify-content: space-between;
@@ -1017,6 +1012,8 @@ a.tie.is-final:hover { box-shadow: inset 0 4px 0 var(--accent-fill), 0 0 0 2px v
   }
 }
 .tree--hope { max-width: 760px; }
+/* 1/8 column: every box fills its row, so "automatic" boxes match the game boxes. */
+@media (min-width: 940px) { .tree .c-r16 { align-items: stretch; } .tree .c-r16 > .tie { align-content: space-between; } }
 
 /* ---------- Mirrored bracket (Dobele playoffs) ---------- */
 .po { --gap: 48px; --ln: var(--bk-conn); display: grid; gap: 14px; }
@@ -1158,18 +1155,16 @@ a.tie.is-final:hover { box-shadow: inset 0 4px 0 var(--accent-fill), 0 0 0 2px v
   text-align: center;
 }
 .gh-meta {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 4px 10px;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
   font-family: var(--font-cond);
   font-weight: 700;
-  font-size: 0.85rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--fg-muted);
 }
-.gh-meta .tag { color: var(--accent); }
+.gh-cup { color: var(--accent); font-size: 0.9rem; }
+.gh-stage { color: var(--fg-muted); font-size: 0.85rem; }
 .gh-board {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
@@ -1261,7 +1256,6 @@ a.tie.is-final:hover { box-shadow: inset 0 4px 0 var(--accent-fill), 0 0 0 2px v
 
 /* top performers */
 .leaders { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 12px; }
-@media (max-width: 559px) { .leaders { grid-template-columns: 1fr 1fr; gap: 10px; } .ldr { padding: 12px; } .ldr-who { grid-column: 1 / -1; } .ldr-v { grid-row: 1; grid-column: 2; font-size: 1.9rem; } .ldr-k { grid-column: 1; } }
 .ldr {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -1284,6 +1278,16 @@ a.tie.is-final:hover { box-shadow: inset 0 4px 0 var(--accent-fill), 0 0 0 2px v
 .ldr-who { display: flex; align-items: center; gap: 10px; min-width: 0; font-weight: 600; }
 .ldr-who .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ldr-v { font-family: var(--font-display); font-size: 2.2rem; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
+/* Phones: centred tiles — category, number, then logo + first name / surname on two lines. */
+@media (max-width: 559px) {
+  .leaders { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ldr { padding: 12px 8px 14px; grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; gap: 6px; }
+  .ldr-k { grid-row: 1; }
+  .ldr-v { grid-row: 2; font-size: 2rem; }
+  .ldr-who { grid-row: 3; justify-content: center; gap: 8px; line-height: 1.2; }
+  .ldr-who .badge { width: 2.4rem; height: 2.4rem; flex: none; }   /* as tall as the two name lines */
+  .ldr-who .nm { display: grid; text-align: left; white-space: normal; }
+}
 
 /* team comparison */
 .cmp { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 16px 12px; }
@@ -1330,8 +1334,9 @@ a.tie.is-final:hover { box-shadow: inset 0 4px 0 var(--accent-fill), 0 0 0 2px v
 }
 .cmp-bar { display: flex; gap: 3px; height: 6px; }
 .cmp-bar i { display: block; border-radius: 3px; }
-.cmp-bar .h { background: var(--fg); opacity: 0.85; }
-.cmp-bar .a { background: var(--accent); }
+/* The better team's bar gets the cup colour; the other stays white. */
+.cmp-bar i { background: var(--fg); opacity: 0.85; }
+.cmp-bar i.lead { background: var(--accent); opacity: 1; }
 
 /* box scores */
 .bx-grid { display: grid; gap: 18px; }
@@ -1545,7 +1550,11 @@ button.cal-day:hover { border-color: var(--accent); }
 .cal-cup { flex: none; width: 22px; height: 22px; border-radius: 50%; }
 .cal-count, .cal-what, .cal-flag, .cal-oppn, .cal-res { display: none; }
 .cal-opp { display: flex; justify-content: center; }
-.cal-day.tv .cal-marks { display: none; }
+/* Team selected: phones show the opponent's logo and a small cup logo in the corner. */
+.cal-day.tv .cal-marks { position: absolute; top: 3px; right: 3px; }
+.cal-day.tv .cal-marks .cal-cup { width: 13px; height: 13px; }
+.cal-day.tv .cal-n { align-self: flex-start; padding-left: 2px; }   /* date left, cup logo right */
+.cal-vs { display: none; }
 .cal-day .cal-opp .badge { width: 24px; height: 24px; }
 @media (min-width: 760px) {
   .cal-card { padding: 18px; }
@@ -1553,7 +1562,9 @@ button.cal-day:hover { border-color: var(--accent); }
   .cal-day { min-height: 112px; padding: 8px; align-items: stretch; text-align: left; gap: 4px; }
   .cal-n { font-size: 1rem; }
   .cal-marks { position: absolute; top: 7px; right: 7px; }
-  .cal-day.tv .cal-marks { display: flex; }
+  .cal-day.tv .cal-marks { top: 7px; right: 7px; }
+  .cal-day.tv .cal-marks .cal-cup { width: 22px; height: 22px; }
+  .cal-vs { display: inline; font-family: var(--font-cond); font-weight: 700; font-size: 0.82rem; letter-spacing: 0.08em; }
   .cal-count { display: block; font-weight: 700; font-size: 0.95rem; }
   .cal-what {
     display: -webkit-box;
@@ -1579,7 +1590,8 @@ button.cal-day:hover { border-color: var(--accent); }
     text-transform: uppercase;
   }
   .cal-opp { justify-content: flex-start; align-items: center; gap: 6px; min-width: 0; font-weight: 600; font-size: 0.86rem; }
-  .cal-day .cal-opp .badge { width: 22px; height: 22px; }
+  .cal-day .cal-opp .badge { width: 26px; height: 26px; }
+  .cal-day.tv .cal-n { padding-left: 0; }
   .cal-oppn { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .cal-res { display: block; font-family: var(--font-display); font-size: 1.15rem; line-height: 1; font-variant-numeric: tabular-nums; }
 }

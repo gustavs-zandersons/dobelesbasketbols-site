@@ -29,6 +29,22 @@ next deployment.
   rezultāti" and "Nākamās kārtas spēles". The round MVP follows the results
   without its own heading. On phones "Dalīties" sits above the schedule card and
   "Viss kalendārs ›" below it, both on the right.
+- **Second review (15 Oct).**
+  - Posters: a bit more space between the "Cerību kauss" label and its game.
+  - K group table on phones: no A1/B2… tags next to the (short) team names.
+  - Jelgava bracket: teams that go straight to the quarterfinal get a box the
+    same size as the game boxes, without the "Brīvs" label, saying
+    "Automātiski kvalificējas ceturtdaļfinālam" with their quarterfinal dates.
+  - Calendar with a team selected: desktop shows "VS" + the opponent's logo;
+    phones show a small cup logo in the corner of the day.
+  - Game page header centred: cup, stage + game, result, date/time/hall,
+    status line, series game buttons (no extra "Sērija"/"Summā" block).
+  - Team comparison: the better team's bar gets the cup colour, the other is white
+    (fewer is better for turnovers and fouls).
+  - Game leaders on phones: centred tiles — category, number, logo + first name
+    and surname on two lines.
+  - Box score: total rebounds (AB) and assists (RP) in bold like points.
+  - Next-round schedule card: thicker outline.
 - **Photo pool.** One shared pool for both cups; the system picks the photo
   per round, cycling through the pool. Stand-in photo from last season until
   the new photos arrive.
