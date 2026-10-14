@@ -207,23 +207,6 @@ h1, h2, h3, p { margin: 0; }
   color: var(--title);
   text-wrap: balance;
 }
-/* Stage block: its own element, right-aligned under the title */
-.hero-stage {
-  grid-column: 1 / -1;
-  justify-self: end;
-  display: grid;
-  justify-items: end;
-  gap: 6px;
-  text-align: right;
-  max-width: 40ch;
-}
-.hero-stage .line { color: var(--fg); font-weight: 600; font-size: 1rem; }
-.hero-stage .line.sub { color: var(--fg-muted); font-weight: 500; font-size: 0.92rem; }
-@media (min-width: 768px) {
-  .hero-logo { grid-row: span 2; }
-  .hero-copy { align-self: end; }
-  .hero-stage { grid-column: 2; align-self: start; }
-}
 .pill {
   display: inline-flex;
   align-items: center;
@@ -1718,6 +1701,14 @@ body.no-scroll { overflow: hidden; }
 
 /* ---------- Share posters ---------- */
 .head-actions { display: flex; align-items: center; gap: 6px 18px; flex-wrap: wrap; }
+/* Phones: "Dalīties" above the schedule card, calendar link below it, both on the right. */
+.next-share-m, .next-cal-m { display: flex; justify-content: flex-end; }
+.next-share-m { margin-bottom: 12px; }
+.next-cal-m { margin-top: 6px; }
+@media (max-width: 767px) { #block-next .block-head .head-actions { display: none; } }
+@media (min-width: 768px) { .next-share-m, .next-cal-m { display: none; } }
+/* The round MVP belongs to the previous-round section: no heading, smaller gap. */
+#block-mvp { margin-top: -20px; }
 .share-btn {
   display: inline-flex;
   align-items: center;
@@ -1762,15 +1753,7 @@ body.no-scroll { overflow: hidden; }
 .poster-card--story .poster-frame { aspect-ratio: 9 / 16; }
 .poster-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .poster-wait { color: var(--fg-dim); font-size: 0.85rem; padding: 8px; text-align: center; }
-.poster-card figcaption { display: grid; gap: 1px; align-content: start; }
-.poster-name {
-  font-family: var(--font-cond);
-  font-weight: 700;
-  font-size: 1.02rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-.poster-hint { color: var(--fg-muted); font-size: 0.82rem; line-height: 1.3; }
+.poster-hint { color: var(--fg-muted); font-size: 0.86rem; line-height: 1.3; align-self: start; }
 .poster-actions { display: grid; gap: 8px; }
 .btn {
   display: inline-flex;

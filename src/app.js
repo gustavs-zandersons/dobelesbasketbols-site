@@ -141,12 +141,6 @@
   }
 
   // ---------- round naming ----------
-  function roundParts(r) {
-    if (r.comp === 'jssc') return { chip: r.stage, rest: r.label };
-    if (r.stage === 'Pusfināli') return { chip: r.label, rest: 'Pusfināli' };
-    if (r.stage === 'Fināli') return { chip: 'Fināli', rest: 'Zelta un bronzas fināls' };
-    return { chip: r.label, rest: r.stage };
-  }
   function primaryRound(rounds) {
     return rounds.filter(function (r) { return r.stage !== 'Cerību kauss'; })[0] || rounds[0];
   }
@@ -217,16 +211,13 @@
     // No results yet: the block is not shown at all.
     if (!lr) { el.hidden = true; el.innerHTML = ''; return; }
     el.hidden = false;
-    var pr = primaryRound(lr.rounds), p = roundParts(pr);
-    var venue = ctx.venue(lr.games[0].venue);
-    var sub = '<span class="chip">' + esc(p.chip) + '</span><span>' + esc([p.rest, dateLong(lr.date), venue ? venue.name : ''].filter(Boolean).join(' · ')) + '</span>';
     var multi = lr.rounds.length > 1;
     var body = lr.rounds.map(function (r) {
       var list = sortGames(lr.games.filter(function (g) { return g.round === r.id; }));
       return (multi ? '<h3 class="group-head">' + esc(groupTitle(r)) + ' <small>' + games(list.length) + '</small></h3>' : '') +
         list.map(resRow).join('');
     }).join('');
-    el.innerHTML = head('last-title', 'Iepriekšējās kārtas rezultāti', sub) + '<div class="results">' + body + '</div>';
+    el.innerHTML = head('last-title', 'Iepriekšējās kārtas rezultāti') + '<div class="results">' + body + '</div>';
   }
 
   // ---------- Block 2: round MVP ----------
@@ -234,10 +225,9 @@
     var el = $('block-mvp');
     if (!lr || !lr.mvp) { el.hidden = true; el.innerHTML = ''; return; }
     var m = lr.mvp, sp = CUPS[state.cup].mvpSponsor;
-    var p = roundParts(primaryRound(lr.rounds));
     el.hidden = false;
-    el.innerHTML = head('mvp-title', 'Kārtas MVP', '<span class="chip">' + esc(p.chip) + '</span><span>' + esc(p.rest) + '</span>') +
-      '<div class="mvp-wrap">' +
+    // Part of the previous-round section: no heading of its own.
+    el.innerHTML = '<div class="mvp-wrap">' +
       '<div class="mvp-sponsor"><p>Kārtas MVP balvu pasniedz</p><img src="' + esc(sp.logo) + '" alt="' + esc(sp.name) + '"></div>' +
       '<article class="mvp" aria-label="Kārtas vērtīgākais spēlētājs">' +
       '<p class="mvp-k">Vērtīgākais spēlētājs</p>' +
@@ -280,8 +270,6 @@
       el.innerHTML = head('next-title', title) + '<div class="empty"><strong>Sezona noslēgusies.</strong>Paldies visām komandām un skatītājiem!</div>';
       return;
     }
-    var pr = primaryRound(nr.rounds), p = roundParts(pr);
-    var sub = '<span class="chip">' + esc(p.chip) + '</span><span>' + esc(p.rest) + '</span>';
     var v = ctx.venue(nr.games[0].venue);
     var x = parse(nr.date);
     var multi = nr.rounds.length > 1;
@@ -290,15 +278,19 @@
       return (multi ? '<li class="group-head" role="presentation">' + esc(groupTitle(r)) + ' <small>' + games(gs.length) + '</small></li>' : '') +
         gs.map(fxRow).join('');
     }).join('');
-    var actions = '<div class="head-actions">' + (posterRound(nr) ? '<button type="button" class="share-btn" data-share-round>' + SHARE_ICON + 'Dalīties</button>' : '') + CAL_LINK + '</div>';
-    el.innerHTML = head('next-title', title, sub, actions) +
+    // Desktop: share + calendar next to the title. Phones: share above the
+    // schedule card, calendar link below it, both on the right.
+    var shareBtn = posterRound(nr) ? '<button type="button" class="share-btn" data-share-round>' + SHARE_ICON + 'Dalīties</button>' : '';
+    el.innerHTML = head('next-title', title, '', '<div class="head-actions">' + shareBtn + CAL_LINK + '</div>') +
+      (shareBtn ? '<div class="next-share-m">' + shareBtn + '</div>' : '') +
       '<div class="ticket">' +
       '<div class="stub" aria-label="' + esc(cap(dateLong(nr.date))) + '"><span class="stub-day">' + x.getDate() + '</span>' +
       '<span class="stub-txt"><span class="stub-month">' + MONTH_NOM[x.getMonth()] + '</span><span class="stub-wd">' + WEEKDAY_NOM[x.getDay()] + '</span></span>' + CAL_ICON + '</div>' +
       '<div class="ticket-main"><div class="venue-bar"><div><h3 class="venue-name">' + esc(v.name) + '</h3><p class="venue-addr">' + esc(v.address) + '</p></div>' +
       '<a class="map-link" href="' + esc(mapsUrl(v)) + '" target="_blank" rel="noopener" aria-label="' + esc(v.name) + ' — atvērt Google Maps">' +
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>Kā nokļūt</a></div>' +
-      '<ul class="fx-list">' + list + '</ul></div></div>';
+      '<ul class="fx-list">' + list + '</ul></div></div>' +
+      '<div class="next-cal-m">' + CAL_LINK + '</div>';
   }
 
   function lastGroupDate() {
@@ -539,33 +531,12 @@
   }
 
   // ---------- Hero ----------
-  var STAGE_NAME = { preseason: 'Pirms sezonas', group: 'Grupu turnīrs', k: 'K grupa', playoff: 'Izslēgšanas spēles', done: 'Sezona noslēgusies' };
   function renderHero() {
     var cup = CUPS[state.cup];
     $('hero-logo').src = cup.logo;
     $('hero-title').textContent = cup.name;
-    var nr = ctx.nextRound(state.cup);
-    var pill, lines = [];
-    if (state.cup === 'dbck') {
-      var s = ctx.dbckStage();
-      pill = STAGE_NAME[s];
-      if (nr) lines.push((s === 'preseason' ? 'Sezona sākas ' : 'Nākamā kārta ') + dateLong(nr.date));
-    } else {
-      var js = ctx.jsscStage();
-      if (js === 'projected') {
-        pill = 'Drīzumā';
-        lines.push('Sāksies pēc Dobeles kausa grupu turnīra');
-        if (nr) lines.push('Pirmās spēles plānotas ' + dateLong(nr.date));
-      } else if (js === 'done') {
-        pill = 'Kauss izcīnīts';
-      } else {
-        pill = nr ? primaryRound(nr.rounds).stage : 'Izaicinājuma kauss';
-        if (nr) lines.push('Nākamā kārta ' + dateLong(nr.date));
-      }
-    }
-    $('hero-stage').innerHTML = '<span class="pill">' + esc(pill) + '</span>' +
-      lines.map(function (l, i) { return '<span class="line' + (i ? ' sub' : '') + '">' + esc(l) + '</span>'; }).join('');
   }
+
 
   // ---------- Game page ----------
   // Box row layout: [rosterIdx, starter, seconds, pts, 2pm, 2pa, 3pm, 3pa, ftm, fta, oreb, dreb, ast, stl, blk, tov, pf, eff, +/-]
@@ -1012,7 +983,8 @@
       hall: v ? v.name : '',
       stage: pr.stage + (pr.label ? ' · ' + pr.label : ''),
       names: ctx.teams().map(function (t) { return t.name; }),
-      games: sortGames(nr.games).map(function (g) {
+      // Hope Cup games always go last, below the K group games.
+      games: sortGames(nr.games).sort(function (x, y) { return (x.round !== pr.id) - (y.round !== pr.id); }).map(function (g) {
         var h = side(g.comp, g.home, false), a = side(g.comp, g.away, false);
         // A Hope Cup game inside a K group round gets a label over its row.
         var tag = g.round !== pr.id ? groupTitle(ctx.round(g.round)) : '';
@@ -1035,13 +1007,12 @@
     if (!posterRound(nr) || typeof window.Poster === 'undefined') return;
     releaseShare();
     var token = share.token;
-    var pr = primaryRound(nr.rounds), p = roundParts(pr), v = ctx.venue(nr.games[0].venue);
     var canShare = canShareFiles();
     var base = CUPS[state.cup].hash + '-' + nr.date + '-';
     var cards = POSTERS.map(function (f) {
       return '<figure class="poster-card poster-card--' + f.key + '">' +
         '<div class="poster-frame" data-poster-frame="' + f.key + '"><span class="poster-wait">Gatavo plakātu…</span></div>' +
-        '<figcaption><span class="poster-name">' + esc(f.name) + '</span><span class="poster-hint">' + esc(f.hint) + '</span></figcaption>' +
+        '<figcaption class="poster-hint">' + esc(f.hint) + '</figcaption>' +
         '<div class="poster-actions">' +
         (canShare ? '<button type="button" class="btn btn--fill" data-poster-share="' + f.key + '" disabled>' + SHARE_ICON + 'Dalīties</button>' : '') +
         '<a class="btn' + (canShare ? '' : ' btn--fill') + '" data-poster-dl="' + f.key + '" download="' + esc(base + f.file + '.jpg') + '" aria-disabled="true">' + DL_ICON + 'Lejupielādēt</a>' +
@@ -1052,9 +1023,8 @@
     $('sheet').innerHTML = '<div class="sheet-grip" aria-hidden="true"></div>' +
       '<div class="sheet-head"><h2 id="sheet-title">Kārtas plakāti</h2>' +
       '<button type="button" class="icon-btn" data-sheet-close aria-label="Aizvērt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>' +
-      '<div class="sheet-body"><p class="block-sub"><span class="chip">' + esc(p.chip) + '</span><span>' + esc([p.rest, dateLong(nr.date), v ? v.name : ''].filter(Boolean).join(' · ')) + '</span></p>' +
-      '<div class="poster-grid">' + cards + '</div>' +
-      '<p class="poster-note">' + (canShare ? 'Spied „Dalīties”, lai publicētu Instagram vai Facebook, vai saglabā attēlu.' : 'Lejupielādē plakātu un publicē to Instagram vai Facebook.') + '</p></div>';
+      '<div class="sheet-body"><div class="poster-grid">' + cards + '</div>' +
+      '<p class="poster-note">' + (canShare ? 'Spied „Dalīties”, lai publicētu plakātu sociālajos tīklos, vai lejupielādē to.' : 'Lejupielādē plakātu un publicē to sociālajos tīklos.') + '</p></div>';
     $('sheet').hidden = false; $('sheet-scrim').hidden = false;
     document.body.classList.add('no-scroll');
     var cl = $('sheet').querySelector('[data-sheet-close]');

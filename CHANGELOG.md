@@ -18,6 +18,17 @@ next deployment.
 - **Where the posters apply.** Dobele group stage and K group (incl. Hope Cup
   games), Jelgava 1/8 and 1/4 finals. Semifinals and finals of both cups get a
   separate template later; no share button there for now.
+- **Poster details (review 15 Oct).** Story poster: header sits lower under the
+  photo and closer to the games. The Hope Cup game is always last, in its own
+  section with extra space above it and its label right on top of it (no line).
+  Pop-up shows only the title, the two previews with their platform/ratio line
+  and the buttons; the bottom note now says "social networks".
+- **Home page tidy-up (both cups, desktop and phone).** Header shows only the
+  logo with the season and cup name centred next to it (stage and next-round
+  date removed). No line of stage/date/hall under "Iepriekšējās kārtas
+  rezultāti" and "Nākamās kārtas spēles". The round MVP follows the results
+  without its own heading. On phones "Dalīties" sits above the schedule card and
+  "Viss kalendārs ›" below it, both on the right.
 - **Photo pool.** One shared pool for both cups; the system picks the photo
   per round, cycling through the pool. Stand-in photo from last season until
   the new photos arrive.

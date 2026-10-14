@@ -24,12 +24,12 @@
   var FORMATS = {
     feed: {
       w: 1080, h: 1350, side: 64, photo: 384, ridge: 46, sponsorTop: 1066, bar: 54,
-      title: 54, titleMin: 38, date: 35, stage: 28, team: 54, timeBox: [150, 62], row: [96, 122],
+      title: 54, titleMin: 38, date: 35, stage: 28, team: 54, timeBox: [150, 62], row: [96, 122], headTop: 30,
       logoRows: [7, 6], logoArea: 7600, logoMax: [150, 92], logoGap: 26, notice: 25
     },
     story: {
       w: 1080, h: 1920, side: 104, photo: 500, ridge: 50, sponsorTop: 1446, bar: 62,
-      title: 62, titleMin: 50, date: 39, stage: 30, team: 58, timeBox: [144, 64], row: [130, 160],
+      title: 62, titleMin: 50, date: 39, stage: 30, team: 58, timeBox: [144, 64], row: [130, 140], headTop: 84,
       logoRows: [4, 5, 4], logoArea: 8600, logoMax: [180, 100], logoGap: 34, notice: 26
     }
   };
@@ -216,21 +216,26 @@
     var tLh = tPx * 1.02;
     var headH = tLines.length * tLh + 8 + sPx + (stage ? 10 + stPx : 0);
 
-    // Game rows fill the rest of the panel, centred as one block.
+    // Game rows fill the rest of the panel.
     var list = spec.games || [];
-    var zoneTop = F.photo + F.ridge * 0.4 + 30;
+    var story = spec.format === 'story';
+    var zoneTop = F.photo + F.ridge * 0.4 + F.headTop;      // air under the photo edge
     var zoneBottom = F.sponsorTop - F.ridge * 1.5 - 10;
-    var gapHead = spec.format === 'story' ? 50 : 34;
+    var gapHead = story ? 14 : 34;   // rows have their own padding; the story keeps the header close to the games
     var n = Math.max(1, list.length);
-    // A row with a label (e.g. the Hope Cup game) gets an extra strip on top.
-    var tagPx = spec.format === 'story' ? 25 : 23, tagExtra = tagPx + 16;
+    // A labelled game (the Hope Cup game in a K group round) is its own section
+    // at the bottom: extra space above it, no line, the label tight on top.
+    var tagPx = story ? 25 : 23, secGap = story ? 40 : 26, tagGap = 12;
     var tagged = list.filter(function (gm) { return gm.tag; }).length;
+    var tagFixed = secGap + tagPx * 0.75 + tagGap + 10;
     // Rows use their preferred height when there is room and shrink (never
     // overflow into the sponsor band) when the panel is full.
-    var rowH = Math.min(F.row[1], (zoneBottom - zoneTop - headH - gapHead - tagged * tagExtra) / n);
+    var rowH = Math.min(F.row[1], (zoneBottom - zoneTop - headH - gapHead - tagged * tagFixed) / (n - tagged * 0.2));
     rowH = Math.max(rowH, 70);
-    var block = headH + gapHead + rowH * list.length + tagged * tagExtra;
-    var y = zoneTop + Math.max(0, (zoneBottom - zoneTop - block) / 2);
+    var block = headH + gapHead + rowH * (list.length - tagged * 0.2) + tagged * tagFixed;
+    // The story poster sits the text a bit lower (more air under the photo).
+    var free = Math.max(0, zoneBottom - zoneTop - block);
+    var y = zoneTop + free * (story ? 0.62 : 0.5);
 
     tLines.forEach(function (l, i) { text(g, l, W / 2, y + tLh * i + tPx / 2, tPx, T.head); });
     y += tLines.length * tLh + 8;
@@ -241,33 +246,42 @@
 
     // The time box is one of the elements, not the biggest one.
     var bw = F.timeBox[0], bh = Math.min(F.timeBox[1], rowH * 0.6);
-    var nameW = (W - bw) / 2 - F.side + (spec.format === 'story' ? 6 : 0) - 26;
+    var nameW = (W - bw) / 2 - F.side + (story ? 6 : 0) - 26;
     // One name size for the whole season and both cups: the longest names set
     // it (at the standard row height), not only the teams playing this round.
     var names = (spec.names || []).concat(list.map(function (gm) { return gm.home; }), list.map(function (gm) { return gm.away; }));
     var namePx = names.reduce(function (px, nm) { return Math.min(px, nameFit(g, up(nm), F, nameW, F.row[0])); }, F.team);
     namePx = Math.max(namePx, 24);
+    var timePx = Math.min(Math.round(bh * 0.66), Math.round(namePx * 1.05));
+
+    function drawGame(gm, cy, home, away) {
+      g.fillStyle = T.box;
+      g.fillRect(W / 2 - bw / 2, cy - bh / 2, bw, bh);
+      var tm = String(gm.time || '');
+      text(g, tm, W / 2, cy, fit(g, tm, timePx, bw - 24, 20), T.boxText);   // digits ≈ name size
+      drawTeam(g, home, W / 2 - bw / 2 - 26, cy, 'right', T.team);
+      drawTeam(g, away, W / 2 + bw / 2 + 26, cy, 'left', T.team);
+    }
     var top = y;
     list.forEach(function (gm, i) {
+      var home = teamLayout(g, up(gm.home), namePx, nameW), away = teamLayout(g, up(gm.away), namePx, nameW);
+      if (gm.tag) {
+        // Half the visible height of this row's content (time box or names).
+        var lines = Math.max(home.lines.length, away.lines.length);
+        var half = Math.max(bh, (lines - 1) * namePx * 0.98 + capHeight(g, namePx)) / 2;
+        var tag = up(gm.tag), tPxTag = fit(g, tag, tagPx, W - 2 * F.side, 14);
+        top += secGap;
+        text(g, tag, W / 2, top + capHeight(g, tPxTag) / 2, tPxTag, T.tag);
+        var cyTag = top + capHeight(g, tPxTag) + tagGap + half;
+        drawGame(gm, cyTag, home, away);
+        top = cyTag + half + 10;
+        return;
+      }
       if (i > 0) {
         g.fillStyle = T.line;
         g.fillRect(W * 0.15, top - 1.5, W * 0.7, 3);
       }
-      if (gm.tag) {
-        var tag = up(gm.tag);
-        text(g, tag, W / 2, top + tagExtra / 2 + 6, fit(g, tag, tagPx, W - 2 * F.side, 14), T.tag);
-        top += tagExtra;
-      }
-      var cy = top + rowH / 2;
-      // time box
-      g.fillStyle = T.box;
-      g.fillRect(W / 2 - bw / 2, cy - bh / 2, bw, bh);
-      var tm = String(gm.time || '');
-      // Time digits about the size of the team names.
-      text(g, tm, W / 2, cy, fit(g, tm, Math.min(Math.round(bh * 0.66), Math.round(namePx * 1.05)), bw - 24, 20), T.boxText);
-      // teams
-      drawTeam(g, teamLayout(g, up(gm.home), namePx, nameW), W / 2 - bw / 2 - 26, cy, 'right', T.team);
-      drawTeam(g, teamLayout(g, up(gm.away), namePx, nameW), W / 2 + bw / 2 + 26, cy, 'left', T.team);
+      drawGame(gm, top + rowH / 2, home, away);
       top += rowH;
     });
 
