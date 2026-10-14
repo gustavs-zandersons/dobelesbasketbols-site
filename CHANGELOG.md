@@ -1,5 +1,12 @@
 # Changelog
 
+## Test site date — 15 Oct 2026
+
+- The test site now shows 5 January 2027: Dobele K group after round 1 (next:
+  K group round 2 + the first Hope Cup semifinal) and the Challenge Cup after
+  the first leg of the 1/8 finals (next: second leg). Previously 10 March 2027
+  (both cups in the semifinals).
+
 ## Round 2 — released 15 Oct 2026 (PR #2)
 
 Everything requested after PR #1 was merged (14 Oct 2026). Ships together as the

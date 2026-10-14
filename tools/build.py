@@ -15,9 +15,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / 'src'
 
-# Mock "today" for the test deployment: Dobele semifinals after game 1,
-# Challenge Cup semifinals after the first leg. Remove once real data syncs.
-MOCK_TODAY = '2027-03-10'
+# Mock "today" for the test deployment: Dobele K group after round 1, next
+# round = K group round 2 + the first Hope Cup semifinal; Challenge Cup after
+# the first leg of the 1/8 finals, next round = second leg. Remove once real
+# data syncs.
+MOCK_TODAY = '2027-01-05'
 
 NOTICE = ('<div class="test-note" role="note">Testa versija — rezultāti, spēlētāji un statistika ir izdomāti. '
           'Reālie dati parādīsies, kad sāksies sezona.</div>')
