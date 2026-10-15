@@ -8,13 +8,14 @@
 - **Results posters ("Dalīties" on the previous-round block).** Same pop-up and
   two formats as the next-round posters, for every round of both cups. Full
   photo under a see-through tint (gold for Dobele, red for Jelgava), cup logo
-  top left, stage / round + date / series rule at the top, then home logo ·
-  score · away logo per game (winner's score brighter), a small line under the
-  score for series standings, aggregates, overtime and forfeits, the sponsor
-  band and the notice bar. Hope Cup games and the gold/bronze finals are labelled.
-- **Photo pool.** Photos are kept up to 2000 px for full-photo posters; the
-  results posters use a different photo than the same weekend's next-round
-  poster, and the story format prefers upright photos.
+  centred on top, "Iepriekšējās kārtas rezultāti" and the date of the games,
+  then home logo · score · away logo per game (winner's score brighter), a small
+  line under the score for series standings, aggregates, overtime and forfeits,
+  the sponsor band and the notice bar. Hope Cup games and the gold/bronze finals
+  get a label in a cup-coloured pill.
+- **Photo pools.** Separate pools for next-round posters and results posters
+  (`use` in `src/poster-photos.json`); photos are kept up to 2000 px, and the
+  results Story prefers upright photos.
 
 ## Test site date — 15 Oct 2026
 

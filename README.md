@@ -85,12 +85,13 @@ node tools/gen-season.js > src/sample-data.json   # regenerate the mock season
   order are in `tools/prepare_assets.py`. Run `python3 tools/prepare_assets.py sponsors`
   to make the web copies. The footer and the posters size every logo to the
   same visual weight automatically.
-- **Poster photos:** one shared pool for both cups. Each round gets the next
-  photo in the pool (the same one for everyone sharing that round). Add photos with
-  `python3 tools/prepare_assets.py photos <files…>`; they are resized to 1600 px
-  and listed in `src/poster-photos.json`. Landscape action shots work best; the
-  top of the poster is a wide strip and the photo is darkened automatically.
-  The current pool has one stand-in photo taken from last season's poster.
+- **Poster photos:** two separate pools, each shared by both cups — one for the
+  next-round posters (a wide photo strip on top) and one for the results posters
+  (the whole poster is the photo). Each round gets the next photo of its pool,
+  the same for everyone sharing that round. Add photos with
+  `python3 tools/prepare_assets.py photos --for next|results <files…>`; they are
+  resized to 2000 px and listed in `src/poster-photos.json` (`use`). The results
+  Story format prefers upright photos. Photos are darkened/tinted automatically.
 
 ## Deployment
 

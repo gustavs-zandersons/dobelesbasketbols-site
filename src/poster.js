@@ -292,20 +292,29 @@
 
   // ---------- results poster ----------
   // Last season's results poster: the whole photo under a see-through cup
-  // tint (gold for Dobele, red for Jelgava), cup logo in the top-left corner,
-  // stage / round + date / series rule at the top, then one row per game:
+  // tint (gold for Dobele, red for Jelgava), cup logo centred on top, title +
+  // date of the games (+ optional rule line), then one row per game:
   // home logo · score · away logo (no names), white sponsor band and notice.
   //
-  // spec = { cup, format, seed, logo: img, stage, sub, rule,
+  // spec = { cup, format, seed, logo: img, title, sub, rule,
   //          games: [{ home: crest, away: crest, hs, as, info, tag }],
   //          photo, sponsors, notice }   crest = { img } or { initials, color }
   var TINTS = { dbck: 'rgb(233, 183, 22)', jssc: 'rgb(222, 70, 92)' };
   var RES = {
-    // logo: [x, y, size]; the story keeps it below Instagram's name bar.
-    feed: { logo: [52, 52, 168], headTop: 70, title: 92, sub: 36, rule: 30, rowMax: 230, crest: 200, score: 104, info: 30, sideX: 0.24 },
-    story: { logo: [104, 196, 176], headTop: 430, title: 104, sub: 40, rule: 32, rowMax: 240, crest: 210, score: 112, info: 32, sideX: 0.25 }
+    // logo: [top, size] — centred; the story keeps it below Instagram's name bar.
+    feed: { logo: [40, 150], title: 66, sub: 38, rule: 30, rowMax: 230, crest: 200, score: 104, info: 30, sideX: 0.24, tag: 28 },
+    story: { logo: [190, 176], title: 70, sub: 42, rule: 32, rowMax: 240, crest: 210, score: 112, info: 32, sideX: 0.25, tag: 31 }
   };
 
+  var PILL = { dbck: ['#E9B716', '#111111'], jssc: ['#FFFFFF', '#9C213D'] };
+  function roundRect(g, x, y, w, h, r) {
+    g.beginPath();
+    g.moveTo(x + r, y); g.lineTo(x + w - r, y); g.arcTo(x + w, y, x + w, y + r, r);
+    g.lineTo(x + w, y + h - r); g.arcTo(x + w, y + h, x + w - r, y + h, r);
+    g.lineTo(x + r, y + h); g.arcTo(x, y + h, x, y + h - r, r);
+    g.lineTo(x, y + r); g.arcTo(x, y, x + r, y, r);
+    g.closePath(); g.fill();
+  }
   function drawCover(g, photo, W, H) {
     var img = photo.img, iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
     var s = Math.max(W / iw, H / ih), sw = W / s, sh = H / s;
@@ -367,7 +376,7 @@
     var c = document.createElement('canvas');
     c.width = W; c.height = H;
     var g = c.getContext('2d');
-    var rnd = rng(spec.seed || spec.stage);
+    var rnd = rng(spec.seed || spec.title);
 
     if (spec.photo && spec.photo.img) drawCover(g, spec.photo, W, H);
     else { g.fillStyle = '#1B1A14'; g.fillRect(0, 0, W, H); }
@@ -378,16 +387,13 @@
     var notice = up(spec.notice);
     if (notice) text(g, notice, W / 2, H - F.bar / 2, fit(g, notice, F.notice, W - 40, 14), '#FFFFFF');
 
-    // Cup logo, top-left corner.
-    if (spec.logo) drawContain(g, spec.logo, R.logo[0] + R.logo[2] / 2, R.logo[1] + R.logo[2] / 2, R.logo[2], true);
-
-    // Header: stage (big), round + date, series rule. On the feed post it sits
-    // beside the logo; on the story it sits below it.
-    var maxW = story ? W - 2 * F.side : W - 2 * (R.logo[0] + R.logo[2] + 20);
-    var y = R.headTop;
-    var stage = up(spec.stage), tPx = fit(g, stage, R.title, maxW, 40);
-    text(g, stage, W / 2, y + capHeight(g, tPx) / 2, tPx, '#FFFFFF');
-    y += capHeight(g, tPx) + Math.round(tPx * 0.3);   // room for Ļ, Ņ, Ģ under the line
+    // Header, centred: cup logo, title, date of the games.
+    if (spec.logo) drawContain(g, spec.logo, W / 2, R.logo[0] + R.logo[1] / 2, R.logo[1], true);
+    var maxW = W - 2 * F.side;
+    var y = R.logo[0] + R.logo[1] + (story ? 34 : 26);
+    var title = up(spec.title), tPx = fit(g, title, R.title, maxW, 36);
+    text(g, title, W / 2, y + capHeight(g, tPx) / 2, tPx, '#FFFFFF');
+    y += capHeight(g, tPx) + Math.round(tPx * 0.32);   // room for Ļ, Ņ, Ģ under the line
     var sub = up(spec.sub);
     if (sub) {
       var sPx = fit(g, sub, R.sub, maxW, 18);
@@ -403,9 +409,9 @@
 
     // Games, centred in the space between the header and the sponsor band.
     var list = spec.games || [];
-    var zoneTop = Math.max(y + (story ? 40 : 30), story ? 0 : R.logo[1] + R.logo[2] + 16);
+    var zoneTop = y + (story ? 36 : 24);
     var zoneBottom = F.sponsorTop - F.ridge * 1.5 - 10;
-    var tagPx = story ? 25 : 23, tagH = tagPx + 18;
+    var tagPx = R.tag, tagH = Math.round(tagPx * 1.55) + 22;
     var tagged = list.filter(function (gm) { return gm.tag; }).length;
     var n = Math.max(1, list.length);
     var rowH = Math.min(R.rowMax, (zoneBottom - zoneTop - tagged * tagH) / n);
@@ -415,8 +421,12 @@
     var top = zoneTop + Math.max(0, (zoneBottom - zoneTop - rowH * list.length - tagged * tagH) / 2);
     list.forEach(function (gm) {
       if (gm.tag) {
-        var tag = up(gm.tag);
-        text(g, tag, W / 2, top + tagH / 2, fit(g, tag, tagPx, W * 0.5, 14), 'rgba(255, 255, 255, 0.85)');
+        // Label in a pill (cup colour), so a different competition stands out.
+        var tag = up(gm.tag), px = fit(g, tag, tagPx, W * 0.6, 14);
+        var tw = width(g, tag, px) + px * 1.4, th = Math.round(px * 1.55), ty = top + (tagH - th) / 2;
+        g.fillStyle = PILL[spec.cup] ? PILL[spec.cup][0] : PILL.dbck[0];
+        roundRect(g, W / 2 - tw / 2, ty, tw, th, th / 2);
+        text(g, tag, W / 2, ty + th / 2, px, PILL[spec.cup] ? PILL[spec.cup][1] : PILL.dbck[1]);
         top += tagH;
       }
       var cy = top + rowH / 2;

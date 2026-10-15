@@ -973,21 +973,22 @@
       return g.comp === 'dbck' ? ['group', 'k', 'hope'].indexOf(g.stage) >= 0 : /^(R16|QF)/.test(g.tie || '');
     });
   }
-  // Same photo for everyone during a round; consecutive rounds get the next one.
-  // Results posters start two photos further on, so the results and the
-  // next-round poster of one weekend never share a photo. The full-photo
-  // story prefers upright photos, the next-round strip wide ones.
+  // Two separate photo pools: next-round posters (use "next") and results
+  // posters (use "results"). Same photo for everyone during a round;
+  // consecutive rounds get the next one. The full-photo results story prefers
+  // upright photos.
   function posterPhoto(date, kind, format) {
-    var all = POSTER_DATA.photos || [];
-    if (!all.length) return null;
-    var want = kind === 'results' ? (format === 'story' ? 'tall' : '') : 'wide';
-    var list = all.filter(function (p) { return want === 'tall' ? p.h > p.w : want === 'wide' ? p.w >= p.h : true; });
-    if (!list.length) list = all;
+    var pool = (POSTER_DATA.photos || []).filter(function (p) { return (p.use || ['next']).indexOf(kind) >= 0; });
+    if (!pool.length) return null;
+    var list = pool;
+    if (kind === 'results' && format === 'story') {
+      var tall = pool.filter(function (p) { return p.h > p.w; });
+      if (tall.length) list = tall;
+    }
     var dates = [];
     DATA.rounds.forEach(function (r) { if (dates.indexOf(r.date) < 0) dates.push(r.date); });
     dates.sort();
-    var i = Math.max(0, dates.indexOf(date)) + (kind === 'results' ? 2 : 0);
-    return list[i % list.length];
+    return list[Math.max(0, dates.indexOf(date)) % list.length];
   }
   function posterSpec(nr) {
     var pr = primaryRound(nr.rounds), x = parse(nr.date);
@@ -1045,17 +1046,10 @@
   function resultsSpec(lr) {
     var pr = primaryRound(lr.rounds), x = parse(lr.date);
     var finals = pr.stage === 'Fināli';
-    var ruleGame = lr.games.filter(function (g) { return g.round === pr.id && g.tie; })[0];
-    var rule = '';
-    if (ruleGame) {
-      var type = ctx.tieState(ruleGame.comp, ruleGame.tie).type;
-      rule = type === 'bo3' ? 'Līdz 2 uzvarām' : type === 'twoleg' ? 'Divu spēļu summa' : '';
-    }
     return {
       cup: state.cup, seed: state.cup + lr.date + 'r',
-      stage: pr.stage,
-      sub: [finals ? '' : pr.label, x.getDate() + '. ' + MONTH_NOM[x.getMonth()]].filter(Boolean).join(' · '),
-      rule: rule,
+      title: 'Iepriekšējās kārtas rezultāti',
+      sub: x.getDate() + '. ' + MONTH_NOM[x.getMonth()],   // date the games were played
       // Hope Cup games go last with a label; on finals day each game is labelled.
       games: sortGames(lr.games).sort(function (p, q) { return (p.round !== pr.id) - (q.round !== pr.id); }).map(function (g) {
         return {

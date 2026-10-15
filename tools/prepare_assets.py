@@ -3,8 +3,10 @@
     python3 tools/prepare_assets.py sponsors
         design/sponsors/<id>.png  ->  assets/sponsors/<id>.webp  + src/sponsors.json
 
-    python3 tools/prepare_assets.py photos <file> [<file> ...] [--focus 0.4]
-        adds photos to the poster pool:  assets/posters/<name>.jpg  + src/poster-photos.json
+    python3 tools/prepare_assets.py photos --for next|results <file> [<file> ...] [--focus 0.4]
+        adds photos to a poster pool:  assets/posters/<name>.jpg  + src/poster-photos.json
+        "next" = next-round posters (photo strip on top), "results" = results
+        posters (full photo). The two pools are kept separate.
 
 Sponsor originals stay in design/sponsors (not published). The web copies are
 trimmed to the logo itself, so the site can size every logo to the same visual
@@ -67,7 +69,7 @@ def sponsors():
     (ROOT / 'src' / 'sponsors.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=1) + '\n')
 
 
-def photos(files, focus):
+def photos(files, focus, use):
     out_dir = ROOT / 'assets' / 'posters'
     out_dir.mkdir(parents=True, exist_ok=True)
     mpath = ROOT / 'src' / 'poster-photos.json'
@@ -80,7 +82,7 @@ def photos(files, focus):
         dest = out_dir / f'{stem}.jpg'
         im.save(dest, 'JPEG', quality=82, optimize=True, progressive=True)
         src = f'assets/posters/{dest.name}'
-        entry = {'src': src, 'w': im.width, 'h': im.height, 'focus': focus}
+        entry = {'src': src, 'w': im.width, 'h': im.height, 'focus': focus, 'use': [use]}
         manifest = [m for m in manifest if m['src'] != src] + [entry]
         print(('updated ' if src in known else 'added   ') + src, f'{im.width}x{im.height}', dest.stat().st_size // 1024, 'KB')
     mpath.write_text(json.dumps(manifest, ensure_ascii=False, indent=1) + '\n')
@@ -91,12 +93,19 @@ if __name__ == '__main__':
     if args[:1] == ['sponsors']:
         sponsors()
     elif args[:1] == ['photos']:
-        focus = 0.4
+        focus, use = 0.4, None
         if '--focus' in args:
             i = args.index('--focus')
             focus = float(args[i + 1])
             args = args[:i] + args[i + 2:]
-        photos(args[1:], focus)
+        if '--for' in args:
+            i = args.index('--for')
+            use = args[i + 1]
+            args = args[:i] + args[i + 2:]
+        if use not in ('next', 'results'):
+            print('Say which pool: --for next  or  --for results')
+            sys.exit(1)
+        photos(args[1:], focus, use)
     else:
         print(__doc__)
         sys.exit(1)
