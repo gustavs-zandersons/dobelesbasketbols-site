@@ -7,9 +7,10 @@
   bracket labels and the mock season follow.
 - **Results posters ("Dalīties" on the previous-round block).** Same pop-up and
   two formats as the next-round posters, for every round of both cups. Full
-  photo under a see-through tint (gold for Dobele, red for Jelgava), cup logo
-  centred on top, "Iepriekšējās kārtas rezultāti" and the date of the games,
-  then home logo · score · away logo per game (winner's score brighter), a small
+  photo under a dark see-through tint (gold for Dobele, red for Jelgava), cup
+  logo centred about 10% from the top on both formats, "Rezultāti" and the
+  date of the games, then home logo · score · away logo per game (winner's
+  score brighter), a small
   line under the score for series standings, aggregates, overtime and forfeits,
   the sponsor band and the notice bar. Every round's games sit under a stage
   label in a cup-coloured pill ("Grupu turnīrs · 3. kārta", "K grupa · 2.

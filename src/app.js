@@ -1048,7 +1048,7 @@
     var finals = pr.stage === 'Fināli';
     return {
       cup: state.cup, seed: state.cup + lr.date + 'r',
-      title: 'Iepriekšējās kārtas rezultāti',
+      title: 'Rezultāti',
       sub: x.getDate() + '. ' + MONTH_NOM[x.getMonth()],   // date the games were played
       // Each round's games sit under a label with the stage and round
       // (Hope Cup games last); on finals day each game gets its own label.

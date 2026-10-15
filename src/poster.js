@@ -301,8 +301,9 @@
   //          photo, sponsors, notice }   crest = { img } or { initials, color }
   var TINTS = { dbck: 'rgb(233, 183, 22)', jssc: 'rgb(222, 70, 92)' };
   var RES = {
-    // logo: [top, size] — centred; the story keeps it below Instagram's name bar.
-    feed: { logo: [40, 150], title: 66, sub: 38, rule: 30, rowMax: 230, crest: 200, score: 104, info: 30, sideX: 0.24, tag: 28 },
+    // logo: [top, size] — centred, about 10% of the height from the top on both
+    // formats (the story keeps it below Instagram's name bar).
+    feed: { logo: [134, 132], title: 66, sub: 38, rule: 30, rowMax: 230, crest: 200, score: 104, info: 30, sideX: 0.24, tag: 28 },
     story: { logo: [190, 176], title: 70, sub: 42, rule: 32, rowMax: 240, crest: 210, score: 112, info: 32, sideX: 0.25, tag: 31 }
   };
 
@@ -325,7 +326,7 @@
   }
   // Darken, then multiply with the cup colour: the photo stays visible.
   function tint(g, cup, W, H) {
-    g.fillStyle = 'rgba(0, 0, 0, 0.42)';
+    g.fillStyle = 'rgba(0, 0, 0, 0.56)';
     g.fillRect(0, 0, W, H);
     g.save();
     g.globalCompositeOperation = 'multiply';
@@ -413,7 +414,7 @@
     var list = spec.games || [];
     var zoneTop = y + (story ? 36 : 24);
     var zoneBottom = F.sponsorTop - F.ridge * 1.5 - 10;
-    var tagPx = R.tag, tagH = Math.round(tagPx * 1.55) + 22;
+    var tagPx = R.tag, tagH = Math.round(tagPx * 1.55) + (story ? 22 : 16);
     var tagged = list.filter(function (gm) { return gm.tag; }).length;
     var n = Math.max(1, list.length);
     var rowH = Math.min(R.rowMax, (zoneBottom - zoneTop - tagged * tagH) / n);
