@@ -378,7 +378,9 @@
     var g = c.getContext('2d');
     var rnd = rng(spec.seed || spec.title);
 
-    if (spec.photo && spec.photo.img) drawCover(g, spec.photo, W, H);
+    // The photo only has to fill the part above the sponsor band (the band is
+    // white), so it is zoomed out as far as it can go while still covering it.
+    if (spec.photo && spec.photo.img) drawCover(g, spec.photo, W, F.sponsorTop);
     else { g.fillStyle = '#1B1A14'; g.fillRect(0, 0, W, H); }
     tint(g, spec.cup, W, H);
     ridge(g, W, F.sponsorTop, F.ridge * 0.75, H, '#FFFFFF', rnd);
@@ -421,7 +423,7 @@
     var top = zoneTop + Math.max(0, (zoneBottom - zoneTop - rowH * list.length - tagged * tagH) / 2);
     list.forEach(function (gm) {
       if (gm.tag) {
-        // Label in a pill (cup colour), so a different competition stands out.
+        // Stage label in a pill (cup colour) above each round's games.
         var tag = up(gm.tag), px = fit(g, tag, tagPx, W * 0.6, 14);
         var tw = width(g, tag, px) + px * 1.4, th = Math.round(px * 1.55), ty = top + (tagH - th) / 2;
         g.fillStyle = PILL[spec.cup] ? PILL[spec.cup][0] : PILL.dbck[0];

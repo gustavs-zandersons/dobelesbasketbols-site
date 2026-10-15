@@ -1050,14 +1050,19 @@
       cup: state.cup, seed: state.cup + lr.date + 'r',
       title: 'Iepriekšējās kārtas rezultāti',
       sub: x.getDate() + '. ' + MONTH_NOM[x.getMonth()],   // date the games were played
-      // Hope Cup games go last with a label; on finals day each game is labelled.
-      games: sortGames(lr.games).sort(function (p, q) { return (p.round !== pr.id) - (q.round !== pr.id); }).map(function (g) {
-        return {
-          home: crestOf(ctx.resolve(g.comp, g.home).team), away: crestOf(ctx.resolve(g.comp, g.away).team),
-          hs: g.hs, as: g.as, info: resultInfo(g),
-          tag: g.round !== pr.id ? groupTitle(ctx.round(g.round)) : finals ? gameTag(g) : ''
-        };
-      }),
+      // Each round's games sit under a label with the stage and round
+      // (Hope Cup games last); on finals day each game gets its own label.
+      games: (function () {
+        var prev = null;
+        return sortGames(lr.games).sort(function (p, q) { return (p.round !== pr.id) - (q.round !== pr.id); }).map(function (g) {
+          var tag = finals ? gameTag(g) : g.round !== prev ? groupTitle(ctx.round(g.round)) : '';
+          prev = g.round;
+          return {
+            home: crestOf(ctx.resolve(g.comp, g.home).team), away: crestOf(ctx.resolve(g.comp, g.away).team),
+            hs: g.hs, as: g.as, info: resultInfo(g), tag: tag
+          };
+        });
+      })(),
       notice: NOTICE
     };
   }

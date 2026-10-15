@@ -11,11 +11,16 @@
   centred on top, "Iepriekšējās kārtas rezultāti" and the date of the games,
   then home logo · score · away logo per game (winner's score brighter), a small
   line under the score for series standings, aggregates, overtime and forfeits,
-  the sponsor band and the notice bar. Hope Cup games and the gold/bronze finals
-  get a label in a cup-coloured pill.
+  the sponsor band and the notice bar. Every round's games sit under a stage
+  label in a cup-coloured pill ("Grupu turnīrs · 3. kārta", "K grupa · 2.
+  kārta", "Cerību kauss · 1. pusfināls", "Pusfināli · 2. spēle",
+  "Astotdaļfināls · 1. spēle", "Pusfināls", "Fināls"); on Dobele finals day
+  each game gets its own ("Bronzas fināls", "Zelta fināls"). The photo fills
+  only the area above the sponsor band, so it is zoomed out as far as possible.
 - **Photo pools.** Separate pools for next-round posters and results posters
   (`use` in `src/poster-photos.json`); photos are kept up to 2000 px, and the
-  results Story prefers upright photos.
+  results Story prefers upright photos. Results pool: three upright photos from
+  last season.
 
 ## Test site date — 15 Oct 2026
 
