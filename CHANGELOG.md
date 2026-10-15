@@ -1,5 +1,27 @@
 # Changelog
 
+## Round 3 — released 15 Oct 2026 (PR #4)
+
+- **Challenge Cup format.** Semifinals are one game (were two-game aggregate).
+  1/8 and 1/4 finals stay two-game aggregate; the final is one game. Engine,
+  bracket labels and the mock season follow.
+- **Results posters ("Dalīties" on the previous-round block).** Same pop-up and
+  two formats as the next-round posters, for every round of both cups. Full
+  photo under a dark see-through tint (gold for Dobele, red for Jelgava), cup
+  logo centred about 10% from the top on both formats, "Rezultāti" and the
+  date of the games, then home logo · score · away logo per game (winner's
+  score brighter), a small line under the score for series standings,
+  aggregates, overtime and forfeits, the sponsor band and the notice bar.
+  Every round's games sit under a stage label in a cup-coloured pill ("Grupu turnīrs · 3. kārta", "K grupa · 2.
+  kārta", "Cerību kauss · 1. pusfināls", "Pusfināli · 2. spēle",
+  "Astotdaļfināls · 1. spēle", "Pusfināls", "Fināls"); on Dobele finals day
+  each game gets its own ("Bronzas fināls", "Zelta fināls"). The photo fills
+  only the area above the sponsor band, so it is zoomed out as far as possible.
+- **Photo pools.** Separate pools for next-round posters and results posters
+  (`use` in `src/poster-photos.json`); photos are kept up to 2000 px, and the
+  results Story prefers upright photos. Results pool: three upright photos from
+  last season.
+
 ## Test site date — 15 Oct 2026
 
 - The test site now shows 5 January 2027: Dobele K group after round 1 (next:

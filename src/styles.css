@@ -1717,7 +1717,7 @@ body.no-scroll { overflow: hidden; }
 .next-share-m, .next-cal-m { display: flex; justify-content: flex-end; }
 .next-share-m { margin-bottom: 12px; }
 .next-cal-m { margin-top: 6px; }
-@media (max-width: 767px) { #block-next .block-head .head-actions { display: none; } }
+@media (max-width: 767px) { #block-next .block-head .head-actions, #block-last .block-head .head-actions { display: none; } }
 @media (min-width: 768px) { .next-share-m, .next-cal-m { display: none; } }
 /* The round MVP belongs to the previous-round section: no heading, smaller gap. */
 #block-mvp { margin-top: -20px; }

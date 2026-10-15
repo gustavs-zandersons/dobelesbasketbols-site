@@ -290,6 +290,162 @@
     return c;
   }
 
+  // ---------- results poster ----------
+  // Last season's results poster: the whole photo under a see-through cup
+  // tint (gold for Dobele, red for Jelgava), cup logo centred on top, title +
+  // date of the games (+ optional rule line), then one row per game:
+  // home logo · score · away logo (no names), white sponsor band and notice.
+  //
+  // spec = { cup, format, seed, logo: img, title, sub, rule,
+  //          games: [{ home: crest, away: crest, hs, as, info, tag }],
+  //          photo, sponsors, notice }   crest = { img } or { initials, color }
+  var TINTS = { dbck: 'rgb(233, 183, 22)', jssc: 'rgb(222, 70, 92)' };
+  var RES = {
+    // logo: [top, size] — centred, about 10% of the height from the top on both
+    // formats (the story keeps it below Instagram's name bar).
+    feed: { logo: [134, 132], title: 66, sub: 38, rule: 30, rowMax: 230, crest: 200, score: 104, info: 30, sideX: 0.24, tag: 28 },
+    story: { logo: [190, 176], title: 70, sub: 42, rule: 32, rowMax: 240, crest: 210, score: 112, info: 32, sideX: 0.25, tag: 31 }
+  };
+
+  var PILL = { dbck: ['#E9B716', '#111111'], jssc: ['#FFFFFF', '#9C213D'] };
+  function roundRect(g, x, y, w, h, r) {
+    g.beginPath();
+    g.moveTo(x + r, y); g.lineTo(x + w - r, y); g.arcTo(x + w, y, x + w, y + r, r);
+    g.lineTo(x + w, y + h - r); g.arcTo(x + w, y + h, x + w - r, y + h, r);
+    g.lineTo(x + r, y + h); g.arcTo(x, y + h, x, y + h - r, r);
+    g.lineTo(x, y + r); g.arcTo(x, y, x + r, y, r);
+    g.closePath(); g.fill();
+  }
+  function drawCover(g, photo, W, H) {
+    var img = photo.img, iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+    var s = Math.max(W / iw, H / ih), sw = W / s, sh = H / s;
+    var fy = photo.focus == null ? 0.45 : photo.focus, fx = photo.focusX == null ? 0.5 : photo.focusX;
+    var sx = Math.max(0, Math.min(iw - sw, iw * fx - sw / 2));
+    var sy = Math.max(0, Math.min(ih - sh, ih * fy - sh / 2));
+    g.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+  }
+  // Darken, then multiply with the cup colour: the photo stays visible.
+  function tint(g, cup, W, H) {
+    g.fillStyle = 'rgba(0, 0, 0, 0.56)';
+    g.fillRect(0, 0, W, H);
+    g.save();
+    g.globalCompositeOperation = 'multiply';
+    g.globalAlpha = 0.85;
+    g.fillStyle = TINTS[cup] || TINTS.dbck;
+    g.fillRect(0, 0, W, H);
+    g.restore();
+    var gr = g.createLinearGradient(0, 0, 0, H * 0.4);   // extra shade behind the header
+    gr.addColorStop(0, 'rgba(0, 0, 0, 0.35)');
+    gr.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    g.fillStyle = gr;
+    g.fillRect(0, 0, W, H * 0.4);
+  }
+  function drawContain(g, img, cx, cy, size, shadow) {
+    var iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+    var s = size / Math.max(iw, ih), w = iw * s, h = ih * s;
+    g.save();
+    if (shadow) { g.shadowColor = 'rgba(0, 0, 0, 0.45)'; g.shadowBlur = 18; g.shadowOffsetY = 4; }
+    g.drawImage(img, cx - w / 2, cy - h / 2, w, h);
+    g.restore();
+  }
+  function drawCrest(g, t, cx, cy, size) {
+    if (t && t.img) { drawContain(g, t.img, cx, cy, size, true); return; }
+    var r = size * 0.42;   // no logo yet: round badge with initials
+    g.save();
+    g.shadowColor = 'rgba(0, 0, 0, 0.45)'; g.shadowBlur = 18;
+    g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2);
+    g.fillStyle = (t && t.color) || '#5B6478'; g.fill();
+    g.restore();
+    g.lineWidth = Math.max(3, size * 0.025); g.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+    g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.stroke();
+    text(g, up((t && t.initials) || '?'), cx, cy, Math.round(r * 0.8), '#FFFFFF');
+  }
+  // "93:95" — the winner's number in white, the loser's a little dimmer.
+  function drawScore(g, hs, as, cx, cy, px) {
+    var a = String(hs), b = String(as), hi = '#FFFFFF', lo = 'rgba(255, 255, 255, 0.6)';
+    font(g, px);
+    var wa = g.measureText(a).width, wc = g.measureText(':').width, wb = g.measureText(b).width, pad = px * 0.06;
+    var x = cx - (wa + wc + wb + 2 * pad) / 2;
+    text(g, a, x, cy, px, hs >= as ? hi : lo, 'left');
+    text(g, ':', x + wa + pad, cy - px * 0.04, px, lo, 'left');
+    text(g, b, x + wa + wc + 2 * pad, cy, px, as >= hs ? hi : lo, 'left');
+  }
+
+  function renderResults(spec) {
+    var F = FORMATS[spec.format] || FORMATS.feed, R = RES[spec.format] || RES.feed;
+    var W = F.w, H = F.h, story = spec.format === 'story';
+    var c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    var g = c.getContext('2d');
+    var rnd = rng(spec.seed || spec.title);
+
+    // The photo only has to fill the part above the sponsor band (the band is
+    // white), so it is zoomed out as far as it can go while still covering it.
+    if (spec.photo && spec.photo.img) drawCover(g, spec.photo, W, F.sponsorTop);
+    else { g.fillStyle = '#1B1A14'; g.fillRect(0, 0, W, H); }
+    tint(g, spec.cup, W, H);
+    ridge(g, W, F.sponsorTop, F.ridge * 0.75, H, '#FFFFFF', rnd);
+    g.fillStyle = '#000000';
+    g.fillRect(0, H - F.bar, W, F.bar);
+    var notice = up(spec.notice);
+    if (notice) text(g, notice, W / 2, H - F.bar / 2, fit(g, notice, F.notice, W - 40, 14), '#FFFFFF');
+
+    // Header, centred: cup logo, title, date of the games.
+    if (spec.logo) drawContain(g, spec.logo, W / 2, R.logo[0] + R.logo[1] / 2, R.logo[1], true);
+    var maxW = W - 2 * F.side;
+    var y = R.logo[0] + R.logo[1] + (story ? 34 : 26);
+    var title = up(spec.title), tPx = fit(g, title, R.title, maxW, 36);
+    text(g, title, W / 2, y + capHeight(g, tPx) / 2, tPx, '#FFFFFF');
+    y += capHeight(g, tPx) + Math.round(tPx * 0.32);   // room for Ļ, Ņ, Ģ under the line
+    var sub = up(spec.sub);
+    if (sub) {
+      var sPx = fit(g, sub, R.sub, maxW, 18);
+      text(g, sub, W / 2, y + capHeight(g, sPx) / 2, sPx, 'rgba(255, 255, 255, 0.9)');
+      y += capHeight(g, sPx) + 14;
+    }
+    var rule = spec.rule ? '( ' + up(spec.rule) + ' )' : '';
+    if (rule) {
+      var rPx = fit(g, rule, R.rule, maxW, 16);
+      text(g, rule, W / 2, y + capHeight(g, rPx) / 2, rPx, 'rgba(255, 255, 255, 0.72)');
+      y += capHeight(g, rPx) + 14;
+    }
+
+    // Games, centred in the space between the header and the sponsor band.
+    var list = spec.games || [];
+    var zoneTop = y + (story ? 36 : 24);
+    var zoneBottom = F.sponsorTop - F.ridge * 1.5 - 10;
+    var tagPx = R.tag, tagH = Math.round(tagPx * 1.55) + (story ? 22 : 16);
+    var tagged = list.filter(function (gm) { return gm.tag; }).length;
+    var n = Math.max(1, list.length);
+    var rowH = Math.min(R.rowMax, (zoneBottom - zoneTop - tagged * tagH) / n);
+    var crest = Math.min(R.crest, rowH * 0.84);
+    var scorePx = Math.min(R.score, Math.round(rowH * 0.46));
+    var infoPx = Math.min(R.info, Math.round(rowH * 0.17));
+    var top = zoneTop + Math.max(0, (zoneBottom - zoneTop - rowH * list.length - tagged * tagH) / 2);
+    list.forEach(function (gm) {
+      if (gm.tag) {
+        // Stage label in a pill (cup colour) above each round's games.
+        var tag = up(gm.tag), px = fit(g, tag, tagPx, W * 0.6, 14);
+        var tw = width(g, tag, px) + px * 1.4, th = Math.round(px * 1.55), ty = top + (tagH - th) / 2;
+        g.fillStyle = PILL[spec.cup] ? PILL[spec.cup][0] : PILL.dbck[0];
+        roundRect(g, W / 2 - tw / 2, ty, tw, th, th / 2);
+        text(g, tag, W / 2, ty + th / 2, px, PILL[spec.cup] ? PILL[spec.cup][1] : PILL.dbck[1]);
+        top += tagH;
+      }
+      var cy = top + rowH / 2;
+      drawCrest(g, gm.home, W * R.sideX, cy, crest);
+      drawCrest(g, gm.away, W * (1 - R.sideX), cy, crest);
+      var info = up(gm.info);
+      var sCy = info ? cy - infoPx * 0.75 : cy;
+      drawScore(g, gm.hs, gm.as, W / 2, sCy, scorePx);
+      if (info) text(g, info, W / 2, sCy + capHeight(g, scorePx) / 2 + infoPx * 1.05, fit(g, info, infoPx, W * (1 - 2 * R.sideX) - crest * 0.6, 14), 'rgba(255, 255, 255, 0.78)');
+      top += rowH;
+    });
+
+    drawSponsors(g, spec.sponsors || [], F, F.sponsorTop + 30, H - F.bar - 30);
+    return c;
+  }
+
   // ---------- loading ----------
   var cache = {};
   function loadImage(src) {
@@ -313,5 +469,5 @@
       .then(function (res) { return res.slice(1); });
   }
 
-  window.Poster = { render: render, prepare: prepare, FORMATS: FORMATS };
+  window.Poster = { render: render, renderResults: renderResults, prepare: prepare, FORMATS: FORMATS };
 })();

@@ -217,7 +217,10 @@
       return (multi ? '<h3 class="group-head">' + esc(groupTitle(r)) + ' <small>' + games(list.length) + '</small></h3>' : '') +
         list.map(resRow).join('');
     }).join('');
-    el.innerHTML = head('last-title', 'Iepriekšējās kārtas rezultāti') + '<div class="results">' + body + '</div>';
+    var shareBtn = '<button type="button" class="share-btn" data-share-results>' + SHARE_ICON + 'Dalīties</button>';
+    el.innerHTML = head('last-title', 'Iepriekšējās kārtas rezultāti', '', '<div class="head-actions">' + shareBtn + '</div>') +
+      '<div class="next-share-m">' + shareBtn + '</div>' +
+      '<div class="results">' + body + '</div>';
   }
 
   // ---------- Block 2: round MVP ----------
@@ -468,7 +471,7 @@
         { html: card('QF3'), row: '8 / 10', pos: 'top', join: 'g1', recv: true, cls: 'half-gap' },
         { html: card('QF4'), row: '11 / 13', pos: 'bot', join: 'g1', recv: true, cls: 'path-gap' }
       ] },
-      { key: 'sf', short: '1/2', name: 'Pusfināls', sub: '2 spēļu summā', items: [
+      { key: 'sf', short: '1/2', name: 'Pusfināls', sub: '1 spēle', items: [
         { html: card('SF1'), row: '2 / 7', pos: 'top', join: 'g2', recv: true },
         { html: card('SF2'), row: '8 / 13', pos: 'bot', join: 'g2', recv: true, cls: 'half-gap' }
       ] },
@@ -483,7 +486,7 @@
       ? (ctx.groupStarted()
         ? 'Prognoze — ja grupu turnīrs beigtos šodien. Komandu vietas Dobeles kausa grupu turnīrā (A1, B4 …) nosaka to vietu shēmā; A1, A2, B1 un B2 sāk uzreiz ceturtdaļfinālā. Galīgie pāri būs zināmi pēc ' + esc(dateDay(lastGroupDate())) + '.'
         : 'Komandu vietas Dobeles kausa grupu turnīrā (A1, B4 …) noteiks to vietu shēmā; A1, A2, B1 un B2 sāk uzreiz ceturtdaļfinālā.')
-      : 'Astotdaļfināls, ceturtdaļfināls un pusfināls — divu spēļu summā (mazie skaitļi — katras spēles rezultāts, lielais — kopsumma). Fināls — vienā spēlē. Pieskaries pārim, lai redzētu spēles statistiku.';
+      : 'Astotdaļfināls un ceturtdaļfināls — divu spēļu summā (mazie skaitļi — katras spēles rezultāts, lielais — kopsumma). Pusfināls un fināls — vienā spēlē. Pieskaries pārim, lai redzētu spēles statistiku.';
     return stageHead(o.id || 'stage-title', 'Izaicinājuma kauss', 'Izspēles shēma', o.chip != null ? o.chip : extra) + (o.lead || '') +
       tree('bk', cols, { current: current, rows: 'auto 1fr 1fr var(--g1) 1fr 1fr var(--g2) 1fr 1fr var(--g1) 1fr 1fr' }) +
       '<p class="note">' + note + '</p>';
@@ -970,15 +973,22 @@
       return g.comp === 'dbck' ? ['group', 'k', 'hope'].indexOf(g.stage) >= 0 : /^(R16|QF)/.test(g.tie || '');
     });
   }
-  // Same photo for everyone during a round; consecutive rounds get the next one.
-  function posterPhoto(date) {
-    var list = POSTER_DATA.photos || [];
-    if (!list.length) return null;
+  // Two separate photo pools: next-round posters (use "next") and results
+  // posters (use "results"). Same photo for everyone during a round;
+  // consecutive rounds get the next one. The full-photo results story prefers
+  // upright photos.
+  function posterPhoto(date, kind, format) {
+    var pool = (POSTER_DATA.photos || []).filter(function (p) { return (p.use || ['next']).indexOf(kind) >= 0; });
+    if (!pool.length) return null;
+    var list = pool;
+    if (kind === 'results' && format === 'story') {
+      var tall = pool.filter(function (p) { return p.h > p.w; });
+      if (tall.length) list = tall;
+    }
     var dates = [];
     DATA.rounds.forEach(function (r) { if (dates.indexOf(r.date) < 0) dates.push(r.date); });
     dates.sort();
-    var i = Math.max(0, dates.indexOf(date));
-    return list[i % list.length];
+    return list[Math.max(0, dates.indexOf(date)) % list.length];
   }
   function posterSpec(nr) {
     var pr = primaryRound(nr.rounds), x = parse(nr.date);
@@ -1004,18 +1014,72 @@
       notice: NOTICE
     };
   }
+  // ---------- Results poster ----------
+  function crestOf(id) {
+    var tm = team(id);
+    return { src: tm.logo || '', initials: initials(tm.short), color: tm.color };
+  }
+  // Small line under a score: series standing, aggregate, overtime, forfeit.
+  function resultInfo(g) {
+    var bits = [];
+    var h = ctx.resolve(g.comp, g.home).team, a = ctx.resolve(g.comp, g.away).team;
+    if (g.tie) {
+      var st = ctx.tieState(g.comp, g.tie);
+      var pts = function (x, id) { return ctx.resolve(g.comp, x.home).team === id ? x.hs : x.as; };
+      if (st.type === 'bo3') {
+        var wh = 0, wa = 0;
+        st.games.forEach(function (x) { if (x.final && x.n <= g.n) { if (pts(x, h) > pts(x, a)) wh++; else wa++; } });
+        bits.push('Sērijā ' + wh + ':' + wa);
+      } else if (st.type === 'twoleg') {
+        if (g.n === 1) bits.push('1. spēle');
+        else {
+          var th = 0, ta = 0;
+          st.games.forEach(function (x) { if (x.final) { th += pts(x, h); ta += pts(x, a); } });
+          bits.push('Summā ' + th + ':' + ta);
+        }
+      }
+    }
+    if (g.ot) bits.push('Papildlaikā');
+    if (g.forfeit) bits.push('Tehniskais rezultāts');
+    return bits.join(' · ');
+  }
+  function resultsSpec(lr) {
+    var pr = primaryRound(lr.rounds), x = parse(lr.date);
+    var finals = pr.stage === 'Fināli';
+    return {
+      cup: state.cup, seed: state.cup + lr.date + 'r',
+      title: 'Rezultāti',
+      sub: x.getDate() + '. ' + MONTH_NOM[x.getMonth()],   // date the games were played
+      // Each round's games sit under a label with the stage and round
+      // (Hope Cup games last); on finals day each game gets its own label.
+      games: (function () {
+        var prev = null;
+        return sortGames(lr.games).sort(function (p, q) { return (p.round !== pr.id) - (q.round !== pr.id); }).map(function (g) {
+          var tag = finals ? gameTag(g) : g.round !== prev ? groupTitle(ctx.round(g.round)) : '';
+          prev = g.round;
+          return {
+            home: crestOf(ctx.resolve(g.comp, g.home).team), away: crestOf(ctx.resolve(g.comp, g.away).team),
+            hs: g.hs, as: g.as, info: resultInfo(g), tag: tag
+          };
+        });
+      })(),
+      notice: NOTICE
+    };
+  }
   function releaseShare() {
     share.token++;
     share.urls.forEach(function (u) { URL.revokeObjectURL(u); });
     share.urls = []; share.files = {};
   }
-  function openShare(trigger) {
-    var nr = ctx.nextRound(state.cup);
-    if (!posterRound(nr) || typeof window.Poster === 'undefined') return;
+  // kind: 'next' (next-round posters) or 'results' (previous-round results).
+  function openShare(trigger, kind) {
+    var results = kind === 'results';
+    var round = results ? ctx.lastRound(state.cup) : ctx.nextRound(state.cup);
+    if (!round || (!results && !posterRound(round)) || typeof window.Poster === 'undefined') return;
     releaseShare();
     var token = share.token;
     var canShare = canShareFiles();
-    var base = CUPS[state.cup].hash + '-' + nr.date + '-';
+    var base = CUPS[state.cup].hash + '-' + round.date + (results ? '-rezultati-' : '-');
     var cards = POSTERS.map(function (f) {
       return '<figure class="poster-card poster-card--' + f.key + '">' +
         '<div class="poster-frame" data-poster-frame="' + f.key + '"><span class="poster-wait">Gatavo plakātu…</span></div>' +
@@ -1028,7 +1092,7 @@
     sheetReturn = trigger || null;
     $('sheet').classList.add('sheet--share');
     $('sheet').innerHTML = '<div class="sheet-grip" aria-hidden="true"></div>' +
-      '<div class="sheet-head"><h2 id="sheet-title">Kārtas plakāti</h2>' +
+      '<div class="sheet-head"><h2 id="sheet-title">' + (results ? 'Kārtas rezultāti' : 'Kārtas plakāti') + '</h2>' +
       '<button type="button" class="icon-btn" data-sheet-close aria-label="Aizvērt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>' +
       '<div class="sheet-body"><div class="poster-grid">' + cards + '</div>' +
       '<p class="poster-note">' + (canShare ? 'Spied „Dalīties”, lai publicētu plakātu sociālajos tīklos, vai lejupielādē to.' : 'Lejupielādē plakātu un publicē to sociālajos tīklos.') + '</p></div>';
@@ -1037,15 +1101,28 @@
     var cl = $('sheet').querySelector('[data-sheet-close]');
     if (cl) cl.focus();
 
-    var spec = posterSpec(nr), photo = posterPhoto(nr.date), logos = POSTER_DATA.sponsors || [];
-    var srcs = (photo ? [photo.src] : []).concat(logos.map(function (s) { return s.src; }));
+    // Everything the two posters need, loaded once.
+    var spec = results ? resultsSpec(round) : posterSpec(round);
+    var photos = {}, logos = POSTER_DATA.sponsors || [], srcs = [];
+    var need = function (src) { if (src && srcs.indexOf(src) < 0) srcs.push(src); };
+    POSTERS.forEach(function (f) { photos[f.key] = posterPhoto(round.date, results ? 'results' : 'next', f.key); if (photos[f.key]) need(photos[f.key].src); });
+    logos.forEach(function (s) { need(s.src); });
+    if (results) {
+      need(CUPS[state.cup].logo);
+      spec.games.forEach(function (gm) { need(gm.home.src); need(gm.away.src); });
+    }
     window.Poster.prepare(srcs).then(function (imgs) {
       if (token !== share.token) return;
-      spec.photo = photo ? { img: imgs[0], focus: photo.focus } : null;
-      var li = imgs.slice(photo ? 1 : 0);
-      spec.sponsors = logos.map(function (s, i) { return { img: li[i], w: s.w, h: s.h, scale: s.scale }; });
+      var img = function (src) { var i = srcs.indexOf(src); return i < 0 ? null : imgs[i]; };
+      spec.sponsors = logos.map(function (s) { return { img: img(s.src), w: s.w, h: s.h, scale: s.scale }; });
+      if (results) {
+        spec.logo = img(CUPS[state.cup].logo);
+        spec.games.forEach(function (gm) { gm.home.img = img(gm.home.src); gm.away.img = img(gm.away.src); });
+      }
       POSTERS.forEach(function (f) {
-        var canvas = window.Poster.render(Object.assign({}, spec, { format: f.key }));
+        var ph = photos[f.key];
+        var fs = Object.assign({}, spec, { format: f.key, photo: ph ? { img: img(ph.src), focus: ph.focus, focusX: ph.focusX } : null });
+        var canvas = results ? window.Poster.renderResults(fs) : window.Poster.render(fs);
         // Preview as a data URL (works in every viewer); the file itself as a blob.
         var preview = canvas.toDataURL('image/jpeg', 0.85);
         canvas.toBlob(function (blob) {
@@ -1055,7 +1132,7 @@
           var url = URL.createObjectURL(blob);
           share.urls.push(url);
           var frame = $('sheet').querySelector('[data-poster-frame="' + f.key + '"]');
-          if (frame) frame.innerHTML = '<img src="' + preview + '" alt="' + esc(f.name + ' — ' + CUPS[state.cup].short + ', ' + dateDay(nr.date)) + '">';
+          if (frame) frame.innerHTML = '<img src="' + preview + '" alt="' + esc(f.name + ' — ' + CUPS[state.cup].short + ', ' + dateDay(round.date)) + '">';
           var dl = $('sheet').querySelector('[data-poster-dl="' + f.key + '"]');
           if (dl) { dl.href = url; dl.removeAttribute('aria-disabled'); }
           var sb = $('sheet').querySelector('[data-poster-share="' + f.key + '"]');
@@ -1274,7 +1351,9 @@
     if (e.target.closest('[data-sheet-close]') || e.target.id === 'sheet-scrim') { closeSheet(); return; }
     if (e.target.closest('[data-sheet-all]')) { state.cal.showAll = true; renderSheet(); return; }
     var sr = e.target.closest('[data-share-round]');
-    if (sr) { openShare(sr); return; }
+    if (sr) { openShare(sr, 'next'); return; }
+    var sres = e.target.closest('[data-share-results]');
+    if (sres) { openShare(sres, 'results'); return; }
     var ps = e.target.closest('[data-poster-share]');
     if (ps) { sharePoster(ps.getAttribute('data-poster-share')); return; }
     var pd = e.target.closest('[data-poster-dl]');
