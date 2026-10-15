@@ -8,7 +8,7 @@
 
 Sponsor originals stay in design/sponsors (not published). The web copies are
 trimmed to the logo itself, so the site can size every logo to the same visual
-weight. Photos are resized for 1080px-wide posters; the originals are not kept.
+weight. Photos are resized to 2000 px on the long side; the originals are not kept.
 """
 import json
 import re
@@ -37,7 +37,7 @@ SPONSORS = [
     ('kebabmix', 'Kebabmix', 1.0),
 ]
 LOGO_BOX = (400, 200)      # max size of a web copy (enough for 2x screens and the posters)
-PHOTO_W, PHOTO_MAX_H = 1600, 1100
+PHOTO_W, PHOTO_MAX_H = 2000, 2000   # long side 2000 px: enough for full-photo 1080×1920 posters
 
 
 def trim(im, pad=0.02):

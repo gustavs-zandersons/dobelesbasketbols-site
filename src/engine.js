@@ -48,8 +48,8 @@
         QF2: { type: 'twoleg', a: 'B2', b: 'W:R16_2', round: 'QF' },
         QF3: { type: 'twoleg', a: 'B1', b: 'W:R16_3', round: 'QF' },
         QF4: { type: 'twoleg', a: 'A2', b: 'W:R16_4', round: 'QF' },
-        SF1: { type: 'twoleg', a: 'W:QF1', b: 'W:QF2', round: 'SF' },
-        SF2: { type: 'twoleg', a: 'W:QF3', b: 'W:QF4', round: 'SF' },
+        SF1: { type: 'single', a: 'W:QF1', b: 'W:QF2', round: 'SF' },
+        SF2: { type: 'single', a: 'W:QF3', b: 'W:QF4', round: 'SF' },
         F: { type: 'single', a: 'W:SF1', b: 'W:SF2', round: 'F' }
       }
     }

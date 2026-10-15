@@ -1,5 +1,21 @@
 # Changelog
 
+## Round 3 — in progress (planned for 15 Oct 2026)
+
+- **Challenge Cup format.** Semifinals are one game (were two-game aggregate).
+  1/8 and 1/4 finals stay two-game aggregate; the final is one game. Engine,
+  bracket labels and the mock season follow.
+- **Results posters ("Dalīties" on the previous-round block).** Same pop-up and
+  two formats as the next-round posters, for every round of both cups. Full
+  photo under a see-through tint (gold for Dobele, red for Jelgava), cup logo
+  top left, stage / round + date / series rule at the top, then home logo ·
+  score · away logo per game (winner's score brighter), a small line under the
+  score for series standings, aggregates, overtime and forfeits, the sponsor
+  band and the notice bar. Hope Cup games and the gold/bronze finals are labelled.
+- **Photo pool.** Photos are kept up to 2000 px for full-photo posters; the
+  results posters use a different photo than the same weekend's next-round
+  poster, and the story format prefers upright photos.
+
 ## Test site date — 15 Oct 2026
 
 - The test site now shows 5 January 2027: Dobele K group after round 1 (next:

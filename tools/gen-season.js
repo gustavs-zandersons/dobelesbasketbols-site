@@ -112,7 +112,7 @@ groupDates.forEach((date, r) => {
 const J = Engine.STRUCTURE.jssc.ties;
 [['C16A', '2027-01-03', 'Astotdaļfināls', '1. spēle'], ['C16B', '2027-01-17', 'Astotdaļfināls', '2. spēle'],
  ['C8A', '2027-01-31', 'Ceturtdaļfināls', '1. spēle'], ['C8B', '2027-02-14', 'Ceturtdaļfināls', '2. spēle'],
- ['C4A', '2027-02-28', 'Pusfināls', '1. spēle'], ['C4B', '2027-03-14', 'Pusfināls', '2. spēle'],
+ ['C4A', '2027-02-28', 'Pusfināls', ''],
  ['CF', '2027-04-11', 'Fināls', '']].forEach(([id, date, stage, label]) => addRound({ id, comp: 'jssc', stage, label, date }));
 
 function cupLeg(tieIds, rid, date, venue, n) {
@@ -169,6 +169,7 @@ cupLeg(['QF1', 'QF2', 'QF3', 'QF4'], 'C8A', '2027-01-31', 'jelgava', 1);
 kRound(3);                                                     // 7 Feb
 cupLeg(['QF1', 'QF2', 'QF3', 'QF4'], 'C8B', '2027-02-14', 'dobele', 2);
 kRound(4);                                                     // 21 Feb
+// Semifinals: one game each (format change 15 Oct 2026).
 cupLeg(['SF1', 'SF2'], 'C4A', '2027-02-28', 'jelgava', 1);
 
 // ---- Dobele semifinals, best of three ----
@@ -180,7 +181,6 @@ const K = n => res('dbck', 'K' + n);
 const win = (w, l) => (h) => forced(w, l, h);
 refGame('dbck', 'playoff', 'SFG1', '2027-03-07', '13:00', 'dobele', 'K1', 'K4', { tie: 'SF1', n: 1 }, win(K(1), K(4)));
 refGame('dbck', 'playoff', 'SFG1', '2027-03-07', '15:00', 'dobele', 'K2', 'K3', { tie: 'SF2', n: 1 }, win(K(2), K(3)));
-cupLeg(['SF1', 'SF2'], 'C4B', '2027-03-14', 'dobele', 2);
 refGame('dbck', 'playoff', 'SFG2', '2027-03-21', '13:00', 'jelgava', 'K4', 'K1', { tie: 'SF1', n: 2 }, win(K(1), K(4)));
 refGame('dbck', 'playoff', 'SFG2', '2027-03-21', '15:00', 'jelgava', 'K3', 'K2', { tie: 'SF2', n: 2 }, win(K(3), K(2)));
 // 28 March is Easter Sunday — no games.

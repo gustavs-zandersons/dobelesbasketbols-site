@@ -4,5 +4,11 @@
   "w": 1600,
   "h": 611,
   "focus": 0.5
+ },
+ {
+  "src": "assets/posters/foto-01.jpg",
+  "w": 2000,
+  "h": 1333,
+  "focus": 0.45
  }
 ]

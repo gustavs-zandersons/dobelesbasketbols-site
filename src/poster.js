@@ -290,6 +290,149 @@
     return c;
   }
 
+  // ---------- results poster ----------
+  // Last season's results poster: the whole photo under a see-through cup
+  // tint (gold for Dobele, red for Jelgava), cup logo in the top-left corner,
+  // stage / round + date / series rule at the top, then one row per game:
+  // home logo · score · away logo (no names), white sponsor band and notice.
+  //
+  // spec = { cup, format, seed, logo: img, stage, sub, rule,
+  //          games: [{ home: crest, away: crest, hs, as, info, tag }],
+  //          photo, sponsors, notice }   crest = { img } or { initials, color }
+  var TINTS = { dbck: 'rgb(233, 183, 22)', jssc: 'rgb(222, 70, 92)' };
+  var RES = {
+    // logo: [x, y, size]; the story keeps it below Instagram's name bar.
+    feed: { logo: [52, 52, 168], headTop: 70, title: 92, sub: 36, rule: 30, rowMax: 230, crest: 200, score: 104, info: 30, sideX: 0.24 },
+    story: { logo: [104, 196, 176], headTop: 430, title: 104, sub: 40, rule: 32, rowMax: 240, crest: 210, score: 112, info: 32, sideX: 0.25 }
+  };
+
+  function drawCover(g, photo, W, H) {
+    var img = photo.img, iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+    var s = Math.max(W / iw, H / ih), sw = W / s, sh = H / s;
+    var fy = photo.focus == null ? 0.45 : photo.focus, fx = photo.focusX == null ? 0.5 : photo.focusX;
+    var sx = Math.max(0, Math.min(iw - sw, iw * fx - sw / 2));
+    var sy = Math.max(0, Math.min(ih - sh, ih * fy - sh / 2));
+    g.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+  }
+  // Darken, then multiply with the cup colour: the photo stays visible.
+  function tint(g, cup, W, H) {
+    g.fillStyle = 'rgba(0, 0, 0, 0.42)';
+    g.fillRect(0, 0, W, H);
+    g.save();
+    g.globalCompositeOperation = 'multiply';
+    g.globalAlpha = 0.85;
+    g.fillStyle = TINTS[cup] || TINTS.dbck;
+    g.fillRect(0, 0, W, H);
+    g.restore();
+    var gr = g.createLinearGradient(0, 0, 0, H * 0.4);   // extra shade behind the header
+    gr.addColorStop(0, 'rgba(0, 0, 0, 0.35)');
+    gr.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    g.fillStyle = gr;
+    g.fillRect(0, 0, W, H * 0.4);
+  }
+  function drawContain(g, img, cx, cy, size, shadow) {
+    var iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+    var s = size / Math.max(iw, ih), w = iw * s, h = ih * s;
+    g.save();
+    if (shadow) { g.shadowColor = 'rgba(0, 0, 0, 0.45)'; g.shadowBlur = 18; g.shadowOffsetY = 4; }
+    g.drawImage(img, cx - w / 2, cy - h / 2, w, h);
+    g.restore();
+  }
+  function drawCrest(g, t, cx, cy, size) {
+    if (t && t.img) { drawContain(g, t.img, cx, cy, size, true); return; }
+    var r = size * 0.42;   // no logo yet: round badge with initials
+    g.save();
+    g.shadowColor = 'rgba(0, 0, 0, 0.45)'; g.shadowBlur = 18;
+    g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2);
+    g.fillStyle = (t && t.color) || '#5B6478'; g.fill();
+    g.restore();
+    g.lineWidth = Math.max(3, size * 0.025); g.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+    g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.stroke();
+    text(g, up((t && t.initials) || '?'), cx, cy, Math.round(r * 0.8), '#FFFFFF');
+  }
+  // "93:95" — the winner's number in white, the loser's a little dimmer.
+  function drawScore(g, hs, as, cx, cy, px) {
+    var a = String(hs), b = String(as), hi = '#FFFFFF', lo = 'rgba(255, 255, 255, 0.6)';
+    font(g, px);
+    var wa = g.measureText(a).width, wc = g.measureText(':').width, wb = g.measureText(b).width, pad = px * 0.06;
+    var x = cx - (wa + wc + wb + 2 * pad) / 2;
+    text(g, a, x, cy, px, hs >= as ? hi : lo, 'left');
+    text(g, ':', x + wa + pad, cy - px * 0.04, px, lo, 'left');
+    text(g, b, x + wa + wc + 2 * pad, cy, px, as >= hs ? hi : lo, 'left');
+  }
+
+  function renderResults(spec) {
+    var F = FORMATS[spec.format] || FORMATS.feed, R = RES[spec.format] || RES.feed;
+    var W = F.w, H = F.h, story = spec.format === 'story';
+    var c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    var g = c.getContext('2d');
+    var rnd = rng(spec.seed || spec.stage);
+
+    if (spec.photo && spec.photo.img) drawCover(g, spec.photo, W, H);
+    else { g.fillStyle = '#1B1A14'; g.fillRect(0, 0, W, H); }
+    tint(g, spec.cup, W, H);
+    ridge(g, W, F.sponsorTop, F.ridge * 0.75, H, '#FFFFFF', rnd);
+    g.fillStyle = '#000000';
+    g.fillRect(0, H - F.bar, W, F.bar);
+    var notice = up(spec.notice);
+    if (notice) text(g, notice, W / 2, H - F.bar / 2, fit(g, notice, F.notice, W - 40, 14), '#FFFFFF');
+
+    // Cup logo, top-left corner.
+    if (spec.logo) drawContain(g, spec.logo, R.logo[0] + R.logo[2] / 2, R.logo[1] + R.logo[2] / 2, R.logo[2], true);
+
+    // Header: stage (big), round + date, series rule. On the feed post it sits
+    // beside the logo; on the story it sits below it.
+    var maxW = story ? W - 2 * F.side : W - 2 * (R.logo[0] + R.logo[2] + 20);
+    var y = R.headTop;
+    var stage = up(spec.stage), tPx = fit(g, stage, R.title, maxW, 40);
+    text(g, stage, W / 2, y + capHeight(g, tPx) / 2, tPx, '#FFFFFF');
+    y += capHeight(g, tPx) + Math.round(tPx * 0.3);   // room for Ļ, Ņ, Ģ under the line
+    var sub = up(spec.sub);
+    if (sub) {
+      var sPx = fit(g, sub, R.sub, maxW, 18);
+      text(g, sub, W / 2, y + capHeight(g, sPx) / 2, sPx, 'rgba(255, 255, 255, 0.9)');
+      y += capHeight(g, sPx) + 14;
+    }
+    var rule = spec.rule ? '( ' + up(spec.rule) + ' )' : '';
+    if (rule) {
+      var rPx = fit(g, rule, R.rule, maxW, 16);
+      text(g, rule, W / 2, y + capHeight(g, rPx) / 2, rPx, 'rgba(255, 255, 255, 0.72)');
+      y += capHeight(g, rPx) + 14;
+    }
+
+    // Games, centred in the space between the header and the sponsor band.
+    var list = spec.games || [];
+    var zoneTop = Math.max(y + (story ? 40 : 30), story ? 0 : R.logo[1] + R.logo[2] + 16);
+    var zoneBottom = F.sponsorTop - F.ridge * 1.5 - 10;
+    var tagPx = story ? 25 : 23, tagH = tagPx + 18;
+    var tagged = list.filter(function (gm) { return gm.tag; }).length;
+    var n = Math.max(1, list.length);
+    var rowH = Math.min(R.rowMax, (zoneBottom - zoneTop - tagged * tagH) / n);
+    var crest = Math.min(R.crest, rowH * 0.84);
+    var scorePx = Math.min(R.score, Math.round(rowH * 0.46));
+    var infoPx = Math.min(R.info, Math.round(rowH * 0.17));
+    var top = zoneTop + Math.max(0, (zoneBottom - zoneTop - rowH * list.length - tagged * tagH) / 2);
+    list.forEach(function (gm) {
+      if (gm.tag) {
+        var tag = up(gm.tag);
+        text(g, tag, W / 2, top + tagH / 2, fit(g, tag, tagPx, W * 0.5, 14), 'rgba(255, 255, 255, 0.85)');
+        top += tagH;
+      }
+      var cy = top + rowH / 2;
+      drawCrest(g, gm.home, W * R.sideX, cy, crest);
+      drawCrest(g, gm.away, W * (1 - R.sideX), cy, crest);
+      var info = up(gm.info);
+      var sCy = info ? cy - infoPx * 0.75 : cy;
+      drawScore(g, gm.hs, gm.as, W / 2, sCy, scorePx);
+      if (info) text(g, info, W / 2, sCy + capHeight(g, scorePx) / 2 + infoPx * 1.05, fit(g, info, infoPx, W * (1 - 2 * R.sideX) - crest * 0.6, 14), 'rgba(255, 255, 255, 0.78)');
+      top += rowH;
+    });
+
+    drawSponsors(g, spec.sponsors || [], F, F.sponsorTop + 30, H - F.bar - 30);
+    return c;
+  }
+
   // ---------- loading ----------
   var cache = {};
   function loadImage(src) {
@@ -313,5 +456,5 @@
       .then(function (res) { return res.slice(1); });
   }
 
-  window.Poster = { render: render, prepare: prepare, FORMATS: FORMATS };
+  window.Poster = { render: render, renderResults: renderResults, prepare: prepare, FORMATS: FORMATS };
 })();
