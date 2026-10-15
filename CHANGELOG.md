@@ -11,8 +11,8 @@
   logo centred about 10% from the top on both formats, "Rezultāti" and the
   date of the games, then home logo · score · away logo per game (winner's
   score brighter), a small line under the score for series standings,
-  aggregates, overtime and forfeits, the sponsor band and the notice bar. Every round's games sit under a stage
-  label in a cup-coloured pill ("Grupu turnīrs · 3. kārta", "K grupa · 2.
+  aggregates, overtime and forfeits, the sponsor band and the notice bar.
+  Every round's games sit under a stage label in a cup-coloured pill ("Grupu turnīrs · 3. kārta", "K grupa · 2.
   kārta", "Cerību kauss · 1. pusfināls", "Pusfināli · 2. spēle",
   "Astotdaļfināls · 1. spēle", "Pusfināls", "Fināls"); on Dobele finals day
   each game gets its own ("Bronzas fināls", "Zelta fināls"). The photo fills
