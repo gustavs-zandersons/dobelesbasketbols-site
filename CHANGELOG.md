@@ -1,6 +1,6 @@
 # Changelog
 
-## Round 3 — in progress (planned for 15 Oct 2026)
+## Round 3 — released 15 Oct 2026 (PR #4)
 
 - **Challenge Cup format.** Semifinals are one game (were two-game aggregate).
   1/8 and 1/4 finals stay two-game aggregate; the final is one game. Engine,
@@ -10,9 +10,8 @@
   photo under a dark see-through tint (gold for Dobele, red for Jelgava), cup
   logo centred about 10% from the top on both formats, "Rezultāti" and the
   date of the games, then home logo · score · away logo per game (winner's
-  score brighter), a small
-  line under the score for series standings, aggregates, overtime and forfeits,
-  the sponsor band and the notice bar. Every round's games sit under a stage
+  score brighter), a small line under the score for series standings,
+  aggregates, overtime and forfeits, the sponsor band and the notice bar. Every round's games sit under a stage
   label in a cup-coloured pill ("Grupu turnīrs · 3. kārta", "K grupa · 2.
   kārta", "Cerību kauss · 1. pusfināls", "Pusfināli · 2. spēle",
   "Astotdaļfināls · 1. spēle", "Pusfināls", "Fināls"); on Dobele finals day
