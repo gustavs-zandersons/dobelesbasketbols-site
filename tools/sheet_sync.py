@@ -529,11 +529,15 @@ def main():
     ap.add_argument('--expect-same', action='store_true', help='fail if the data differs from src/sheet.json')
     args = ap.parse_args()
     try:
-        if args.url:
+        if args.url is not None:
             url = args.url.strip()
             if not url:
-                raise SyncError('Tabulas saite nav iestatīta (GitHub: Settings → Secrets → SHEET_URL).')
-            body, _ = fetch(sheet_export_url(url), 'Tabula')
+                raise SyncError('Tabulas saite nav iestatīta (GitHub: Settings → Secrets and variables → Actions → SHEET_URL).')
+            try:
+                body, _ = fetch(sheet_export_url(url), 'Tabula')
+            except ValueError as e:
+                raise SyncError(f'{e}. Pārbaudi, vai tabula joprojām ir publicēta '
+                                '(Fails → Kopīgot → Publicēt tīmeklī) un saite ir pareiza.')
             if not body.startswith(b'PK'):
                 raise SyncError('Pēc saites neatveras tabula. Pārbaudi, vai tā ir publicēta: '
                                 'Fails → Kopīgot → Publicēt tīmeklī → „Viss dokuments”.')
