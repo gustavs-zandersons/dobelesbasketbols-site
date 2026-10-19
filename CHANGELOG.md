@@ -1,6 +1,6 @@
 # Changelog
 
-## Round 4 — in progress (requested 19 Oct 2026)
+## Round 4 — released 19 Oct 2026 (PR #5)
 
 - **K group renamed** to "Playoff kvalifikācijas grupa" everywhere it shows:
   stage heading, legend, notes, game tags, game page, calendar, both poster
