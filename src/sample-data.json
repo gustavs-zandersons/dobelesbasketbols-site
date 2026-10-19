@@ -55,7 +55,7 @@
   {
    "id": "buki",
    "name": "BK Buki / Sandramebeles.lv",
-   "short": "Buki",
+   "short": "BK Buki",
    "group": "A",
    "color": "#3A3A3A",
    "logo": "assets/teams/buki.webp",
@@ -613,6 +613,11 @@
    "id": "jelgava",
    "name": "Jelgavas Sporta halle",
    "address": "Mātera iela 44A, Jelgava"
+  },
+  {
+   "id": "kronauce",
+   "name": "Tērvetes sporta centrs",
+   "address": "Annas Brigaderes pamatskola, Kroņauce"
   }
  ],
  "rounds": [
