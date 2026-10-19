@@ -715,14 +715,14 @@
   {
    "id": "K1",
    "comp": "dbck",
-   "stage": "K grupa",
+   "stage": "Playoff kvalifikācijas grupa",
    "label": "1. kārta",
    "date": "2026-12-20"
   },
   {
    "id": "K2",
    "comp": "dbck",
-   "stage": "K grupa",
+   "stage": "Playoff kvalifikācijas grupa",
    "label": "2. kārta",
    "date": "2027-01-10"
   },
@@ -736,7 +736,7 @@
   {
    "id": "K3",
    "comp": "dbck",
-   "stage": "K grupa",
+   "stage": "Playoff kvalifikācijas grupa",
    "label": "3. kārta",
    "date": "2027-01-24"
   },
@@ -750,7 +750,7 @@
   {
    "id": "K4",
    "comp": "dbck",
-   "stage": "K grupa",
+   "stage": "Playoff kvalifikācijas grupa",
    "label": "4. kārta",
    "date": "2027-02-07"
   },
@@ -764,7 +764,7 @@
   {
    "id": "K5",
    "comp": "dbck",
-   "stage": "K grupa",
+   "stage": "Playoff kvalifikācijas grupa",
    "label": "5. kārta",
    "date": "2027-02-21"
   },

@@ -2,7 +2,7 @@
 //   node tools/check.js
 // 1) the built page's inline scripts parse, 2) the engine runs at several
 // points of the season, 3) every box score adds up to its final score,
-// 4) sponsor logos and poster photos exist.
+// 4) sponsor logos and poster photos exist, 5) sponsors page data is valid.
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -59,6 +59,17 @@ check(sponsors.length > 0, 'sponsor list is empty');
 check(photos.length > 0, 'poster photo pool is empty');
 sponsors.concat(photos).forEach(a => check(fs.existsSync(path.join(root, a.src)), 'missing file ' + a.src));
 check(html.includes('id="poster-data"') && html.includes('window.Poster'), 'poster script and data are in the page');
+
+// 5. Sponsors page data (the sheet's "Sponsori" tab): every row has a logo,
+// a known level, and links are full https addresses.
+const info = require('../src/sponsor-info.json');
+const logoIds = new Set(sponsors.map(s => s.id));
+info.forEach(r => {
+  check(logoIds.has(r.id), 'sponsor ' + r.id + ' has no logo in src/sponsors.json');
+  check(['Ģenerālsponsors', 'Atbalstītājs'].includes(r.level), 'sponsor ' + r.id + ': unknown level ' + r.level);
+  ['website', 'facebook', 'instagram', 'tiktok'].forEach(k => check(!r[k] || /^https:\/\/\S+$/.test(r[k]), 'sponsor ' + r.id + ': ' + k + ' must start with https://'));
+});
+check(html.includes('id="sponsor-data"'), 'sponsor data is in the page');
 
 if (failures) { console.error(failures + ' check(s) failed'); process.exit(1); }
 console.log('All checks passed (' + data.games.length + ' games).');

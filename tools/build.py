@@ -73,6 +73,24 @@ def sponsors_html(sponsors):
     return '\n'.join(rows)
 
 
+LEVELS = ('Ģenerālsponsors', 'Atbalstītājs')
+
+
+def sponsor_page(logos):
+    """Sponsors page data: the sheet's "Sponsori" tab (src/sponsor-info.json:
+    level, order, description, links) joined with the web logos by id."""
+    info = json.loads((SRC / 'sponsor-info.json').read_text())
+    by_id = {s['id']: s for s in logos}
+    out = []
+    for r in sorted(info, key=lambda r: (LEVELS.index(r['level']), r.get('order') or 999)):
+        logo = by_id[r['id']]
+        out.append({'id': r['id'], 'name': r.get('name') or logo['name'], 'level': r['level'],
+                    'description': r.get('description', '').strip(),
+                    'links': {k: r[k].strip() for k in ('website', 'facebook', 'instagram', 'tiktok') if r.get(k, '').strip()},
+                    'src': logo['src'], 'w': logo['w'], 'h': logo['h'], 'scale': logo.get('scale', 1)})
+    return out
+
+
 def render(preview):
     tpl = (SRC / 'template.html').read_text()
     data = json.loads((SRC / 'sample-data.json').read_text())
@@ -85,6 +103,7 @@ def render(preview):
             .replace('{{APP}}', (SRC / 'app.js').read_text())
             .replace('{{DATA}}', as_json(data))
             .replace('{{POSTER_DATA}}', as_json({'sponsors': sponsors, 'photos': photos}))
+            .replace('{{SPONSOR_DATA}}', as_json(sponsor_page(sponsors)))
             .replace('{{SPONSORS_HTML}}', sponsors_html(sponsors))
             .replace('{{RIDGE_A}}', ridge(7))
             .replace('{{RIDGE_B}}', ridge(11, base=36, amp=24))

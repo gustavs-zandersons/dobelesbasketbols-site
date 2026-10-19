@@ -147,7 +147,7 @@ const kDates = ['2026-12-20', '2027-01-10', '2027-01-24', '2027-02-07', '2027-02
 // Interleave in calendar order.
 function kRound(r) {
   const rid = 'K' + (r + 1), date = kDates[r], venue = venueFor(r + 1);
-  addRound({ id: rid, comp: 'dbck', stage: 'K grupa', label: (r + 1) + '. kārta', date });
+  addRound({ id: rid, comp: 'dbck', stage: 'Playoff kvalifikācijas grupa', label: (r + 1) + '. kārta', date });
   kRounds[r].forEach(([a, b], i) => {
     const [home, away] = (i + r) % 2 ? [b, a] : [a, b];
     refGame('dbck', 'k', rid, date, SLOTS[i], venue, home, away);

@@ -1,5 +1,28 @@
 # Changelog
 
+## Round 4 — in progress (requested 19 Oct 2026)
+
+- **K group renamed** to "Playoff kvalifikācijas grupa" everywhere it shows:
+  stage heading, legend, notes, game tags, game page, calendar, both poster
+  types, demo bar. Its places show as PK1…PK8 (semifinal seeds, note); the
+  slot codes in the data stay K1…K8. The table card no longer repeats the name.
+- **Page titles:** more room between the small line and the big title
+  (Kopvērtējums, Kalendārs, Sponsori), so Ā, Ē, Ī, Ū clear the line above.
+- **Season progress bar** under the title on both cup home pages: first game
+  date, final date with a trophy, filled by date, dot for today, ticks where each
+  stage starts. Empty before the season, full with the trophy lit after the final.
+- **Sponsori page** (menu, both cups): thank-you text, Ģenerālsponsori (3) and
+  Atbalstītāji (10) as large logo tiles; a tile opens a pop-up with the logo,
+  level, description and website / Facebook / Instagram / TikTok buttons (only
+  the filled ones). Content from the sheet's new "Sponsori" tab
+  (`src/sponsor-info.json`). Footer logos unchanged.
+- **Phones:** "Dalīties" moved under the previous-round results (right) and
+  under the next-round card (right, with "Viss kalendārs" on the left).
+- **Next-round card:** inside is a lighter shade of the page colour (blue on
+  Dobele, red on Jelgava), so it stands out from the page.
+- **Season sheet template:** "Sponsori" tab, renamed stage, single-game
+  Challenge Cup semifinals; the builder now lives in `tools/season_sheet.py`.
+
 ## Round 3 — released 15 Oct 2026 (PR #4)
 
 - **Challenge Cup format.** Semifinals are one game (were two-game aggregate).
