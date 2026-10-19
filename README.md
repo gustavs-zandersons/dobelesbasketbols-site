@@ -22,6 +22,17 @@ Live (once GitHub Pages is enabled): https://gustavs-zandersons.github.io/dobele
 | Calendar (both cups, team filter) | `#kalendars` |
 | Kopvērtējums — Dobele / Jelgava | `#dobele-kopvertejums`, `#jelgava-kopvertejums` |
 | Sponsori (same on both cups, in the cup's colours) | `#dobele-sponsori`, `#jelgava-sponsori` |
+| Komandas — team list | `#dobele-komandas`, `#jelgava-komandas` |
+| Team page (stats for that cup, switch to the other) | `#dobele-komanda-buki`, `#jelgava-komanda-buki` |
+
+Team pages are calculated from results and box scores per cup: record, last
+five games, team averages with the cup average and rank, leaders (top three per
+category, per game, at least half of the team's games), roster averages
+(players matched by name — shirt numbers can change), next three games (both
+cups) and all results. Player tables (team roster, game box scores) sort by any
+column on click. Forfeits count in the record but not in the stats. Optional team
+fields from the sheet's "Komandas" tab (`city`, `description`, `website`,
+`facebook`, `instagram`, `tiktok` on each team) show only when filled.
 
 The Dobele "K group" (the code name in `engine.js` and the data, slots K1…K8)
 is shown on the site as **Playoff kvalifikācijas grupa**; its places show as

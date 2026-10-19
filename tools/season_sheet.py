@@ -95,7 +95,7 @@ rows = [
     ('gap', ''),
     ('h', 'Lapas'),
     ('kv', ('Iestatījumi', 'Sezona, kausu nosaukumi, MVP balvas sponsori, basket.lv saites.')),
-    ('kv', ('Komandas', 'Visas komandas. Kolonnu „Grupa” aizpilda pēc izlozes. „basket.lv nosaukums” — tieši tā, kā komanda rakstīta basket.lv.')),
+    ('kv', ('Komandas', 'Visas komandas. Kolonnu „Grupa” aizpilda pēc izlozes. „basket.lv nosaukums” — tieši tā, kā komanda rakstīta basket.lv. Pilsēta, apraksts un saites nav obligāti — ja aizpildīti, tie redzami komandas lapā.')),
     ('kv', ('Zāles', 'Zāles ar adresēm. Spēlēs zāli norāda ar tās ID (dobele, jelgava).')),
     ('kv', ('Kalendārs', 'Visas sezonas spēles — viena rinda = viena spēle. Kārta = visas spēles vienā datumā un zālē (ne vairāk kā 4).')),
     ('kv', ('MVP', 'Katras kārtas MVP katram kausam. Statistika tiek ņemta no basket.lv automātiski.')),
@@ -180,8 +180,10 @@ for i in range(2, 2 + len(settings)):
 
 # ---------------------------------------------------------------- Komandas
 ws = wb.create_sheet('Komandas')
-header(ws, ['ID', 'Pilnais nosaukums', 'Īsais nosaukums', 'basket.lv nosaukums', 'Grupa', 'Logo fails', 'Piezīme'],
-       [14, 34, 18, 34, 9, 26, 34])
+# Columns G–L are optional (shown on the team page only when filled).
+header(ws, ['ID', 'Pilnais nosaukums', 'Īsais nosaukums', 'basket.lv nosaukums', 'Grupa', 'Logo fails',
+            'Pilsēta', 'Apraksts', 'Mājaslapa', 'Facebook', 'Instagram', 'TikTok', 'Piezīme'],
+       [14, 34, 18, 34, 9, 26, 16, 50, 28, 28, 28, 28, 34])
 teams = [
     ('buki', 'BK Buki / Sandramebeles.lv', 'Buki', 'buki.webp'),
     ('vilki', 'Vilki', 'Vilki', 'vilki.webp'),
@@ -203,12 +205,17 @@ for i, (tid, full, short, logo) in enumerate(teams, start=2):
     ws.cell(row=i, column=3, value=short)
     ws.cell(row=i, column=6, value=logo)
     if not logo:
-        ws.cell(row=i, column=7, value='Logo vēl nav — atsūtīt PNG.')
-style_rows(ws, 2, 1 + TEAM_ROWS, 7, ['in', 'in', 'in', 'in', 'in', 'auto', 'in'])
+        ws.cell(row=i, column=13, value='Logo vēl nav — atsūtīt PNG.')
+style_rows(ws, 2, 1 + TEAM_ROWS, 13, ['in', 'in', 'in', 'in', 'in', 'auto', 'in', 'in', 'in', 'in', 'in', 'in', 'in'])
+for r in range(2, 2 + TEAM_ROWS):
+    ws.cell(row=r, column=8).alignment = Alignment(wrap_text=True, vertical='top')
 ws.cell(row=1, column=1).comment = Comment('Īss ID bez garumzīmēm un atstarpēm. Pēc sezonas sākuma nemainīt — uz to atsaucas kalendārs.', 'Claude')
 ws.cell(row=1, column=4).comment = Comment('Tieši tā, kā komanda rakstīta basket.lv. Ja nosaukumi ir vairāki, atdali ar semikolu (;).', 'Claude')
 ws.cell(row=1, column=5).comment = Comment('A vai B — aizpilda pēc izlozes.', 'Claude')
 ws.cell(row=1, column=6).comment = Comment('Logo fails mājaslapā (assets/teams/). Aizpilda Claude, kad logo atsūtīts.', 'Claude')
+ws.cell(row=1, column=7).comment = Comment('Nav obligāti. Pilsēta vai novads komandas lapā.', 'Claude')
+ws.cell(row=1, column=8).comment = Comment('Nav obligāti. Īss apraksts komandas lapā (2–4 teikumi).', 'Claude')
+ws.cell(row=1, column=9).comment = Comment('Nav obligāti. Pilna saite, sākas ar https://. Tukša šūna — poga netiek rādīta.', 'Claude')
 dv_list(ws, '"A,B"', f'E2:E{1 + TEAM_ROWS}')
 
 # ---------------------------------------------------------------- Zāles

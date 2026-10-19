@@ -17,9 +17,9 @@
  *         are carried over; each team plays the 4 qualifiers of the other group.
  *  - 8.7  Hope Cup: A5–B6, B5–A6, single games, then final.
  *  - 8.8  Semifinals K1–K4, K2–K3, best of three. 8.9 Gold and bronze finals.
- *  - 9.x  Challenge Cup: A1, A2, B1, B2 straight to quarterfinals; R16, QF and
- *         SF decided on two-game aggregate (overtime in leg 2 if level);
- *         single-game final.
+ *  - 9.x  Challenge Cup: A1, A2, B1, B2 straight to quarterfinals; R16 and QF
+ *         decided on two-game aggregate (overtime in leg 2 if level);
+ *         single-game semifinals and final.
  */
 (function (root) {
   'use strict';
