@@ -1489,12 +1489,13 @@
     if (!about && SHOW_DEMO) about = '<p class="sp-desc sp-ph">Šeit būs komandas apraksts, pilsēta un saites no tabulas „Komandas”, ja tās būs aizpildītas.</p>';
     if (about) html += '<div class="tm-about">' + about + '</div>';
 
-    var next = calGames().filter(function (g) { return !g.final && g.date >= ctx.today && (g.ht === id || g.at === id); }).sort(byWhen).slice(0, 3);
-    var nextHtml = '<section class="tm-sec" aria-labelledby="tm-next"><h2 class="g-title" id="tm-next">Nākamās spēles <small>abos kausos</small></h2>' +
+    // Next 3 games in the selected cup.
+    var next = calGames().filter(function (g) { return g.comp === cup && !g.final && g.date >= ctx.today && (g.ht === id || g.at === id); }).sort(byWhen).slice(0, 3);
+    var nextHtml = '<section class="tm-sec" aria-labelledby="tm-next"><h2 class="g-title" id="tm-next">Nākamās spēles</h2>' +
       (next.length ? '<ul class="tm-list">' + next.map(function (g) {
         var home = g.ht === id, oppRef = home ? g.away : g.home, oppId = home ? g.at : g.ht;
-        return teamRow({ g: g, opp: oppId, oppLabel: oppId ? '' : refLabel(g.comp, oppRef, ctx.resolve(g.comp, oppRef)) }, { next: true, mark: true });
-      }).join('') + '</ul>' : '<div class="empty"><strong>Nākamās spēles vēl nav ieplānotas.</strong></div>') + '</section>';
+        return teamRow({ g: g, opp: oppId, oppLabel: oppId ? '' : refLabel(g.comp, oppRef, ctx.resolve(g.comp, oppRef)) }, { next: true });
+      }).join('') + '</ul>' : '<div class="empty"><strong>' + (cup === 'jssc' ? 'Izaicinājuma kausā' : 'Čempionu kausā') + ' komandai nākamās spēles vēl nav ieplānotas.</strong></div>') + '</section>';
 
     if (!s.list.length) {
       html += '<div class="empty"><strong>' + (cup === 'jssc' ? 'Izaicinājuma kausā' : 'Čempionu kausā') + ' komanda vēl nav aizvadījusi nevienu spēli.</strong>Statistika parādīsies pēc pirmās spēles.</div>' + nextHtml;

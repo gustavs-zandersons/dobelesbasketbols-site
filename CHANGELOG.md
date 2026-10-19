@@ -12,7 +12,7 @@
   cards with the top three per category (per game, at least half of the
   team's games), roster (name, games, points, rebounds, assists, FG %, 2P %,
   3P %, steals, blocks, efficiency per game; no shirt numbers), next three
-  games in both cups, all results. Forfeits count in the record only.
+  games in the selected cup, all results. Forfeits count in the record only.
 - **Win / loss chips everywhere:** green "U", red "Z" (team pages, calendar
   with a team filter).
 - **Team averages table:** columns "Komanda", "Kausa vidējais", "Vieta kausā"
