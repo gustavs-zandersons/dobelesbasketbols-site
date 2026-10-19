@@ -820,7 +820,7 @@
     var res = '';
     if (g.final) {
       var my = home ? g.hs : g.as, their = home ? g.as : g.hs;
-      res = (my > their ? 'U' : 'Z') + ' ' + my + ':' + their;
+      res = my + ':' + their;
     }
     return { opp: opp, res: res, won: g.final && ((home ? g.hs : g.as) > (home ? g.as : g.hs)) };
   }
@@ -882,7 +882,7 @@
         var tv = teamView(dg[0], c.team);
         cls += ' tv';
         info = '<span class="cal-opp">' + (tv.opp ? '<span class="cal-vs">VS</span>' + badge(tv.opp, 'sm') : '<span class="cal-oppn">Pretinieks vēl nav zināms</span>') + '</span>' +
-          (tv.res ? '<span class="cal-res' + (tv.won ? ' w' : '') + '">' + esc(tv.res) + '</span>' : '');
+          (tv.res ? '<span class="cal-res">' + wl(tv.won) + esc(tv.res) + '</span>' : '');
       } else {
         info = '<span class="cal-count">' + games(dg.length) + '</span>';
       }
@@ -914,7 +914,7 @@
           var right;
           if (c.team && dg.length === 1) {
             var tv = teamView(dg[0], c.team);
-            right = (tv.opp ? badge(tv.opp, 'sm') + '<span>' + esc(team(tv.opp).short) + '</span>' : '<span>Pretinieks vēl nav zināms</span>') + (tv.res ? '<b class="' + (tv.won ? 'w' : '') + '">' + esc(tv.res) + '</b>' : '<b>' + esc(dg[0].time) + '</b>');
+            right = (tv.opp ? badge(tv.opp, 'sm') + '<span>' + esc(team(tv.opp).short) + '</span>' : '<span>Pretinieks vēl nav zināms</span>') + (tv.res ? '<b class="cal-wl">' + wl(tv.won) + esc(tv.res) + '</b>' : '<b>' + esc(dg[0].time) + '</b>');
           } else {
             right = '<span>' + games(dg.length) + '</span><b>' + (played ? 'Rezultāti' : esc(dg.map(function (g) { return g.time; }).sort()[0])) + '</b>';
           }
@@ -1342,30 +1342,42 @@
     statsMemo[key] = T;
     return T;
   }
+  // Win / loss chip, the same everywhere on the site: green U, red Z.
+  function wl(won, title) {
+    return '<i class="wl ' + (won ? 'w' : 'l') + '"' + (title ? ' title="' + esc(title) + '"' : '') + '>' + (won ? 'U' : 'Z') + '</i>';
+  }
   function formHtml(list, n) {
     var last = list.slice(-(n || 5));
     if (!last.length) return '';
     return '<span class="form" aria-label="Pēdējās spēles: ' + esc(last.map(function (x) { return x.won ? 'uzvara' : 'zaudējums'; }).join(', ')) + '">' +
-      last.map(function (x) {
-        return '<i class="' + (x.won ? 'w' : 'l') + '" title="' + esc(dateShort(x.g.date) + ' pret ' + team(x.opp).short + ' ' + x.my + ':' + x.their) + '">' + (x.won ? 'U' : 'Z') + '</i>';
-      }).join('') + '</span>';
+      last.map(function (x) { return wl(x.won, dateShort(x.g.date) + ' pret ' + team(x.opp).short + ' ' + x.my + ':' + x.their); }).join('') + '</span>';
   }
-  // Team performance tiles: per-game values and percentages, with the rank in this cup.
+  // Team averages, grouped. m/a = made/attempted (percentages); low = lower is better.
   var PERF = [
-    { k: 'Gūtie punkti', v: function (t) { return t.pf / t.sg; } },
-    { k: 'Ielaistie punkti', v: function (t) { return t.pa / t.sg; }, low: true },
-    { k: 'Metieni no spēles', m: function (t) { return t.tot[4] + t.tot[6]; }, a: function (t) { return t.tot[5] + t.tot[7]; } },
-    { k: 'Divpunktu metieni', m: function (t) { return t.tot[4]; }, a: function (t) { return t.tot[5]; } },
-    { k: 'Trīspunktu metieni', m: function (t) { return t.tot[6]; }, a: function (t) { return t.tot[7]; } },
-    { k: 'Soda metieni', m: function (t) { return t.tot[8]; }, a: function (t) { return t.tot[9]; } },
-    { k: 'Atlēkušās bumbas', v: function (t) { return (t.tot[10] + t.tot[11]) / t.sg; } },
-    { k: 'Rezultatīvas piespēles', v: function (t) { return t.tot[12] / t.sg; } },
-    { k: 'Pārķertās bumbas', v: function (t) { return t.tot[13] / t.sg; } },
-    { k: 'Bloķētie metieni', v: function (t) { return t.tot[14] / t.sg; } },
-    { k: 'Kļūdas', v: function (t) { return t.tot[15] / t.sg; }, low: true },
-    { k: 'Efektivitāte', v: function (t) { return t.tot[17] / t.sg; } }
+    { group: 'Punkti', rows: [
+      { k: 'Gūtie punkti', v: function (t) { return t.pf / t.sg; }, cup: function (L) { return L.pf / L.sg; } },
+      { k: 'Ielaistie punkti', v: function (t) { return t.pa / t.sg; }, cup: function (L) { return L.pa / L.sg; }, low: true }
+    ] },
+    { group: 'Metieni', rows: [
+      { k: 'Metieni no spēles', m: function (t) { return t.tot[4] + t.tot[6]; }, a: function (t) { return t.tot[5] + t.tot[7]; } },
+      { k: 'Divpunktu metieni', m: function (t) { return t.tot[4]; }, a: function (t) { return t.tot[5]; } },
+      { k: 'Trīspunktu metieni', m: function (t) { return t.tot[6]; }, a: function (t) { return t.tot[7]; } },
+      { k: 'Soda metieni', m: function (t) { return t.tot[8]; }, a: function (t) { return t.tot[9]; } }
+    ] },
+    { group: 'Pārējais', rows: [
+      { k: 'Atlēkušās bumbas', i: [10, 11] },
+      { k: 'Rezultatīvas piespēles', i: [12] },
+      { k: 'Pārķertās bumbas', i: [13] },
+      { k: 'Bloķētie metieni', i: [14] },
+      { k: 'Kļūdas', i: [15], low: true },
+      { k: 'Efektivitāte', i: [17] }
+    ] }
   ];
-  function perfValue(c, t) { return c.m ? (c.a(t) ? c.m(t) / c.a(t) : 0) : c.v(t); }
+  function perfValue(c, t) {
+    if (c.m) return c.a(t) ? c.m(t) / c.a(t) : 0;
+    if (c.i) return c.i.reduce(function (s, i) { return s + t.tot[i]; }, 0) / t.sg;
+    return c.v(t);
+  }
   var LEADS = [
     { k: 'Punkti', i: [3] },
     { k: 'Atlēkušās bumbas', i: [10, 11] },
@@ -1374,10 +1386,6 @@
     { k: 'Bloķētie metieni', i: [14] }
   ];
   function psum(p, idx) { return idx.reduce(function (a, i) { return a + p.sum[i]; }, 0); }
-  function personName(n) {
-    var sp = n.indexOf(' ');
-    return sp > 0 ? '<span class="fn">' + esc(n.slice(0, sp)) + '</span> <span class="ln">' + esc(n.slice(sp + 1)) + '</span>' : esc(n);
-  }
 
   function cupSwitch(id) {
     return '<div class="seg tm-seg" role="group" aria-label="Kauss">' + ['dbck', 'jssc'].map(function (c) {
@@ -1386,24 +1394,14 @@
     }).join('') + '</div>';
   }
 
+  // Team list: logo tiles (like the sponsors page), alphabetical, no groups.
   function renderTeams() {
-    var cup = state.cup, S = cupStats(cup);
-    var html = '<div class="page-head tm-top"><div><p class="eyebrow">Sezona 2026/27 · ' + esc(CUPS[cup].short) + '</p><h1 class="page-title">Komandas</h1>' +
-      '<p class="page-sub">Visas sezonas komandas. Izvēlies komandu, lai redzētu tās statistiku, sastāvu un nākamās spēles.</p></div>' + cupSwitch('') + '</div>';
     var all = ctx.teams().slice().sort(function (a, b) { return a.short.localeCompare(b.short, 'lv'); });
-    var grouped = all.every(function (t) { return t.group; });
-    var groups = grouped ? ['A', 'B'].map(function (g) { return { title: g + ' grupa', list: all.filter(function (t) { return t.group === g; }) }; }) : [{ title: '', list: all }];
-    groups.forEach(function (gr) {
-      html += '<section class="tm-sec">' + (gr.title ? '<h2 class="g-title">' + esc(gr.title) + '</h2>' : '') + '<div class="tm-grid">' +
-        gr.list.map(function (t) {
-          var s = S[t.id];
-          var rec = s.w + s.l ? '<span class="tm-card-rec"><b>' + s.w + '</b> U · <b>' + s.l + '</b> Z</span>' + formHtml(s.list) : '<span class="tm-card-rec">Šajā kausā vēl nav spēlējuši</span>';
-          return '<a class="tm-card" href="' + teamHref(t.id) + '">' + badge(t.id, 'xl') +
-            '<span class="tm-card-txt"><span class="tm-card-name">' + esc(t.name) + '</span><span class="tm-card-meta">' + rec + '</span></span>' +
-            '<svg class="tm-card-go" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></a>';
-        }).join('') + '</div></section>';
-    });
-    $('teams-view').innerHTML = html;
+    $('teams-view').innerHTML = '<div class="page-head"><p class="eyebrow">Sezona 2026/27</p><h1 class="page-title">Komandas</h1>' +
+      '<p class="page-sub">Visas sezonas komandas. Izvēlies komandu, lai redzētu tās statistiku, sastāvu un spēles.</p></div>' +
+      '<div class="tm-tiles">' + all.map(function (t) {
+        return '<a class="tm-tile" href="' + teamHref(t.id) + '"><span class="tm-tile-logo">' + badge(t.id, 'xl') + '</span><span class="tm-tile-name">' + esc(t.name) + '</span></a>';
+      }).join('') + '</div>';
   }
 
   function teamRow(x, o) {
@@ -1413,7 +1411,7 @@
     var opp = x.opp ? badge(x.opp, 'sm') + nameHtml(x.opp) : badge(null, 'sm') + '<span class="nm is-tbd">' + esc(x.oppLabel || 'Pretinieks vēl nav zināms') + '</span>';
     var right = o.next
       ? '<span class="tm-row-r"><b>' + esc(g.time) + '</b><small>' + esc((ctx.venue(g.venue) || {}).name || '') + '</small></span>'
-      : '<span class="tm-row-r"><b class="tm-res ' + (x.won ? 'w' : 'l') + '">' + (x.won ? 'U' : 'Z') + ' ' + x.my + ':' + x.their + '</b>' + (g.forfeit ? '<small>Tehniskais rezultāts</small>' : '') + '</span>';
+      : '<span class="tm-row-r"><b class="tm-res">' + wl(x.won) + x.my + ':' + x.their + '</b>' + (g.forfeit ? '<small>Tehniskais rezultāts</small>' : '') + '</span>';
     var inner = '<span class="tm-row-d"><b>' + d.getDate() + '</b><span>' + MONTH_NOM[d.getMonth()].slice(0, 3) + '</span></span>' +
       '<span class="tm-row-m"><span class="tm-row-k">' + (o.mark ? '<img class="cal-cup" src="' + MARK[g.comp] + '" alt="">' : '') + esc(stage) + '</span><span class="tm-row-o">pret ' + opp + '</span></span>' + right;
     return o.next ? '<li class="tm-row">' + inner + '</li>' : '<li><a class="tm-row" href="' + gameHref(g.id) + '">' + inner + '</a></li>';
@@ -1421,20 +1419,10 @@
 
   function renderTeam(id) {
     var t = team(id), cup = state.cup, S = cupStats(cup), s = S[id];
-    var html = '<a class="back" href="#' + CUPS[cup].hash + '-komandas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Visas komandas</a>';
-    var meta = [t.group ? t.group + ' grupa' : '', t.city || ''].filter(Boolean).join(' · ');
-    html += '<section class="tm-head">' + badge(id, 'xl') +
-      '<div class="tm-id"><p class="eyebrow">' + esc(meta || 'Sezona 2026/27') + '</p><h1 class="page-title tm-name">' + esc(t.name) + '</h1></div>' + cupSwitch(id) + '</section>';
+    // Top row: back link left, cup switch right.
+    var html = '<div class="tm-bar"><a class="back" href="#' + CUPS[cup].hash + '-komandas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Visas komandas</a>' + cupSwitch(id) + '</div>';
 
-    // Optional info from the sheet's "Komandas" tab (description, links).
-    var links = LINKS.filter(function (l) { return t[l.key]; }).map(function (l) {
-      return '<a class="sp-link" href="' + esc(t[l.key]) + '" target="_blank" rel="noopener">' + l.icon + esc(l.label) + '</a>';
-    }).join('');
-    var about = (t.description ? '<p class="sp-desc">' + esc(t.description) + '</p>' : '') + (links ? '<div class="sp-links">' + links + '</div>' : '');
-    if (!about && SHOW_DEMO) about = '<p class="sp-desc sp-ph">Šeit būs komandas apraksts, pilsēta un saites no tabulas „Komandas”, ja tās būs aizpildītas.</p>';
-    if (about) html += '<div class="tm-about">' + about + '</div>';
-
-    // Record in this cup + position where there is a table.
+    // Highlighted block (styled like the round MVP card): logo, name, record, last games, table position.
     var pos = '';
     if (cup === 'dbck') {
       var st = ctx.dbckStage();
@@ -1446,51 +1434,79 @@
         pos = kr ? kr.pos + '. vieta ' + KG_LOC : 'Cerību kauss';
       }
     }
-    html += '<div class="tm-rec">' +
-      '<div><b>' + (s.w + s.l) + '</b><span>Spēles</span></div><div><b>' + s.w + '</b><span>Uzvaras</span></div><div><b>' + s.l + '</b><span>Zaudējumi</span></div>' +
-      (s.list.length ? '<div class="tm-form"><span>Pēdējās spēles</span>' + formHtml(s.list) + '</div>' : '') +
-      (pos ? '<p class="tm-pos">' + esc(pos) + '</p>' : '') + '</div>';
+    var meta = [t.group ? t.group + ' grupa' : '', t.city || '', CUPS[cup].short].filter(Boolean).join(' · ');
+    html += '<section class="tm-hl" aria-label="' + esc(t.name) + '" data-mark="' + esc(t.short) + '">' +
+      '<span class="tm-hl-logo">' + badge(id, 'xl') + '</span>' +
+      '<div class="tm-hl-id"><p class="mvp-k">' + esc(meta) + '</p><h1 class="tm-hl-name">' + esc(t.name) + '</h1>' + (pos ? '<p class="tm-hl-pos">' + esc(pos) + '</p>' : '') + '</div>' +
+      '<div class="tm-hl-rec"><dl class="mvp-stats"><div><dd>' + (s.w + s.l) + '</dd><dt>Spēles</dt></div><div><dd>' + s.w + '</dd><dt>Uzvaras</dt></div><div><dd>' + s.l + '</dd><dt>Zaudējumi</dt></div></dl>' +
+      (s.list.length ? '<div class="tm-hl-form"><span>Pēdējās spēles</span>' + formHtml(s.list) + '</div>' : '') + '</div></section>';
 
-    // Next 3 games in both cups.
+    // Optional info from the sheet's "Komandas" tab (description, links).
+    var links = LINKS.filter(function (l) { return t[l.key]; }).map(function (l) {
+      return '<a class="sp-link" href="' + esc(t[l.key]) + '" target="_blank" rel="noopener">' + l.icon + esc(l.label) + '</a>';
+    }).join('');
+    var about = (t.description ? '<p class="sp-desc">' + esc(t.description) + '</p>' : '') + (links ? '<div class="sp-links">' + links + '</div>' : '');
+    if (!about && SHOW_DEMO) about = '<p class="sp-desc sp-ph">Šeit būs komandas apraksts, pilsēta un saites no tabulas „Komandas”, ja tās būs aizpildītas.</p>';
+    if (about) html += '<div class="tm-about">' + about + '</div>';
+
     var next = calGames().filter(function (g) { return !g.final && g.date >= ctx.today && (g.ht === id || g.at === id); }).sort(byWhen).slice(0, 3);
-    html += '<section class="tm-sec" aria-labelledby="tm-next"><h2 class="g-title" id="tm-next">Nākamās spēles <small>abos kausos</small></h2>' +
+    var nextHtml = '<section class="tm-sec" aria-labelledby="tm-next"><h2 class="g-title" id="tm-next">Nākamās spēles <small>abos kausos</small></h2>' +
       (next.length ? '<ul class="tm-list">' + next.map(function (g) {
         var home = g.ht === id, oppRef = home ? g.away : g.home, oppId = home ? g.at : g.ht;
         return teamRow({ g: g, opp: oppId, oppLabel: oppId ? '' : refLabel(g.comp, oppRef, ctx.resolve(g.comp, oppRef)) }, { next: true, mark: true });
       }).join('') + '</ul>' : '<div class="empty"><strong>Nākamās spēles vēl nav ieplānotas.</strong></div>') + '</section>';
 
     if (!s.list.length) {
-      html += '<div class="empty"><strong>' + (cup === 'jssc' ? 'Izaicinājuma kausā' : 'Čempionu kausā') + ' komanda vēl nav aizvadījusi nevienu spēli.</strong>Statistika parādīsies pēc pirmās spēles.</div>';
+      html += '<div class="empty"><strong>' + (cup === 'jssc' ? 'Izaicinājuma kausā' : 'Čempionu kausā') + ' komanda vēl nav aizvadījusi nevienu spēli.</strong>Statistika parādīsies pēc pirmās spēles.</div>' + nextHtml;
       $('teams-view').innerHTML = html;
       return;
     }
 
     if (s.sg) {
-      // Team performance with the rank among this cup's teams.
-      var others = Object.keys(S).map(function (k) { return S[k]; }).filter(function (x) { return x.sg; });
-      html += '<section class="tm-sec" aria-labelledby="tm-perf"><h2 class="g-title" id="tm-perf">Komandas sniegums <small>vidēji spēlē</small></h2><div class="tm-perf">' +
-        PERF.map(function (c) {
-          var v = perfValue(c, s);
-          var rank = 1 + others.filter(function (o) { var ov = perfValue(c, o); return c.low ? ov < v : ov > v; }).length;
-          var shown = c.m ? pct1(c.m(s), c.a(s)) : fmt1(v);
-          var sub = c.m ? fmt1(c.m(s) / s.sg) + '/' + fmt1(c.a(s) / s.sg) : '';
-          return '<div class="tm-stat"><p class="tm-stat-k">' + esc(c.k) + '</p><p class="tm-stat-v">' + shown + '</p>' +
-            '<p class="tm-stat-s">' + (sub ? '<span>' + sub + '</span>' : '<span></span>') + '<span class="tm-rank' + (rank <= 3 ? ' top' : '') + '">' + rank + '. no ' + others.length + '</span></p></div>';
-        }).join('') + '</div></section>';
+      // 1) Team averages as a table: value, cup average, rank, bar vs the best team.
+      var teamsIn = Object.keys(S).map(function (k) { return S[k]; }).filter(function (x) { return x.sg; });
+      var L = { sg: 0, pf: 0, pa: 0, tot: new Array(19).fill(0) };
+      teamsIn.forEach(function (x) { L.sg += x.sg; L.pf += x.pf; L.pa += x.pa; for (var i = 2; i < 19; i++) L.tot[i] += x.tot[i]; });
+      var avgRow = function (c) {
+        var v = perfValue(c, s), all = teamsIn.map(function (o) { return perfValue(c, o); });
+        var rank = 1 + all.filter(function (ov) { return c.low ? ov < v : ov > v; }).length;
+        var best = c.low ? Math.min.apply(null, all) : Math.max.apply(null, all);
+        var bar = best > 0 ? Math.max(4, Math.round(100 * (c.low ? best / v : v / best))) : 0;
+        var cupV = c.cup ? c.cup(L) : perfValue(c, L);
+        var show = function (x, tt) { return c.m ? pct1(c.m(tt), c.a(tt)) : fmt1(x); };
+        var sub = c.m ? '<small>' + fmt1(c.m(s) / s.sg) + '/' + fmt1(c.a(s) / s.sg) + ' spēlē</small>' : '';
+        return '<div class="tm-avg-row' + (rank <= 3 ? ' is-top' : '') + '"><span class="tm-avg-k">' + esc(c.k) + sub + '</span>' +
+          '<span class="tm-avg-v">' + show(v, s) + '</span><span class="tm-avg-c">' + show(cupV, L) + '</span>' +
+          '<span class="tm-avg-r"><span class="tm-rank">' + rank + '.</span></span>' +
+          '<span class="tm-avg-bar" aria-hidden="true"><i style="width:' + bar + '%"></i></span></div>';
+      };
+      var head = '<div class="tm-avg-head"><span>Rādītājs</span><span>Komanda</span><span>Kausā</span><span>Vieta</span></div>';
+      var col = function (groups) {
+        return '<div class="tm-avg-col">' + head + groups.map(function (gp) {
+          return '<p class="tm-avg-g">' + esc(gp.group) + '</p>' + gp.rows.map(avgRow).join('');
+        }).join('') + '</div>';
+      };
+      html += '<section class="tm-sec" aria-labelledby="tm-perf"><h2 class="g-title" id="tm-perf">Komandas sniegums <small>vidēji spēlē</small></h2>' +
+        '<div class="tm-avg">' + col(PERF.slice(0, 2)) + col(PERF.slice(2)) + '</div>' +
+        '<p class="note">Kausā — visu šī kausa komandu vidējais. Vieta — starp ' + teamsIn.length + ' komandām, kas kausā aizvadījušas spēles.</p></section>';
 
-      // Leaders: per-game average, at least half of the team's games.
+      // 2) Leaders: top 3 per category, per game, at least half of the team's games.
       var minGp = Math.ceil(s.sg / 2);
       var pool = Object.keys(s.players).map(function (k) { return s.players[k]; }).filter(function (p) { return p.gp >= minGp; });
-      html += '<section class="tm-sec" aria-labelledby="tm-ldr"><h2 class="g-title" id="tm-ldr">Līderi <small>vidēji spēlē · vismaz ' + games(minGp) + '</small></h2><div class="leaders tm-leaders">' +
+      html += '<section class="tm-sec" aria-labelledby="tm-ldr"><h2 class="g-title" id="tm-ldr">Līderi <small>vidēji spēlē · vismaz ' + games(minGp) + '</small></h2><div class="tm-ldrs">' +
         LEADS.map(function (l) {
-          var b = pool.slice().sort(function (x, y) { return psum(y, l.i) / y.gp - psum(x, l.i) / x.gp || psum(y, l.i) - psum(x, l.i); })[0];
-          if (!b) return '';
-          var pl = t.players[b.idx];
-          return '<div class="ldr"><p class="ldr-k">' + esc(l.k) + '</p><p class="ldr-who"><span class="ldr-no">' + esc(pl.no) + '</span><span class="nm">' + personName(pl.name) + '</span></p>' +
-            '<p class="ldr-v">' + fmt1(psum(b, l.i) / b.gp) + '</p></div>';
+          var top = pool.slice().sort(function (x, y) { return psum(y, l.i) / y.gp - psum(x, l.i) / x.gp || psum(y, l.i) - psum(x, l.i); }).slice(0, 3);
+          if (!top.length) return '';
+          var nm = function (p) { return t.players[p.idx].name; };
+          var val = function (p) { return fmt1(psum(p, l.i) / p.gp); };
+          return '<article class="tm-ldr"><p class="mvp-k">' + esc(l.k) + '</p>' +
+            '<div class="tm-ldr-1"><p class="tm-ldr-name">' + esc(nm(top[0])) + '</p><p class="tm-ldr-v">' + val(top[0]) + '</p></div>' +
+            (top.length > 1 ? '<ol class="tm-ldr-rest" start="2">' + top.slice(1).map(function (p, i) {
+              return '<li><span class="n">' + (i + 2) + '.</span><span class="nm">' + esc(nm(p)) + '</span><b>' + val(p) + '</b></li>';
+            }).join('') + '</ol>' : '') + '</article>';
         }).join('') + '</div></section>';
 
-      // Roster: per-game averages and shooting percentages.
+      // 3) Roster: per-game averages and shooting percentages (no shirt numbers — they can change).
       var roster = t.players.map(function (pl, i) { return { pl: pl, p: s.players[i] || null }; });
       roster.sort(function (x, y) { return (y.p ? y.p.sum[3] / y.p.gp : -1) - (x.p ? x.p.sum[3] / x.p.gp : -1); });
       var avg = function (p, i) { return fmt1(p.sum[i] / p.gp); };
@@ -1499,7 +1515,7 @@
         '<th scope="col" title="Rezultatīvas piespēles spēlē">RP</th><th scope="col" title="Metieni no spēles">Met%</th><th scope="col" title="Divpunktu metieni">2P%</th><th scope="col" title="Trīspunktu metieni">3P%</th>' +
         '<th scope="col" title="Pārķertās bumbas spēlē">PK</th><th scope="col" title="Bloķētie metieni spēlē">BL</th><th scope="col" title="Efektivitāte spēlē">EF</th></tr></thead><tbody>' +
         roster.map(function (r) {
-          var head = '<td class="pl"><span class="row"><span class="no">' + esc(r.pl.no) + '</span><span class="nm">' + esc(r.pl.name) + '</span></span></td>';
+          var head = '<td class="pl"><span class="row"><span class="nm">' + esc(r.pl.name) + '</span></span></td>';
           if (!r.p) return '<tr class="dnp">' + head + '<td>0</td><td colspan="9">Šajā kausā nav spēlējis</td></tr>';
           var p = r.p;
           return '<tr>' + head + '<td>' + p.gp + '</td><td class="pts">' + avg(p, 3) + '</td><td>' + fmt1((p.sum[10] + p.sum[11]) / p.gp) + '</td><td>' + avg(p, 12) + '</td>' +
@@ -1510,8 +1526,8 @@
         (s.sg < s.list.length ? ' Spēles ar tehnisko rezultātu statistikā netiek ieskaitītas.' : '') + '</p></section>';
     }
 
-    // All played games in this cup, newest first.
-    html += '<section class="tm-sec" aria-labelledby="tm-res"><h2 class="g-title" id="tm-res">Rezultāti</h2><ul class="tm-list">' +
+    // 4) Next games (both cups), 5) all results in this cup, newest first.
+    html += nextHtml + '<section class="tm-sec" aria-labelledby="tm-res"><h2 class="g-title" id="tm-res">Rezultāti</h2><ul class="tm-list">' +
       s.list.slice().reverse().map(function (x) { return teamRow(x, {}); }).join('') + '</ul></section>';
     $('teams-view').innerHTML = html;
   }

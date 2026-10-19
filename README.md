@@ -26,9 +26,10 @@ Live (once GitHub Pages is enabled): https://gustavs-zandersons.github.io/dobele
 | Team page (stats for that cup, switch to the other) | `#dobele-komanda-buki`, `#jelgava-komanda-buki` |
 
 Team pages are calculated from results and box scores per cup: record, last
-five games, next three games (both cups), team averages with the rank in the
-cup, leaders (per game, at least half of the team's games), roster averages and
-all results. Forfeits count in the record but not in the stats. Optional team
+five games, team averages with the cup average and rank, leaders (top three per
+category, per game, at least half of the team's games), roster averages
+(players matched by name — shirt numbers can change), next three games (both
+cups) and all results. Forfeits count in the record but not in the stats. Optional team
 fields from the sheet's "Komandas" tab (`city`, `description`, `website`,
 `facebook`, `instagram`, `tiktok` on each team) show only when filled.
 

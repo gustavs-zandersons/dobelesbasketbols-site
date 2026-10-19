@@ -2,14 +2,19 @@
 
 ## Round 5 — in progress (requested 19 Oct 2026)
 
-- **Komandas** (menu, both cups): all teams by group with record and last five
-  games. Each team has a page with a cup switch (Čempionu / Izaicinājuma kauss):
-  record, last five games, position in the current table, next three games in
-  both cups, team averages with the rank in the cup (points for/against, field
-  goal %, 2P %, 3P %, FT %, rebounds, assists, steals, blocks, turnovers,
-  efficiency), leaders per game (at least half of the team's games), roster
-  table (games, points, rebounds, assists, FG %, 2P %, 3P %, steals, blocks,
-  efficiency per game) and all results. Forfeits count in the record only.
+- **Komandas** (menu): all teams as logo tiles, alphabetical, no groups and
+  no cup switch. Each tile opens the team page.
+- **Team page:** back link and cup switch (Čempionu / Izaicinājuma kauss) on
+  top; a highlighted block styled like the round MVP card (logo, name, group,
+  table position, games / wins / losses, last five games) for the selected
+  cup; then, in order: team averages as a table (value, cup average, rank,
+  bar against the best team; points, shooting, other), leaders as MVP-style
+  cards with the top three per category (per game, at least half of the
+  team's games), roster (name, games, points, rebounds, assists, FG %, 2P %,
+  3P %, steals, blocks, efficiency per game; no shirt numbers), next three
+  games in both cups, all results. Forfeits count in the record only.
+- **Win / loss chips everywhere:** green "U", red "Z" (team pages, calendar
+  with a team filter).
 - **Links:** team names in the standings tables and on game pages open the
   team page.
 - **Season sheet:** optional team fields in "Komandas" (town, description,
