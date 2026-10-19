@@ -1,4 +1,9 @@
-"""Prepare web copies of sponsor logos and poster photos.
+"""Prepare web copies of team and sponsor logos and poster photos.
+
+    python3 tools/prepare_assets.py teams [<id> ...]
+        design/teams/<id>.png (or .jpg/.webp)  ->  assets/teams/<id>.webp
+        Trimmed to the logo, fitted into a 256 px square (same as logos that
+        come in through the sheet). No ids = every original in design/teams.
 
     python3 tools/prepare_assets.py sponsors
         design/sponsors/<id>.png  ->  assets/sponsors/<id>.webp  (sizes updated in src/sponsors.json)
@@ -11,7 +16,7 @@
         "next" = next-round posters (photo strip on top), "results" = results
         posters (full photo). The two pools are kept separate.
 
-Sponsor originals stay in design/sponsors (not published). The web copies are
+Logo originals stay in design/teams and design/sponsors (not published). The web copies are
 trimmed to the logo itself, so the site can size every logo to the same visual
 weight. Photos are resized to 2000 px on the long side; the originals are not kept.
 """
@@ -37,6 +42,18 @@ def trim(im, pad=0.02):
     x0, y0, x1, y1 = box
     p = round(max(x1 - x0, y1 - y0) * pad)
     return im.crop((max(0, x0 - p), max(0, y0 - p), min(im.width, x1 + p), min(im.height, y1 + p)))
+
+
+def teams(ids):
+    sys.path.insert(0, str(ROOT / 'tools'))
+    from sheet_sync import make_logo
+    src_dir = ROOT / 'design' / 'teams'
+    files = {f.stem: f for f in src_dir.iterdir() if f.suffix.lower() in ('.png', '.jpg', '.jpeg', '.webp')}
+    for tid in ids or sorted(files):
+        webp, w, h, transparent = make_logo(files[tid].read_bytes(), 'teams')
+        dest = ROOT / 'assets' / 'teams' / f'{tid}.webp'
+        dest.write_bytes(webp)
+        print(f'{tid:12s} {w}x{h}  {len(webp) // 1024} KB' + ('' if transparent else '  (no transparent background)'))
 
 
 def sponsors():
@@ -81,7 +98,9 @@ def photos(files, focus, use):
 
 if __name__ == '__main__':
     args = sys.argv[1:]
-    if args[:1] == ['sponsors']:
+    if args[:1] == ['teams']:
+        teams(args[1:])
+    elif args[:1] == ['sponsors']:
         sponsors()
     elif args[:1] == ['photos']:
         focus, use = 0.4, None

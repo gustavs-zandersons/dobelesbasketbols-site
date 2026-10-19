@@ -21,7 +21,7 @@ from openpyxl.utils import get_column_letter
 OUT = sys.argv[1] if len(sys.argv) > 1 else 'Dobeles_basketbols_2026-27.xlsx'
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / 'tools'))
-from sheet_sync import SETTINGS, dig  # noqa: E402  (same parameter names as the importer)
+from sheet_sync import SETTINGS, dig, site_logo_link  # noqa: E402  (same names as the importer)
 
 SHEET = json.loads((ROOT / 'src' / 'sheet.json').read_text())
 KG = 'Playoff kvalifikācijas grupa'
@@ -102,8 +102,9 @@ rows = [
     ('kv', ('1. Mape', 'Google Drive izveido mapi (piem., „Logo”) un ielādē tur logo: PNG ar caurspīdīgu fonu. Der arī JPG vai WebP, SVG neder.')),
     ('kv', ('2. Piekļuve', 'Mapei: Kopīgot → Vispārējā piekļuve → „Ikviens, kam ir saite” → Skatītājs (Share → General access → Anyone with the link → Viewer).')),
     ('kv', ('3. Saite', 'Katram failam: Kopīgot → Kopēt saiti (Share → Copy link). Ielīmē to kolonnā „Logo (saite)” pie komandas vai sponsora.')),
+    ('kv', ('Jau aizpildīts', 'Ja logo jau ir mājaslapā, kolonnā „Logo (saite)” ir tā adrese mājaslapā (…/assets/…webp). To neko nemaina — logo paliek.')),
     ('kv', ('Tukša šūna', 'Paliek logo, kas mājaslapā jau ir. Ja komandai logo nav, rāda iniciāļus.')),
-    ('kv', ('Nomainīt logo', 'Ielīmē jaunu saiti (vai Drive aizstāj failu ar jaunu versiju) un atjauno mājaslapu.')),
+    ('kv', ('Nomainīt logo', 'Adreses vietā ielīmē Google Drive saiti uz jauno failu un atjauno mājaslapu.')),
     ('gap', ''),
     ('h', 'Kā dati apvienosies sezonas laikā'),
     ('kv', ('basket.lv', 'Galvenais avots. Ja spēle ir basket.lv, mājaslapa ņem no turienes datumu, laiku, zāli, komandas, rezultātu un statistiku.')),
@@ -141,7 +142,7 @@ rows = [
     ('ex', ('MVP', 'DBČK · 25.10.2026 · Mārtiņš Ozols · skandijs')),
     ('ex', ('Lēmumi', 'DBCK-GR-07 · Neieradās viesi · — · 09.11.2026 · Sacensību komiteja · Komanda neieradās')),
     ('ex', ('Lēmumi (izloze)', 'DBCK-GR-30 · Izloze · buki, doks · 15.12.2026 · Sacensību komiteja · A grupas 3.–4. vieta')),
-    ('ex', ('Sponsori', 'tervete · Tērvetes alus darītava · Atbalstītājs · 4 · Īss apraksts … · https://www.tervete.lv · https://www.facebook.com/… · · · (logo saite — tikai jaunam vai mainītam logo)')),
+    ('ex', ('Sponsori', 'tervete · Alus darītava „Tērvete” · Atbalstītājs · 4 · Īss apraksts … · https://www.tervete.lv · https://www.facebook.com/… · · · https://…/assets/sponsors/tervete.webp')),
     ('gap', ''),
     ('h', 'Noteikumi, lai mājaslapa varētu nolasīt datus'),
     ('kv', ('1', 'Nemainīt lapu un kolonnu nosaukumus un to secību. Lapā „Iestatījumi” nemainīt kolonnu „Parametrs”.')),
@@ -226,11 +227,12 @@ header(ws, ['ID', 'Pilnais nosaukums', 'Īsais nosaukums', 'basket.lv nosaukums'
        [14, 34, 18, 30, 9, 34, 16, 50, 28, 28, 28, 28, 30, 44])
 TEAM_ROWS = 20   # room for changes
 for i, t in enumerate(SHEET['teams'], start=2):
-    vals = [t['id'], t['name'], t['short'], '; '.join(t.get('basket', [])) or None, t.get('group') or None, None,
-            t.get('city'), t.get('description'), t.get('website'), t.get('facebook'), t.get('instagram'), t.get('tiktok')]
+    has_logo = (ROOT / 'assets' / 'teams' / f'{t["id"]}.webp').exists()
+    vals = [t['id'], t['name'], t['short'], '; '.join(t.get('basket', [])) or None, t.get('group') or None,
+            site_logo_link('teams', t['id']) if has_logo else None, t.get('city'), t.get('description'), t.get('website'), t.get('facebook'), t.get('instagram'), t.get('tiktok')]
     for j, v in enumerate(vals, start=1):
         ws.cell(row=i, column=j, value=v)
-    if not (ROOT / 'assets' / 'teams' / f'{t["id"]}.webp').exists():
+    if not has_logo:
         ws.cell(row=i, column=13, value='Logo vēl nav — ieliec saiti kolonnā „Logo (saite)”.')
 style_rows(ws, 2, 1 + TEAM_ROWS, 14, ['in'] * 13 + ['calc'])
 for r in range(2, 2 + TEAM_ROWS):
@@ -255,7 +257,7 @@ ws.cell(row=1, column=1).comment = Comment('Īss ID: mazie latīņu burti bez ga
 ws.cell(row=1, column=3).comment = Comment('Rāda tabulās, kalendārā un plakātos. Līdz 12 zīmēm.', 'Claude')
 ws.cell(row=1, column=4).comment = Comment('Tieši tā, kā komanda rakstīta basket.lv. Ja nosaukumi ir vairāki, atdali ar semikolu (;).', 'Claude')
 ws.cell(row=1, column=5).comment = Comment('A vai B — aizpilda pēc izlozes. Kamēr nav 6 + 6, demo spēlēs grupas ir simulētas.', 'Claude')
-ws.cell(row=1, column=6).comment = Comment('Saite uz logo failu Google Drive (Kopīgot → Kopēt saiti; piekļuve „Ikviens, kam ir saite”). PNG ar caurspīdīgu fonu. Tukša šūna — paliek esošais logo.', 'Claude')
+ws.cell(row=1, column=6).comment = Comment('Saite uz logo. Ja logo jau ir mājaslapā, šeit ir tā adrese mājaslapā — neko nemainīt. Jaunam vai citam logo: Google Drive faila saite (Kopīgot → Kopēt saiti; piekļuve „Ikviens, kam ir saite”), PNG ar caurspīdīgu fonu.', 'Claude')
 ws.cell(row=1, column=7).comment = Comment('Nav obligāti. Pilsēta vai novads komandas lapā.', 'Claude')
 ws.cell(row=1, column=8).comment = Comment('Nav obligāti. Īss apraksts komandas lapā (2–4 teikumi).', 'Claude')
 ws.cell(row=1, column=9).comment = Comment('Nav obligāti. Pilna saite, sākas ar https://. Tukša šūna — poga netiek rādīta.', 'Claude')
@@ -389,7 +391,8 @@ header(ws, ['ID', 'Nosaukums', 'Līmenis', 'Secība', 'Apraksts', 'Mājaslapa', 
 SP_ROWS = 30
 for i, row in enumerate(SHEET['sponsors'], start=2):
     vals = [row['id'], row['name'], row['level'], row['order'], row['description'] or None,
-            row['website'] or None, row['facebook'] or None, row['instagram'] or None, row['tiktok'] or None, None]
+            row['website'] or None, row['facebook'] or None, row['instagram'] or None, row['tiktok'] or None,
+            site_logo_link('sponsors', row['id']) if (ROOT / 'assets' / 'sponsors' / f'{row["id"]}.webp').exists() else None]
     for j, v in enumerate(vals, start=1):
         ws.cell(row=i, column=j, value=v)
 style_rows(ws, 2, 1 + SP_ROWS, 11, ['auto', 'in', 'in', 'in', 'in', 'in', 'in', 'in', 'in', 'in', 'calc'])
@@ -420,7 +423,7 @@ ws.cell(row=1, column=1).comment = Comment('Saista rindu ar logo mājaslapā —
 ws.cell(row=1, column=4).comment = Comment('Secība lapā līmeņa ietvaros: 1 = pirmais. Tāda pati secība kājenē.', 'Claude')
 ws.cell(row=1, column=5).comment = Comment('Īss apraksts uznirstošajā logā (2–4 teikumi).', 'Claude')
 ws.cell(row=1, column=6).comment = Comment('Pilna saite, sākas ar https://. Tukša šūna — poga netiek rādīta.', 'Claude')
-ws.cell(row=1, column=10).comment = Comment('Tikai jaunam vai mainītam logo: saite uz failu Google Drive (Kopīgot → Kopēt saiti; piekļuve „Ikviens, kam ir saite”). Tukša šūna — paliek esošais logo.', 'Claude')
+ws.cell(row=1, column=10).comment = Comment('Saite uz logo. Ja logo jau ir mājaslapā, šeit ir tā adrese mājaslapā — neko nemainīt. Jaunam vai citam logo: Google Drive faila saite (Kopīgot → Kopēt saiti; piekļuve „Ikviens, kam ir saite”).', 'Claude')
 ws.cell(row=1, column=11).comment = Comment('Aprēķinās automātiski. Ja šeit parādās teksts, rindā ir kļūda.', 'Claude')
 
 # ---------------------------------------------------------------- Pārbaude

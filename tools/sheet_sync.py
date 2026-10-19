@@ -49,6 +49,10 @@ TEAM_COUNT = 12          # the demo season needs exactly 12 teams (6 + 6)
 SHORT_MAX = 12           # longer short names get cramped in tables and posters
 MAX_DOWNLOAD = 10 * 1024 * 1024
 TEAM_BOX, TEAM_CANVAS = 240, 256      # team logos: square canvas, logo fitted inside
+# The site's own address. In the sheet, a logo link to the site itself
+# (…/assets/teams/<id>.webp) means "the logo the site already has".
+SITE_URL = 'https://gustavs-zandersons.github.io/dobelesbasketbols-site/'
+SITE_HOSTS = ('gustavs-zandersons.github.io',)   # add the own domain once the site moves
 SPONSOR_BOX = (400, 200)              # sponsor logos: same as tools/prepare_assets.py
 
 # Iestatījumi: parameter (column A) -> key in sheet.json settings, required?, kind
@@ -391,6 +395,19 @@ def make_logo(raw, kind):
     return buf.getvalue(), im.width, im.height, transparent
 
 
+def own_logo(link, kind, item_id):
+    """A link to a logo on the site itself: 'same' (this row's own logo),
+    'other' (another team's or sponsor's), None (not a site link)."""
+    m = re.match(r'^https?://([^/]+)/(?:[^?#]*/)?assets/(teams|sponsors)/([a-z0-9-]+)\.webp(?:[?#].*)?$', link)
+    if not m or m.group(1) not in SITE_HOSTS:
+        return None
+    return 'same' if (m.group(2), m.group(3)) == (kind, item_id) else 'other'
+
+
+def site_logo_link(kind, item_id):
+    return f'{SITE_URL}assets/{kind}/{item_id}.webp'
+
+
 def get_logos(kind, rows, sources, rep, tab):
     """Download the logos linked in the sheet. Returns {id: (webp bytes, w, h)} for
     new or changed logos, and the updated sources map."""
@@ -400,6 +417,14 @@ def get_logos(kind, rows, sources, rep, tab):
             continue
         key = f'{kind}/{item["id"]}'
         dest = ROOT / 'assets' / kind / f'{item["id"]}.webp'
+        own = own_logo(link, kind, item['id'])
+        if own == 'other':
+            rep.err(tab, r, f'{item["id"]}: logo saite norāda uz cita logo mājaslapā. Atstāj šīs rindas saiti vai ielīmē jaunu Google Drive saiti.')
+            continue
+        if own == 'same':
+            if not dest.exists():
+                (rep.warn if kind == 'teams' else rep.err)(tab, r, f'{item["id"]}: mājaslapā šī logo nav. Ielīmē Google Drive saiti.')
+            continue                          # the logo the site already has
         try:
             body, _ = fetch(drive_download_url(link), 'Logo')
             sha = hashlib.sha256(body).hexdigest()
@@ -475,10 +500,10 @@ def sync(wb, write=True):
     sp_logos, sources = get_logos('sponsors', sponsors, sources, rep, 'Sponsori')
 
     for r, t, link in teams:
-        if not link and t['id'] not in team_logos and not (ROOT / 'assets' / 'teams' / f'{t["id"]}.webp').exists():
+        if (not link or own_logo(link, 'teams', t['id'])) and t['id'] not in team_logos and not (ROOT / 'assets' / 'teams' / f'{t["id"]}.webp').exists():
             rep.warn('Komandas', r, f'{t["id"]}: nav logo — rādīs iniciāļus. Ieliec saiti kolonnā „Logo (saite)”.')
     for r, s, link in sponsors:
-        if not link and s['id'] not in sp_logos and not (ROOT / 'assets' / 'sponsors' / f'{s["id"]}.webp').exists():
+        if (not link or own_logo(link, 'sponsors', s['id'])) and s['id'] not in sp_logos and not (ROOT / 'assets' / 'sponsors' / f'{s["id"]}.webp').exists():
             rep.err('Sponsori', r, f'{s["id"]}: nav logo. Ieliec saiti kolonnā „Logo (saite)”.')
 
     data = {'settings': settings,

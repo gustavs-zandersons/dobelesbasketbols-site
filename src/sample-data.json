@@ -308,6 +308,7 @@
    "short": "Lietus",
    "group": "A",
    "color": "#7A2E5A",
+   "logo": "assets/teams/lietus.webp",
    "players": [
     {
      "no": "41",
@@ -507,6 +508,7 @@
    "short": "BJSS U19",
    "group": "A",
    "color": "#3E7A4F",
+   "logo": "assets/teams/bjss-u19.webp",
    "players": [
     {
      "no": "41",
@@ -556,6 +558,7 @@
    "short": "BJSS U17",
    "group": "B",
    "color": "#6A4C93",
+   "logo": "assets/teams/bjss-u17.webp",
    "players": [
     {
      "no": "8",
