@@ -1,6 +1,6 @@
 # Changelog
 
-## Round 5 — in progress (requested 19 Oct 2026)
+## Round 5 — released 19 Oct 2026 (PR #6)
 
 - **Komandas** (menu): all teams as logo tiles, alphabetical, no groups and
   no cup switch. Each tile opens the team page.
