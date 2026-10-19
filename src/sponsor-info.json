@@ -1,0 +1,145 @@
+[
+ {
+  "id": "dobeles-novads",
+  "name": "Dobeles novada pašvaldība",
+  "level": "Ģenerālsponsors",
+  "order": 1,
+  "description": "",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "tiktok": ""
+ },
+ {
+  "id": "jelgava",
+  "name": "Jelgava",
+  "level": "Ģenerālsponsors",
+  "order": 2,
+  "description": "",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "tiktok": ""
+ },
+ {
+  "id": "jssc",
+  "name": "Jelgavas Sporta servisa centrs",
+  "level": "Ģenerālsponsors",
+  "order": 3,
+  "description": "",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "tiktok": ""
+ },
+ {
+  "id": "tervete",
+  "name": "Tērvetes alus darītava",
+  "level": "Atbalstītājs",
+  "order": 4,
+  "description": "",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "tiktok": ""
+ },
+ {
+  "id": "jaunpils",
+  "name": "Jaunpils pienotava",
+  "level": "Atbalstītājs",
+  "order": 5,
+  "description": "",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "tiktok": ""
+ },
+ {
+  "id": "dobeles-dzirnavnieks",
+  "name": "Dobeles dzirnavnieks",
+  "level": "Atbalstītājs",
+  "order": 6,
+  "description": "",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "tiktok": ""
+ },
+ {
+  "id": "nakotne",
+  "name": "Nākotne",
+  "level": "Atbalstītājs",
+  "order": 7,
+  "description": "",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "tiktok": ""
+ },
+ {
+  "id": "nordcrunch",
+  "name": "Nordcrunch",
+  "level": "Atbalstītājs",
+  "order": 8,
+  "description": "",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "tiktok": ""
+ },
+ {
+  "id": "ozols-pub",
+  "name": "Ozols Pub",
+  "level": "Atbalstītājs",
+  "order": 9,
+  "description": "",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "tiktok": ""
+ },
+ {
+  "id": "garage-barber",
+  "name": "Garage Barber",
+  "level": "Atbalstītājs",
+  "order": 10,
+  "description": "",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "tiktok": ""
+ },
+ {
+  "id": "sporta-bode",
+  "name": "Sporta bode",
+  "level": "Atbalstītājs",
+  "order": 11,
+  "description": "",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "tiktok": ""
+ },
+ {
+  "id": "balevich-media",
+  "name": "Balevich Media",
+  "level": "Atbalstītājs",
+  "order": 12,
+  "description": "",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "tiktok": ""
+ },
+ {
+  "id": "kebabmix",
+  "name": "Kebabmix",
+  "level": "Atbalstītājs",
+  "order": 13,
+  "description": "",
+  "website": "",
+  "facebook": "",
+  "instagram": "",
+  "tiktok": ""
+ }
+]

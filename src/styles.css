@@ -10,6 +10,7 @@
   --bg-head: #112C5B;
   --surface: #1A417F;
   --surface-hi: #24539F;
+  --ticket: #2D62B6;       /* inside of the next-round card: lighter than the page */
   --line: rgba(255, 255, 255, 0.14);
   --line-strong: rgba(255, 255, 255, 0.34);
   --fg: #FFFFFF;
@@ -44,6 +45,7 @@
   --bg-head: #5E1224;
   --surface: #861C35;
   --surface-hi: #AA2C4A;
+  --ticket: #B5304F;
   --fg-muted: #F2CDD6;
   --fg-dim: #D697A6;
   --title: #FFFFFF;
@@ -206,6 +208,55 @@ h1, h2, h3, p { margin: 0; }
   letter-spacing: 0.01em;
   color: var(--title);
   text-wrap: balance;
+}
+/* Season progress under the title: thin track, fill = time passed,
+   ticks where stages start, trophy at the final. */
+.season {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 4px;
+  margin-top: 6px;
+  max-width: 560px;
+}
+.season:empty { display: none; }
+.season-track { position: relative; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.16); }
+.season-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: var(--title); }
+.season-tick {
+  position: absolute; top: 50%;
+  width: 2px; height: 12px;
+  transform: translate(-50%, -50%);
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.5);
+}
+.season-tick.is-past { background: var(--bg-deep); opacity: 0.55; height: 6px; }
+.season-dot {
+  position: absolute; top: 50%;
+  width: 14px; height: 14px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--title);
+  box-shadow: 0 0 0 3px var(--bg-deep);
+}
+.season-cup {
+  width: 28px; height: 28px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--fg-muted);
+}
+.season-cup svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.season-cup.is-done { background: var(--title); color: var(--bg-deep); }
+.season-dates {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-cond);
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  color: var(--fg-muted);
 }
 .pill {
   display: inline-flex;
@@ -560,7 +611,8 @@ a.res:hover .res-go { color: var(--fg); }
 /* ---------- Next round: outlined "ticket" with a big date stub ---------- */
 .ticket {
   display: grid;
-  border: 4px solid var(--accent-fill);   /* thick outline: the card's inside matches the page colour */
+  border: 4px solid var(--accent-fill);   /* thick outline around a lighter shade of the page colour */
+  background: var(--ticket);
   border-radius: 14px;
   overflow: hidden;
 }
@@ -1417,6 +1469,8 @@ a.tie.is-final:hover { box-shadow: inset 0 4px 0 var(--accent-fill), 0 0 0 2px v
 /* ---------- Calendar page ---------- */
 .cal-view { display: grid; gap: 22px; padding-block: 20px 72px; }
 .page-head { display: grid; gap: 6px; }
+/* Room above the big title so Ā, Ē, Ī, Ū clear the line above it. */
+.page-head .eyebrow + .page-title { margin-top: 0.12em; }
 .page-title {
   font-family: var(--font-display);
   font-weight: 400;
@@ -1713,12 +1767,11 @@ body.no-scroll { overflow: hidden; }
 
 /* ---------- Share posters ---------- */
 .head-actions { display: flex; align-items: center; gap: 6px 18px; flex-wrap: wrap; }
-/* Phones: "Dalīties" above the schedule card, calendar link below it, both on the right. */
-.next-share-m, .next-cal-m { display: flex; justify-content: flex-end; }
-.next-share-m { margin-bottom: 12px; }
-.next-cal-m { margin-top: 6px; }
+/* Phones: a row under the section — calendar link on the left, "Dalīties" on the right. */
+.foot-m { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
+.foot-m--end { justify-content: flex-end; }
 @media (max-width: 767px) { #block-next .block-head .head-actions, #block-last .block-head .head-actions { display: none; } }
-@media (min-width: 768px) { .next-share-m, .next-cal-m { display: none; } }
+@media (min-width: 768px) { .foot-m { display: none; } }
 /* The round MVP belongs to the previous-round section: no heading, smaller gap. */
 #block-mvp { margin-top: -20px; }
 .share-btn {
@@ -1800,6 +1853,7 @@ body.no-scroll { overflow: hidden; }
 /* ---------- Kopvērtējums page ---------- */
 .std-view { display: grid; gap: 44px; padding-block: 20px 72px; }
 .st-top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px; }
+.st-top > div { display: grid; gap: 6px; }
 .season-pick {
   display: flex;
   align-items: center;
@@ -2034,3 +2088,86 @@ body.no-scroll { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }
+
+/* ---------- Sponsori page ---------- */
+.sp-view { display: grid; gap: 36px; padding-block: 20px 72px; }
+.sp-grid {
+  --k: 0.82;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.sp-grid--main { grid-template-columns: minmax(0, 1fr); --k: 0.9; }
+@media (min-width: 560px) { .sp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .sp-grid--main { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 900px) {
+  .sp-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; --k: 1; }
+  .sp-grid--main { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sp-grid--main .sp-tile { min-height: 220px; }
+}
+.sp-tile {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 10px;
+  min-height: 150px;
+  padding: 18px 14px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--ink-muted);
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.sp-grid--main .sp-tile { min-height: 190px; padding-top: 26px; }
+.sp-tile:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22); }
+.sp-tile:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.sp-logo { display: grid; place-items: center; min-height: 0; }
+.sp-logo img {
+  width: calc(var(--w) * var(--k) * 1px);
+  height: calc(var(--h) * var(--k) * 1px);
+  max-width: 100%;
+  object-fit: contain;
+}
+.sp-name {
+  font-family: var(--font-cond);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+/* Pop-up: a narrower card on wider screens. */
+@media (min-width: 760px) { .sheet--sponsor { width: min(560px, calc(100% - 48px)); } }
+.sheet--sponsor .sheet-body { gap: 14px; }
+.sp-pop-logo {
+  display: grid;
+  place-items: center;
+  padding: 26px 20px;
+  border-radius: 12px;
+  background: var(--paper);
+}
+.sp-pop-logo img { max-width: min(320px, 80%); max-height: 130px; object-fit: contain; }
+.sp-desc { color: var(--fg); line-height: 1.55; white-space: pre-line; }
+.sp-links { display: flex; flex-wrap: wrap; gap: 10px; }
+.sp-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 16px 0 12px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  color: var(--fg);
+  text-decoration: none;
+  font-family: var(--font-cond);
+  font-weight: 700;
+  font-size: 0.92rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+a.sp-link:hover { border-color: var(--accent); }
+.sp-link svg { width: 18px; height: 18px; fill: currentColor; flex: none; }
+/* Prototype placeholders (where the sheet's text and links will go). */
+.sp-ph { border: 1px dashed var(--line-strong); color: var(--fg-muted); background: transparent; }
+p.sp-ph { padding: 12px 14px; border-radius: 10px; font-style: italic; }

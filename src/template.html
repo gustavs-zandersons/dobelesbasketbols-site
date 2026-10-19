@@ -31,6 +31,7 @@
     <div class="hero-copy">
       <p class="eyebrow">Sezona 2026/27</p>
       <h1 class="hero-title" id="hero-title">Dobeles Basketbola čempionu kauss</h1>
+      <div class="season" id="season-bar"></div>
     </div>
   </div>
   <svg class="ridge" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true"><path d="{{RIDGE_A}}"/></svg>
@@ -47,6 +48,7 @@
 <main class="wrap game-view" id="game-view" hidden></main>
 <main class="wrap cal-view" id="calendar-view" hidden></main>
 <main class="wrap std-view" id="standings-view" hidden></main>
+<main class="wrap sp-view" id="sponsors-view" hidden></main>
 <div class="sheet-scrim" id="sheet-scrim" hidden></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden></div>
 
@@ -91,6 +93,7 @@
     <span class="nav-item" aria-disabled="true">Statistika <span class="soon">Drīzumā</span></span>
     <span class="nav-item" aria-disabled="true">Nolikums <span class="soon">Drīzumā</span></span>
     <span class="nav-item" aria-disabled="true">Kontakti <span class="soon">Drīzumā</span></span>
+    <a class="nav-item" href="#dobele-sponsori" data-nav="sp" id="nav-sp">Sponsori</a>
   </nav>
   <nav class="drawer-sec" aria-label="Kausi">
     <p class="eyebrow">Kausi</p>
@@ -103,13 +106,14 @@
   <span class="demo-tag">Prototips</span>
   <button type="button" data-demo="pre"><span class="lg">Pirms sezonas</span><span class="sm">Pirms</span></button>
   <button type="button" data-demo="group"><span class="lg">Grupu turnīrs</span><span class="sm">Grupas</span></button>
-  <button type="button" data-demo="k">K grupa</button>
+  <button type="button" data-demo="k"><span class="lg">Kvalifikācijas grupa</span><span class="sm">Kvalif.</span></button>
   <button type="button" data-demo="playoff"><span class="lg">Izslēgšanas spēles</span><span class="sm">Pusfināli</span></button>
   <button type="button" data-demo="done"><span class="lg">Noslēgums</span><span class="sm">Beigas</span></button>
 </div>
 
 <script id="season-data" type="application/json">{{DATA}}</script>
 <script id="poster-data" type="application/json">{{POSTER_DATA}}</script>
+<script id="sponsor-data" type="application/json">{{SPONSOR_DATA}}</script>
 <script>
 {{ENGINE}}
 </script>

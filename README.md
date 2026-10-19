@@ -21,6 +21,12 @@ Live (once GitHub Pages is enabled): https://gustavs-zandersons.github.io/dobele
 | Game page with box score | `#spele-g68` |
 | Calendar (both cups, team filter) | `#kalendars` |
 | Kopvērtējums — Dobele / Jelgava | `#dobele-kopvertejums`, `#jelgava-kopvertejums` |
+| Sponsori (same on both cups, in the cup's colours) | `#dobele-sponsori`, `#jelgava-sponsori` |
+
+The Dobele "K group" (the code name in `engine.js` and the data, slots K1…K8)
+is shown on the site as **Playoff kvalifikācijas grupa**; its places show as
+PK1…PK8. The home page of each cup has a slim season progress bar under the
+title (first game → final, ticks where stages start).
 
 On the home page, **Dalīties** next to the next round opens the round posters:
 a 4:5 feed post (Facebook, Instagram) and a 9:16 Story/Reel. Phones open the
@@ -59,13 +65,15 @@ src/
   app.js             renders home, game, calendar and standings pages, share pop-up
   poster.js          draws the round posters (feed 1080×1350, story 1080×1920)
   sample-data.json   mock 2026/27 season
-  sponsors.json      sponsor list and order (generated)
+  sponsors.json      sponsor logos, footer order (generated)
+  sponsor-info.json  sponsors page: level, order, description, links (= sheet tab "Sponsori")
   poster-photos.json photo pool for the posters (generated)
 tools/
   build.py           builds dist/ (GitHub Pages) or dist-preview/
   prepare_assets.py  web copies of sponsor logos and poster photos
   gen-season.js      regenerates the mock season
   check.js           sanity checks run in CI
+  season_sheet.py    builds the season Google Sheet template (.xlsx)
 assets/              web-optimised logos and poster photos (published)
 design/sponsors/     original sponsor logo files (not published)
 .github/workflows/   build + deploy to GitHub Pages
@@ -85,6 +93,11 @@ node tools/gen-season.js > src/sample-data.json   # regenerate the mock season
   order are in `tools/prepare_assets.py`. Run `python3 tools/prepare_assets.py sponsors`
   to make the web copies. The footer and the posters size every logo to the
   same visual weight automatically.
+- **Sponsors page:** content comes from the season sheet's "Sponsori" tab and
+  lives in `src/sponsor-info.json` (one row per sponsor, matched to the logo by
+  ID): level (Ģenerālsponsors / Atbalstītājs), order, description, website,
+  Facebook, Instagram, TikTok. An empty link means no button. Until the sheet
+  sync runs, the tab is copied in by hand.
 - **Poster photos:** two separate pools, each shared by both cups — one for the
   next-round posters (a wide photo strip on top) and one for the results posters
   (the whole poster is the photo). Each round gets the next photo of its pool,
