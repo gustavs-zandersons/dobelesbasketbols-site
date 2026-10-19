@@ -1,6 +1,6 @@
-// Generates a realistic SAMPLE 2026/27 season for the prototype.
-// Team names and logos are last season's teams (plus two placeholders);
-// every score, player and MVP is made up.
+// Generates a realistic SAMPLE season for the site until the real calendar syncs.
+// Teams and halls come from the season sheet (src/sheet.json, written by
+// tools/sheet_sync.py); every score, player and MVP is made up.
 // Scheduling rules from the organisers: one hall per round, at most 4 games.
 // Run: node tools/gen-season.js > src/sample-data.json
 'use strict';
@@ -12,30 +12,45 @@ function rnd() { seed |= 0; seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(se
 function randn() { return (rnd() + rnd() + rnd() + rnd() - 2) * 1.7; }
 function rint(a, b) { return a + Math.floor(rnd() * (b - a + 1)); }
 
-// ---- teams: draw simulated per 8.2 (pots from 2025/26 final standings) ----
-// Pot 1: Buki, Skandijs · Pot 2: Vilki, Jaunpils · Pot 3: Līvbērze, Brocēni, Īle
-// Pot 4: Valauto, Doks, Sprīdītis · Joker: Auce, Bēne. Alternating A/B.
-const L = id => 'assets/teams/' + id + '.webp';
-const teams = [
-  { id: 'buki', name: 'BK Buki / Sandramebeles.lv', short: 'Buki', group: 'A', color: '#3A3A3A', logo: L('buki'), str: 90 },
-  { id: 'vilki', name: 'Vilki', short: 'Vilki', group: 'A', color: '#5B6C8F', logo: L('vilki'), str: 70 },
-  { id: 'livberze', name: 'BK Līvbērze', short: 'Līvbērze', group: 'A', color: '#1F4E79', logo: L('livberze'), str: 81 },
-  { id: 'ile', name: 'Īle / Penkule', short: 'Īle', group: 'A', color: '#B5651D', logo: L('ile'), str: 80 },
-  { id: 'doks', name: 'Doks', short: 'Doks', group: 'A', color: '#1B2A4A', logo: L('doks'), str: 79 },
-  { id: 'auce', name: 'BK Auce', short: 'Auce', group: 'A', color: '#C0392B', str: 74 },
-  { id: 'skandijs', name: 'Skandijs / HQ Chipper Parts', short: 'Skandijs', group: 'B', color: '#C8102E', logo: L('skandijs'), str: 88 },
-  { id: 'jaunpils', name: 'Jaunpils', short: 'Jaunpils', group: 'B', color: '#7B3A2E', logo: L('jaunpils'), str: 69 },
-  { id: 'broceni', name: 'Brocēni', short: 'Brocēni', group: 'B', color: '#0B7A5A', logo: L('broceni'), str: 82 },
-  { id: 'valauto', name: 'Valauto', short: 'Valauto', group: 'B', color: '#6B1F2A', logo: L('valauto'), str: 72 },
-  { id: 'spriditis', name: 'TSK Sprīdītis', short: 'Sprīdītis', group: 'B', color: '#1E8E3E', logo: L('spriditis'), str: 71 },
-  { id: 'bene', name: 'BK Bēne', short: 'Bēne', group: 'B', color: '#6B8E23', str: 76 }
-];
+// ---- teams and halls: from the season sheet (src/sheet.json) ----
+// Names, short names, optional info and halls are real. Until the draw is in
+// the sheet (6 + 6 in the "Grupa" column) the groups are simulated per 8.2
+// (pots from the 2025/26 final standings: Pot 1 Buki, Skandijs · Pot 2 Vilki,
+// Jaunpils · Pot 3 Līvbērze, Brocēni, Īle · Pot 4 Valauto, Doks, Sprīdītis ·
+// Joker Auce, Bēne; alternating A/B). Colours (shown for teams without a logo)
+// and playing strength are demo-only.
+const fs = require('fs');
+const path = require('path');
+const SHEET = require('../src/sheet.json');
+const DEMO = {
+  buki: { group: 'A', color: '#3A3A3A', str: 90 }, vilki: { group: 'A', color: '#5B6C8F', str: 70 },
+  livberze: { group: 'A', color: '#1F4E79', str: 81 }, ile: { group: 'A', color: '#B5651D', str: 80 },
+  doks: { group: 'A', color: '#1B2A4A', str: 79 }, auce: { group: 'A', color: '#C0392B', str: 74 },
+  skandijs: { group: 'B', color: '#C8102E', str: 88 }, jaunpils: { group: 'B', color: '#7B3A2E', str: 69 },
+  broceni: { group: 'B', color: '#0B7A5A', str: 82 }, valauto: { group: 'B', color: '#6B1F2A', str: 72 },
+  spriditis: { group: 'B', color: '#1E8E3E', str: 71 }, bene: { group: 'B', color: '#6B8E23', str: 76 }
+};
+const PALETTE = ['#2E5E8C', '#8C3B2E', '#3E7A4F', '#6A4C93', '#9A6B1F', '#2F6F73', '#7A2E5A', '#4B5A6B'];
+const EXTRA = ['city', 'description', 'website', 'facebook', 'instagram', 'tiktok'];
+if (SHEET.teams.length !== 12) throw new Error('the demo season needs 12 teams, the sheet has ' + SHEET.teams.length);
+const sheetGroups = SHEET.teams.map(t => t.group);
+const realDraw = sheetGroups.filter(g => g === 'A').length === 6 && sheetGroups.filter(g => g === 'B').length === 6;
+const size = { A: 0, B: 0 };
+const teams = SHEET.teams.map((s, i) => {
+  const d = DEMO[s.id] || { color: PALETTE[i % PALETTE.length], str: 70 + (i * 7) % 16 };
+  const t = { id: s.id, name: s.name, short: s.short, group: realDraw ? s.group : d.group, color: d.color };
+  if (fs.existsSync(path.join(__dirname, '..', 'assets', 'teams', s.id + '.webp'))) t.logo = 'assets/teams/' + s.id + '.webp';
+  EXTRA.forEach(k => { if (s[k]) t[k] = s[k]; });
+  t.str = d.str;
+  if (t.group) size[t.group]++;
+  return t;
+});
+// Simulated draw with new teams: they fill the smaller group.
+teams.forEach(t => { if (!t.group) { t.group = size.A <= size.B ? 'A' : 'B'; size[t.group]++; } });
 const STR = Object.fromEntries(teams.map(t => [t.id, t.str]));
 
-const venues = [
-  { id: 'dobele', name: 'Dobeles Sporta halle', address: 'Tērvetes iela 10, Dobele' },
-  { id: 'jelgava', name: 'Jelgavas Sporta halle', address: 'Mātera iela 44A, Jelgava' }
-];
+const venues = SHEET.venues.map(v => Object.assign({}, v));
+const VD = venues[0].id, VJ = (venues[1] || venues[0]).id;   // demo: "Dobele" and "Jelgava" halls
 
 const rounds = [];
 const games = [];
@@ -72,7 +87,7 @@ function refGame(comp, stage, round, date, time, venue, home, away, extra = {}, 
 }
 
 const SLOTS = ['11:00', '12:30', '14:00', '15:30'];
-const venueFor = i => (i % 2 ? 'jelgava' : 'dobele');
+const venueFor = i => (i % 2 ? VJ : VD);
 
 // ---- 1. Group stage: 30 games → 8 rounds (4,4,4,4,4,4,4,2) ----
 // Each group plays 5 match days of 3 games (circle method). Match days are
@@ -96,14 +111,15 @@ const rrB = roundRobin(teams.filter(t => t.group === 'B').map(t => t.id));
 const flat = [];
 for (let md = 0; md < 5; md++) { rrA[md].forEach(p => flat.push(p)); rrB[md].forEach(p => flat.push(p)); }
 let forfeitDone = false;
+const NOSHOW = STR.vilki ? 'vilki' : teams[1].id;
 const groupDates = ['2026-10-25', '2026-11-01', '2026-11-08', '2026-11-15', '2026-11-22', '2026-11-29', '2026-12-06', '2026-12-13'];
 groupDates.forEach((date, r) => {
   const rid = 'R' + (r + 1);
   addRound({ id: rid, comp: 'dbck', stage: 'Grupu turnīrs', label: (r + 1) + '. kārta', date });
   flat.slice(r * 4, r * 4 + 4).forEach(([h, a], i) => {
     let s = sim(h, a), forfeit;
-    // One no-show for realism: in their second-round game Vilki do not turn up (8.5 / 13.7).
-    if (!forfeitDone && r >= 1 && (h === 'vilki' || a === 'vilki')) { forfeitDone = true; forfeit = h === 'vilki' ? 'home' : 'away'; s = h === 'vilki' ? { hs: 0, as: 20 } : { hs: 20, as: 0 }; }
+    // One no-show for realism: in their second-round game Vilki (or another team) do not turn up (8.5 / 13.7).
+    if (!forfeitDone && r >= 1 && (h === NOSHOW || a === NOSHOW)) { forfeitDone = true; forfeit = h === NOSHOW ? 'home' : 'away'; s = h === NOSHOW ? { hs: 0, as: 20 } : { hs: 20, as: 0 }; }
     game({ comp: 'dbck', stage: 'group', round: rid, date, time: SLOTS[i], venue: venueFor(r), home: h, away: a, hs: s.hs, as: s.as, ot: !!s.ot, forfeit });
   });
 });
@@ -161,16 +177,16 @@ function kRound(r) {
 }
 
 kRound(0);                                                     // 20 Dec
-cupLeg(['R16_1', 'R16_2', 'R16_3', 'R16_4'], 'C16A', '2027-01-03', 'jelgava', 1);
+cupLeg(['R16_1', 'R16_2', 'R16_3', 'R16_4'], 'C16A', '2027-01-03', VJ, 1);
 kRound(1);                                                     // 10 Jan
-cupLeg(['R16_1', 'R16_2', 'R16_3', 'R16_4'], 'C16B', '2027-01-17', 'dobele', 2);
+cupLeg(['R16_1', 'R16_2', 'R16_3', 'R16_4'], 'C16B', '2027-01-17', VD, 2);
 kRound(2);                                                     // 24 Jan
-cupLeg(['QF1', 'QF2', 'QF3', 'QF4'], 'C8A', '2027-01-31', 'jelgava', 1);
+cupLeg(['QF1', 'QF2', 'QF3', 'QF4'], 'C8A', '2027-01-31', VJ, 1);
 kRound(3);                                                     // 7 Feb
-cupLeg(['QF1', 'QF2', 'QF3', 'QF4'], 'C8B', '2027-02-14', 'dobele', 2);
+cupLeg(['QF1', 'QF2', 'QF3', 'QF4'], 'C8B', '2027-02-14', VD, 2);
 kRound(4);                                                     // 21 Feb
 // Semifinals: one game each (format change 15 Oct 2026).
-cupLeg(['SF1', 'SF2'], 'C4A', '2027-02-28', 'jelgava', 1);
+cupLeg(['SF1', 'SF2'], 'C4A', '2027-02-28', VJ, 1);
 
 // ---- Dobele semifinals, best of three ----
 // Scripted so the demo shows both states: SF1 ends 2–0, SF2 goes to game 3.
@@ -179,17 +195,17 @@ addRound({ id: 'SFG2', comp: 'dbck', stage: 'Pusfināli', label: '2. spēle', da
 addRound({ id: 'SFG3', comp: 'dbck', stage: 'Pusfināli', label: '3. spēle', date: '2027-04-04' });
 const K = n => res('dbck', 'K' + n);
 const win = (w, l) => (h) => forced(w, l, h);
-refGame('dbck', 'playoff', 'SFG1', '2027-03-07', '13:00', 'dobele', 'K1', 'K4', { tie: 'SF1', n: 1 }, win(K(1), K(4)));
-refGame('dbck', 'playoff', 'SFG1', '2027-03-07', '15:00', 'dobele', 'K2', 'K3', { tie: 'SF2', n: 1 }, win(K(2), K(3)));
-refGame('dbck', 'playoff', 'SFG2', '2027-03-21', '13:00', 'jelgava', 'K4', 'K1', { tie: 'SF1', n: 2 }, win(K(1), K(4)));
-refGame('dbck', 'playoff', 'SFG2', '2027-03-21', '15:00', 'jelgava', 'K3', 'K2', { tie: 'SF2', n: 2 }, win(K(3), K(2)));
+refGame('dbck', 'playoff', 'SFG1', '2027-03-07', '13:00', VD, 'K1', 'K4', { tie: 'SF1', n: 1 }, win(K(1), K(4)));
+refGame('dbck', 'playoff', 'SFG1', '2027-03-07', '15:00', VD, 'K2', 'K3', { tie: 'SF2', n: 1 }, win(K(2), K(3)));
+refGame('dbck', 'playoff', 'SFG2', '2027-03-21', '13:00', VJ, 'K4', 'K1', { tie: 'SF1', n: 2 }, win(K(1), K(4)));
+refGame('dbck', 'playoff', 'SFG2', '2027-03-21', '15:00', VJ, 'K3', 'K2', { tie: 'SF2', n: 2 }, win(K(3), K(2)));
 // 28 March is Easter Sunday — no games.
-refGame('dbck', 'playoff', 'SFG3', '2027-04-04', '13:00', 'dobele', 'K1', 'K4', { tie: 'SF1', n: 3, ifNeeded: true }, () => ({ hs: null, as: null }));
-refGame('dbck', 'playoff', 'SFG3', '2027-04-04', '15:00', 'dobele', 'K2', 'K3', { tie: 'SF2', n: 3, ifNeeded: true }, win(K(2), K(3)));
-refGame('jssc', 'cup', 'CF', '2027-04-11', '15:00', 'jelgava', 'W:SF1', 'W:SF2', { tie: 'F', n: 1 });
+refGame('dbck', 'playoff', 'SFG3', '2027-04-04', '13:00', VD, 'K1', 'K4', { tie: 'SF1', n: 3, ifNeeded: true }, () => ({ hs: null, as: null }));
+refGame('dbck', 'playoff', 'SFG3', '2027-04-04', '15:00', VD, 'K2', 'K3', { tie: 'SF2', n: 3, ifNeeded: true }, win(K(2), K(3)));
+refGame('jssc', 'cup', 'CF', '2027-04-11', '15:00', VJ, 'W:SF1', 'W:SF2', { tie: 'F', n: 1 });
 addRound({ id: 'FIN', comp: 'dbck', stage: 'Fināli', label: 'Zelta un bronzas fināls', date: '2027-04-18' });
-refGame('dbck', 'playoff', 'FIN', '2027-04-18', '13:00', 'dobele', 'L:SF1', 'L:SF2', { tie: 'BRONZE', n: 1 });
-refGame('dbck', 'playoff', 'FIN', '2027-04-18', '15:30', 'dobele', 'W:SF1', 'W:SF2', { tie: 'GOLD', n: 1 });
+refGame('dbck', 'playoff', 'FIN', '2027-04-18', '13:00', VD, 'L:SF1', 'L:SF2', { tie: 'BRONZE', n: 1 });
+refGame('dbck', 'playoff', 'FIN', '2027-04-18', '15:30', VD, 'W:SF1', 'W:SF2', { tie: 'GOLD', n: 1 });
 
 // ---- Placeholder box scores (fictional players, same fields as basket.lv) ----
 // Box row layout (compact array, also used by the site):
@@ -314,7 +330,7 @@ Object.entries(perRound).forEach(([k, list]) => {
 });
 
 const out = {
-  season: '2026/27',
+  season: SHEET.settings.season,
   sample: true,
   teams: teams.map(({ str, ...t }) => Object.assign(t, { players: rosters[t.id].map(p => ({ no: p.no, name: p.name })) })),
   venues, rounds,

@@ -76,10 +76,9 @@ def sponsors_html(sponsors):
 LEVELS = ('Ģenerālsponsors', 'Atbalstītājs')
 
 
-def sponsor_page(logos):
-    """Sponsors page data: the sheet's "Sponsori" tab (src/sponsor-info.json:
-    level, order, description, links) joined with the web logos by id."""
-    info = json.loads((SRC / 'sponsor-info.json').read_text())
+def sponsor_page(info, logos):
+    """Sponsors page data: the sheet's "Sponsori" tab (src/sheet.json: level,
+    order, description, links) joined with the web logos by id."""
     by_id = {s['id']: s for s in logos}
     out = []
     for r in sorted(info, key=lambda r: (LEVELS.index(r['level']), r.get('order') or 999)):
@@ -91,11 +90,54 @@ def sponsor_page(logos):
     return out
 
 
+SOCIAL_ICONS = {
+    'facebook': ('Facebook', 'M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H7.8v3h2.6V21h3.1z'),
+    'instagram': ('Instagram', 'M12 7.3a4.7 4.7 0 1 0 0 9.4 4.7 4.7 0 0 0 0-9.4zm0 7.7a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm6-7.9a1.1 1.1 0 1 1-2.2 0 1.1 1.1 0 0 1 2.2 0zM16.8 3H7.2A4.2 4.2 0 0 0 3 7.2v9.6A4.2 4.2 0 0 0 7.2 21h9.6a4.2 4.2 0 0 0 4.2-4.2V7.2A4.2 4.2 0 0 0 16.8 3zm2.5 13.8a2.5 2.5 0 0 1-2.5 2.5H7.2a2.5 2.5 0 0 1-2.5-2.5V7.2a2.5 2.5 0 0 1 2.5-2.5h9.6a2.5 2.5 0 0 1 2.5 2.5v9.6z'),
+    'youtube': ('YouTube', 'M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2C2 8.8 2 12 2 12s0 3.2.4 4.8a2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8c.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8zM10 15V9l5.2 3L10 15z'),
+    'tiktok': ('TikTok', 'M16.6 3c.3 2.2 1.6 3.6 3.7 3.8v3.1a6.7 6.7 0 0 1-3.6-1.1v6.3a5.7 5.7 0 1 1-5.7-5.7l.9.1v3.2a2.6 2.6 0 1 0 1.7 2.4V3h3z'),
+}
+
+
+def esc(text):
+    return (text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;'))
+
+
+def socials_html(links):
+    """Footer icons for the tournament's own pages (sheet: Iestatījumi). Empty = no icon."""
+    rows = []
+    for key, (label, path) in SOCIAL_ICONS.items():
+        url = links.get(key, '')
+        if url:
+            rows.append(f'        <a class="social" href="{esc(url)}" target="_blank" rel="noopener" aria-label="{label}">\n'
+                        f'          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="{path}"/></svg>\n        </a>')
+    return ('      <div class="socials">\n' + '\n'.join(rows) + '\n      </div>') if rows else ''
+
+
+def site_settings(sheet, sponsors):
+    """Settings for the page script (sheet: Iestatījumi). The MVP sponsor's logo is
+    the white version (assets/sponsors/mvp-<id>-white.webp) when there is one."""
+    st = sheet['settings']
+    by_name = {s['name'].casefold(): s['id'] for s in sheet['sponsors']}
+    cups = {}
+    for cup in ('dbck', 'jssc'):
+        c = st['cups'][cup]
+        sp, logo = c.get('mvpSponsor', ''), ''
+        sid = by_name.get(sp.casefold()) if sp else None
+        if sid and (ROOT / 'assets' / 'sponsors' / f'mvp-{sid}-white.webp').exists():
+            logo = f'assets/sponsors/mvp-{sid}-white.webp'
+        cups[cup] = {'name': c['name'], 'mvpSponsor': {'name': sp, 'logo': logo} if sp else None}
+    return {'season': st['season'], 'cups': cups, 'sponsorsText': st.get('sponsorsText', '')}
+
+
 def render(preview):
     tpl = (SRC / 'template.html').read_text()
     data = json.loads((SRC / 'sample-data.json').read_text())
+    sheet = json.loads((SRC / 'sheet.json').read_text())
     sponsors = json.loads((SRC / 'sponsors.json').read_text())
     photos = json.loads((SRC / 'poster-photos.json').read_text())
+    data['settings'] = site_settings(sheet, sponsors)
+    footer = sheet['settings'].get('footer', {})
+    names = data['settings']['cups']
     page = (tpl
             .replace('{{STYLE}}', (SRC / 'styles.css').read_text())
             .replace('{{ENGINE}}', (SRC / 'engine.js').read_text())
@@ -103,7 +145,12 @@ def render(preview):
             .replace('{{APP}}', (SRC / 'app.js').read_text())
             .replace('{{DATA}}', as_json(data))
             .replace('{{POSTER_DATA}}', as_json({'sponsors': sponsors, 'photos': photos}))
-            .replace('{{SPONSOR_DATA}}', as_json(sponsor_page(sponsors)))
+            .replace('{{SPONSOR_DATA}}', as_json(sponsor_page(sheet['sponsors'], sponsors)))
+            .replace('{{SEASON}}', esc(data['settings']['season']))
+            .replace('{{DBCK_NAME}}', esc(names['dbck']['name']))
+            .replace('{{JSSC_NAME}}', esc(names['jssc']['name']))
+            .replace('{{FOOTER_TEXT}}', f'<p>{esc(footer["text"])}</p>' if footer.get('text') else '')
+            .replace('{{SOCIALS}}', socials_html(footer.get('links', {})))
             .replace('{{SPONSORS_HTML}}', sponsors_html(sponsors))
             .replace('{{RIDGE_A}}', ridge(7))
             .replace('{{RIDGE_B}}', ridge(11, base=36, amp=24))

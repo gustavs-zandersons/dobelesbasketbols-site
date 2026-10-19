@@ -1,0 +1,258 @@
+{
+ "settings": {
+  "season": "2026/27",
+  "cups": {
+   "dbck": {
+    "name": "Dobeles Basketbola čempionu kauss",
+    "mvpSponsor": "Tērvetes alus darītava",
+    "basket": ""
+   },
+   "jssc": {
+    "name": "Jelgavas Sporta servisa centra Izaicinājuma kauss",
+    "mvpSponsor": "Tērvetes alus darītava",
+    "basket": ""
+   }
+  },
+  "sponsorsText": "Paldies mūsu sponsoriem un atbalstītājiem! Tieši viņi palīdz šai sezonai notikt — sarīkot spēles, sarūpēt balvas un padarīt katru spēļu dienu par svētkiem komandām un skatītājiem.",
+  "footer": {
+   "text": "Sacensības organizē biedrība „SK Dobele” sadarbībā ar Dobeles novada sporta pārvaldi un Jelgavas sporta servisa centru.",
+   "links": {
+    "facebook": "",
+    "instagram": "",
+    "youtube": "",
+    "tiktok": ""
+   }
+  }
+ },
+ "teams": [
+  {
+   "id": "buki",
+   "name": "BK Buki / Sandramebeles.lv",
+   "short": "Buki",
+   "group": ""
+  },
+  {
+   "id": "vilki",
+   "name": "Vilki",
+   "short": "Vilki",
+   "group": ""
+  },
+  {
+   "id": "livberze",
+   "name": "BK Līvbērze",
+   "short": "Līvbērze",
+   "group": ""
+  },
+  {
+   "id": "ile",
+   "name": "Īle / Penkule",
+   "short": "Īle",
+   "group": ""
+  },
+  {
+   "id": "doks",
+   "name": "Doks",
+   "short": "Doks",
+   "group": ""
+  },
+  {
+   "id": "auce",
+   "name": "BK Auce",
+   "short": "Auce",
+   "group": ""
+  },
+  {
+   "id": "skandijs",
+   "name": "Skandijs / HQ Chipper Parts",
+   "short": "Skandijs",
+   "group": ""
+  },
+  {
+   "id": "jaunpils",
+   "name": "Jaunpils",
+   "short": "Jaunpils",
+   "group": ""
+  },
+  {
+   "id": "broceni",
+   "name": "Brocēni",
+   "short": "Brocēni",
+   "group": ""
+  },
+  {
+   "id": "valauto",
+   "name": "Valauto",
+   "short": "Valauto",
+   "group": ""
+  },
+  {
+   "id": "spriditis",
+   "name": "TSK Sprīdītis",
+   "short": "Sprīdītis",
+   "group": ""
+  },
+  {
+   "id": "bene",
+   "name": "BK Bēne",
+   "short": "Bēne",
+   "group": ""
+  }
+ ],
+ "venues": [
+  {
+   "id": "dobele",
+   "name": "Dobeles Sporta halle",
+   "address": "Tērvetes iela 10, Dobele"
+  },
+  {
+   "id": "jelgava",
+   "name": "Jelgavas Sporta halle",
+   "address": "Mātera iela 44A, Jelgava"
+  }
+ ],
+ "sponsors": [
+  {
+   "id": "dobeles-novads",
+   "name": "Dobeles novada pašvaldība",
+   "level": "Ģenerālsponsors",
+   "order": 1,
+   "description": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "tiktok": ""
+  },
+  {
+   "id": "jelgava",
+   "name": "Jelgava",
+   "level": "Ģenerālsponsors",
+   "order": 2,
+   "description": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "tiktok": ""
+  },
+  {
+   "id": "jssc",
+   "name": "Jelgavas Sporta servisa centrs",
+   "level": "Ģenerālsponsors",
+   "order": 3,
+   "description": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "tiktok": ""
+  },
+  {
+   "id": "tervete",
+   "name": "Tērvetes alus darītava",
+   "level": "Atbalstītājs",
+   "order": 4,
+   "description": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "tiktok": ""
+  },
+  {
+   "id": "jaunpils",
+   "name": "Jaunpils pienotava",
+   "level": "Atbalstītājs",
+   "order": 5,
+   "description": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "tiktok": ""
+  },
+  {
+   "id": "dobeles-dzirnavnieks",
+   "name": "Dobeles dzirnavnieks",
+   "level": "Atbalstītājs",
+   "order": 6,
+   "description": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "tiktok": ""
+  },
+  {
+   "id": "nakotne",
+   "name": "Nākotne",
+   "level": "Atbalstītājs",
+   "order": 7,
+   "description": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "tiktok": ""
+  },
+  {
+   "id": "nordcrunch",
+   "name": "Nordcrunch",
+   "level": "Atbalstītājs",
+   "order": 8,
+   "description": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "tiktok": ""
+  },
+  {
+   "id": "ozols-pub",
+   "name": "Ozols Pub",
+   "level": "Atbalstītājs",
+   "order": 9,
+   "description": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "tiktok": ""
+  },
+  {
+   "id": "garage-barber",
+   "name": "Garage Barber",
+   "level": "Atbalstītājs",
+   "order": 10,
+   "description": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "tiktok": ""
+  },
+  {
+   "id": "sporta-bode",
+   "name": "Sporta bode",
+   "level": "Atbalstītājs",
+   "order": 11,
+   "description": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "tiktok": ""
+  },
+  {
+   "id": "balevich-media",
+   "name": "Balevich Media",
+   "level": "Atbalstītājs",
+   "order": 12,
+   "description": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "tiktok": ""
+  },
+  {
+   "id": "kebabmix",
+   "name": "Kebabmix",
+   "level": "Atbalstītājs",
+   "order": 13,
+   "description": "",
+   "website": "",
+   "facebook": "",
+   "instagram": "",
+   "tiktok": ""
+  }
+ ]
+}

@@ -28,6 +28,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Check the season sheet template and importer agree
+        run: |
+          pip install openpyxl==3.1.5 pillow==11.0.0
+          python3 tools/season_sheet.py "$RUNNER_TEMP/sheet.xlsx"
+          python3 tools/sheet_sync.py --file "$RUNNER_TEMP/sheet.xlsx" --expect-same
       - name: Build site
         run: python3 tools/build.py
       - name: Run checks

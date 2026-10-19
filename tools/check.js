@@ -60,9 +60,10 @@ check(photos.length > 0, 'poster photo pool is empty');
 sponsors.concat(photos).forEach(a => check(fs.existsSync(path.join(root, a.src)), 'missing file ' + a.src));
 check(html.includes('id="poster-data"') && html.includes('window.Poster'), 'poster script and data are in the page');
 
-// 5. Sponsors page data (the sheet's "Sponsori" tab): every row has a logo,
-// a known level, and links are full https addresses.
-const info = require('../src/sponsor-info.json');
+// 5. Sponsors page data (the sheet's "Sponsori" tab, src/sheet.json): every row
+// has a logo, a known level, and links are full https addresses.
+const sheet = require('../src/sheet.json');
+const info = sheet.sponsors;
 const logoIds = new Set(sponsors.map(s => s.id));
 info.forEach(r => {
   check(logoIds.has(r.id), 'sponsor ' + r.id + ' has no logo in src/sponsors.json');
@@ -71,7 +72,10 @@ info.forEach(r => {
 });
 check(html.includes('id="sponsor-data"'), 'sponsor data is in the page');
 
-// 6. Optional team fields from the sheet's "Komandas" tab: links are full https addresses.
+// 6. Teams from the sheet's "Komandas" tab: the page has all of them, links are full https addresses.
+check(sheet.teams.every(s => data.teams.some(t => t.id === s.id && t.name === s.name && t.short === s.short)),
+  'src/sample-data.json is older than src/sheet.json — run: node tools/gen-season.js > src/sample-data.json');
+check(['Sezona ' + sheet.settings.season, sheet.settings.cups.dbck.name].every(x => html.includes(x)), 'season and cup names from the sheet are in the page');
 data.teams.forEach(t => ['website', 'facebook', 'instagram', 'tiktok'].forEach(k =>
   check(!t[k] || /^https:\/\/\S+$/.test(t[k]), 'team ' + t.id + ': ' + k + ' must start with https://')));
 
