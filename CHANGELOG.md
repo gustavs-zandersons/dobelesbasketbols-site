@@ -28,6 +28,9 @@
 - **Next-round posters:** the stage + round line moved from the header to
   just above the games, styled and spaced like the Hope Cup label.
 - **Next-round card:** inside a step lighter again (blue / red).
+- **Next-round Story poster:** more space between the header (cup, date +
+  hall) and the stage label, and the games sit lower, using the spare height
+  above the sponsors.
 - **Links:** team names in the standings tables and on game pages open the
   team page.
 - **Season sheet:** optional team fields in "Komandas" (town, description,

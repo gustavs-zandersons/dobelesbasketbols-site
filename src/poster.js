@@ -220,7 +220,7 @@
     var story = spec.format === 'story';
     var zoneTop = F.photo + F.ridge * 0.4 + F.headTop;      // air under the photo edge
     var zoneBottom = F.sponsorTop - F.ridge * 1.5 - 10;
-    var gapHead = story ? 14 : 34;   // rows have their own padding; the story keeps the header close to the games
+    var gapHead = story ? 72 : 34;   // header (cup, date + hall) → stage label; the tall story gets more air
     var n = Math.max(1, list.length);
     // A labelled game (the Hope Cup game in a K group round) is its own section
     // at the bottom: extra space above it, no line, the label tight on top.
@@ -237,13 +237,24 @@
     var block = headH + gapHead + stageFixed + rowH * (list.length - tagged * 0.2) + tagged * tagFixed;
     // The story poster sits the text a bit lower (more air under the photo).
     var free = Math.max(0, zoneBottom - zoneTop - block);
-    var y = zoneTop + free * (story ? 0.62 : 0.5);
+    // Labelled rows end up shorter than the estimate above (the label sits
+    // tight on its game); on the story that left a gap above the sponsors, so
+    // hand most of it back to the layout.
+    if (story) {
+      var bhEst = Math.min(F.timeBox[1], rowH * 0.6);
+      free += 0.6 * ((stage ? Math.max(0, (rowH - bhEst) / 2) : 0) + tagged * Math.max(0, 0.8 * rowH - bhEst));
+    }
+    // The story has spare height: part of it goes above the header, more of it
+    // between the header and the games, so the games sit lower (closer to
+    // the sponsors) and the header keeps its place under the photo.
+    var extraGap = story ? free * 0.45 : 0;
+    var y = zoneTop + free * (story ? 0.33 : 0.5);
 
     tLines.forEach(function (l, i) { text(g, l, W / 2, y + tLh * i + tPx / 2, tPx, T.head); });
     y += tLines.length * tLh + 8;
     text(g, sub, W / 2, y + sPx / 2, sPx, T.head);
     y += sPx;
-    y += gapHead;
+    y += gapHead + extraGap;
 
     // The time box is one of the elements, not the biggest one.
     var bw = F.timeBox[0], bh = Math.min(F.timeBox[1], rowH * 0.6);
