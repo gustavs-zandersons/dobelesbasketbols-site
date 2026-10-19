@@ -9,7 +9,7 @@
  },
  {
   "id": "jelgava",
-  "name": "Jelgava",
+  "name": "Jelgavas pilsētas pašvaldība",
   "src": "assets/sponsors/jelgava.webp",
   "w": 400,
   "h": 198,
@@ -25,7 +25,7 @@
  },
  {
   "id": "tervete",
-  "name": "Tērvetes alus darītava",
+  "name": "Alus darītava „Tērvete”",
   "src": "assets/sponsors/tervete.webp",
   "w": 329,
   "h": 200,
@@ -33,7 +33,7 @@
  },
  {
   "id": "jaunpils",
-  "name": "Jaunpils pienotava",
+  "name": "Jaunpils Pienotava",
   "src": "assets/sponsors/jaunpils.webp",
   "w": 274,
   "h": 200,
@@ -49,7 +49,7 @@
  },
  {
   "id": "nakotne",
-  "name": "Nākotne",
+  "name": "Gaļas pārstrādes uzņēmums „Nākotne”",
   "src": "assets/sponsors/nakotne.webp",
   "w": 346,
   "h": 200,
@@ -81,7 +81,7 @@
  },
  {
   "id": "sporta-bode",
-  "name": "Sporta bode — sportabode.eu",
+  "name": "Sporta Bode",
   "src": "assets/sponsors/sporta-bode.webp",
   "w": 319,
   "h": 200,
@@ -89,7 +89,7 @@
  },
  {
   "id": "balevich-media",
-  "name": "Balevich Media",
+  "name": "Balevich media",
   "src": "assets/sponsors/balevich-media.webp",
   "w": 200,
   "h": 200,

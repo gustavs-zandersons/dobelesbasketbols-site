@@ -1,5 +1,32 @@
 # Changelog
 
+## Season sheet sync, step 1 — released 19 Oct 2026 (PR #7)
+
+- **Real 2026/27 teams and sponsors from the organisers' sheet:** Lietus,
+  Jelgava BJSS U19 and U17 join (new logos); Līvbērze, Auce and Bēne leave.
+  Sponsor names, descriptions and links, the tournament's Facebook / Instagram /
+  YouTube in the footer, short names as the organisers set them.
+- **The site reads the season Google Sheet:** tabs "Iestatījumi", "Komandas",
+  "Zāles" and "Sponsori" (`tools/sheet_sync.py` → `src/sheet.json`). Calendar,
+  MVP and Lēmumi are not read yet.
+- **Demo games for the real teams:** generated for the sheet's teams and halls;
+  the real groups are used once the draw (6 + 6) is in the sheet.
+- **From the settings tab:** season, full cup names (title, standings, page
+  description), MVP sponsor per cup (its white logo if there is one, else the
+  name), sponsors page text, footer text, and the tournament's own Facebook /
+  Instagram / YouTube / TikTok icons in the footer (empty = no icon; the
+  placeholder icons are gone).
+- **Logos from the sheet:** a Google Drive link in "Logo (saite)" (teams and
+  sponsors) is downloaded, trimmed and resized; an empty cell keeps the current
+  logo. Sponsors added or removed in the sheet appear in / disappear from the
+  sponsors page, footer and posters.
+- **"Atjaunot datus no tabulas"** (GitHub Actions, run by hand): sheet → checks
+  → build → commit → publish. Errors stop it with a Latvian list of tab, row and
+  what to fix; the site stays as it was.
+- **Template:** logo link columns, a check column in "Komandas", new settings
+  rows, "Kā lietot" rewritten for this step (logos, publishing, the update
+  button). `src/sponsor-info.json` is replaced by `src/sheet.json`.
+
 ## Round 5 — released 19 Oct 2026 (PR #6)
 
 - **Komandas** (menu): all teams as logo tiles, alphabetical, no groups and

@@ -526,6 +526,8 @@ a.res:hover .res-go { color: var(--fg); }
   color: var(--fg-muted);
 }
 .mvp-sponsor img { height: 46px; width: auto; max-width: 150px; object-fit: contain; }
+/* Sponsor without a white logo yet: its name instead. */
+.mvp-sponsor .mvp-sponsor-name { font-size: 1.05rem; letter-spacing: 0.04em; color: var(--fg); text-align: right; }
 .mvp {
   background: var(--accent-fill);
   color: var(--on-accent);
@@ -1160,6 +1162,7 @@ a.tie.is-final:hover { box-shadow: inset 0 4px 0 var(--accent-fill), 0 0 0 2px v
   object-fit: contain;
 }
 @media (min-width: 768px) { .sponsor-row { --k: 1; gap: 26px 40px; } }
+.foot:empty { display: none; }
 .foot {
   margin-top: 32px;
   padding-top: 20px;

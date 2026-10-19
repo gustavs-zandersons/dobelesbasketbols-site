@@ -1,0 +1,72 @@
+name: Atjaunot datus no tabulas
+
+# Reads the season sheet (Google Sheets) and updates the site: settings, teams,
+# halls, sponsors and logos. Until the real calendar syncs, the demo games are
+# re-generated for the sheet's teams.
+#
+# Run it from the Actions tab: "Atjaunot datus no tabulas" -> Run workflow.
+# If the sheet has errors, nothing changes on the site; the run fails and its
+# summary lists what to fix (tab, row, problem). GitHub emails about failed runs.
+#
+# The sheet's link is the repository secret SHEET_URL
+# (Settings -> Secrets and variables -> Actions).
+on:
+  workflow_dispatch:
+  # Turned on once the season starts:
+  # schedule:
+  #   - cron: '0 */3 * * *'
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: sheet-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Python packages
+        run: pip install openpyxl==3.1.5 pillow==11.0.0
+      - name: Read the sheet
+        env:
+          SHEET_URL: ${{ secrets.SHEET_URL }}
+        run: python3 tools/sheet_sync.py --url "$SHEET_URL"
+      - name: Demo games for the sheet's teams
+        run: node tools/gen-season.js > src/sample-data.json
+      - name: Build and check the site
+        run: |
+          python3 tools/build.py
+          node tools/check.js
+      - name: Save the new data
+        id: save
+        run: |
+          if [ -z "$(git status --porcelain -- src assets)" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Nothing changed in the sheet since the last run."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src assets
+          git commit -m "Dati no tabulas ($(date -u +'%Y-%m-%d %H:%M') UTC)"
+          git push origin HEAD:main
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+      # Pushes made by this workflow don't start other workflows, so the
+      # deploy is started explicitly.
+      - name: Publish the site
+        if: steps.save.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref main

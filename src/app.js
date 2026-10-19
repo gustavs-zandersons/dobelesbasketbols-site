@@ -21,17 +21,20 @@
   var FIXED_TODAY = document.documentElement.getAttribute('data-today');
   var SHOW_DEMO = !FIXED_TODAY || /[?&]demo\b/.test(window.location.search);
 
-  // Per-cup settings. One MVP sponsor per cup for the whole season.
+  // Per-cup settings. Full names, the season and the MVP sponsor (one per cup
+  // for the whole season) come from the sheet's "Iestatījumi" tab.
+  var SET = DATA.settings || {};
+  var SEASON_LABEL = SET.season || DATA.season;
   var CUPS = {
-    dbck: {
-      hash: 'dobele', short: 'Dobeles čempionu kauss', name: 'Dobeles Basketbola čempionu kauss', logo: 'assets/dbck-logo.webp',
-      mvpSponsor: { name: 'Tērvetes alus darītava', logo: 'assets/sponsors/mvp-tervete-white.webp' }
-    },
-    jssc: {
-      hash: 'jelgava', short: 'Izaicinājuma kauss', name: 'Jelgavas Sporta servisa centra Izaicinājuma kauss', logo: 'assets/jssc-logo.webp',
-      mvpSponsor: { name: 'Tērvetes alus darītava', logo: 'assets/sponsors/mvp-tervete-white.webp' }
-    }
+    dbck: { hash: 'dobele', short: 'Dobeles čempionu kauss', name: 'Dobeles Basketbola čempionu kauss', logo: 'assets/dbck-logo.webp', mvpSponsor: null },
+    jssc: { hash: 'jelgava', short: 'Izaicinājuma kauss', name: 'Jelgavas Sporta servisa centra Izaicinājuma kauss', logo: 'assets/jssc-logo.webp', mvpSponsor: null }
   };
+  Object.keys(CUPS).forEach(function (c) {
+    var s = (SET.cups || {})[c];
+    if (!s) return;
+    if (s.name) CUPS[c].name = s.name;
+    CUPS[c].mvpSponsor = s.mvpSponsor || null;
+  });
 
   var state = {
     cup: 'dbck', view: 'home', gameId: null, teamId: null, demo: load('demo') || 'group', tabs: {},
@@ -236,7 +239,7 @@
     el.hidden = false;
     // Part of the previous-round section: no heading of its own.
     el.innerHTML = '<div class="mvp-wrap">' +
-      '<div class="mvp-sponsor"><p>Kārtas MVP balvu pasniedz</p><img src="' + esc(sp.logo) + '" alt="' + esc(sp.name) + '"></div>' +
+      (sp ? '<div class="mvp-sponsor"><p>Kārtas MVP balvu pasniedz</p>' + (sp.logo ? '<img src="' + esc(sp.logo) + '" alt="' + esc(sp.name) + '">' : '<p class="mvp-sponsor-name">' + esc(sp.name) + '</p>') + '</div>' : '') +
       '<article class="mvp" aria-label="Kārtas vērtīgākais spēlētājs">' +
       '<p class="mvp-k">Vērtīgākais spēlētājs</p>' +
       '<p class="mvp-name">' + esc(m.player) + '</p>' +
@@ -883,7 +886,7 @@
     }).join('');
     var CUPF = [{ k: 'all', l: 'Visi kausi', s: 'Visi' }, { k: 'dbck', l: 'Čempionu kauss', s: 'Dobele' }, { k: 'jssc', l: 'Izaicinājuma kauss', s: 'Jelgava' }];
 
-    var html = '<div class="page-head"><p class="eyebrow">Sezona 2026/27</p><h1 class="page-title">Kalendārs</h1>' +
+    var html = '<div class="page-head"><p class="eyebrow">Sezona ' + esc(SEASON_LABEL) + '</p><h1 class="page-title">Kalendārs</h1>' +
       '<p class="page-sub">Visas Dobeles čempionu kausa un Jelgavas Izaicinājuma kausa spēles. Izvēlies dienu, lai redzētu spēles.</p></div>';
 
     html += '<div class="cal-filters">' +
@@ -1240,7 +1243,7 @@
   // Seasons this site knows about. Past seasons will be added here as frozen
   // snapshots (seasons/<id>/…) once a season ends; each lists its own cups.
   var SEASONS = [
-    { id: '2026-27', label: '2026/27', current: true, cups: ['dbck', 'jssc'] }
+    { id: SEASON_LABEL.replace('/', '-'), label: SEASON_LABEL, current: true, cups: ['dbck', 'jssc'] }
   ];
   var CHIP = {
     live: '<span class="pill">Notiek</span>',
@@ -1437,7 +1440,7 @@
   // Team list: logo tiles (like the sponsors page), alphabetical, no groups.
   function renderTeams() {
     var all = ctx.teams().slice().sort(function (a, b) { return a.short.localeCompare(b.short, 'lv'); });
-    $('teams-view').innerHTML = '<div class="page-head"><p class="eyebrow">Sezona 2026/27</p><h1 class="page-title">Komandas</h1>' +
+    $('teams-view').innerHTML = '<div class="page-head"><p class="eyebrow">Sezona ' + esc(SEASON_LABEL) + '</p><h1 class="page-title">Komandas</h1>' +
       '<p class="page-sub">Visas sezonas komandas. Izvēlies komandu, lai redzētu tās statistiku, sastāvu un spēles.</p></div>' +
       '<div class="tm-tiles">' + all.map(function (t) {
         return '<a class="tm-tile" href="' + teamHref(t.id) + '"><span class="tm-tile-logo">' + badge(t.id, 'xl') + '</span><span class="tm-tile-name">' + esc(t.name) + '</span></a>';
@@ -1593,8 +1596,8 @@
     return { w: Math.round(w), h: Math.round(h) };
   }
   function renderSponsors() {
-    var html = '<div class="page-head"><p class="eyebrow">Sezona 2026/27</p><h1 class="page-title">Sponsori</h1>' +
-      '<p class="page-sub">Paldies mūsu sponsoriem un atbalstītājiem! Tieši viņi palīdz šai sezonai notikt — sarīkot spēles, sarūpēt balvas un padarīt katru spēļu dienu par svētkiem komandām un skatītājiem.</p></div>';
+    var html = '<div class="page-head"><p class="eyebrow">Sezona ' + esc(SEASON_LABEL) + '</p><h1 class="page-title">Sponsori</h1>' +
+      (SET.sponsorsText ? '<p class="page-sub">' + esc(SET.sponsorsText) + '</p>' : '') + '</div>';
     LEVELS.forEach(function (lv) {
       var list = SPONSORS.filter(function (sp) { return sp.level === lv.key; });
       if (!list.length) return;

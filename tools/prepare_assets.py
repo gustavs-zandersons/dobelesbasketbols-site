@@ -1,14 +1,22 @@
-"""Prepare web copies of sponsor logos and poster photos.
+"""Prepare web copies of team and sponsor logos and poster photos.
+
+    python3 tools/prepare_assets.py teams [<id> ...]
+        design/teams/<id>.png (or .jpg/.webp)  ->  assets/teams/<id>.webp
+        Trimmed to the logo, fitted into a 256 px square (same as logos that
+        come in through the sheet). No ids = every original in design/teams.
 
     python3 tools/prepare_assets.py sponsors
-        design/sponsors/<id>.png  ->  assets/sponsors/<id>.webp  + src/sponsors.json
+        design/sponsors/<id>.png  ->  assets/sponsors/<id>.webp  (sizes updated in src/sponsors.json)
+        Which sponsors, their names and order come from the season sheet
+        (tools/sheet_sync.py writes src/sponsors.json); a new sponsor's logo
+        normally comes in through the sheet's "Logo (saite)" column.
 
     python3 tools/prepare_assets.py photos --for next|results <file> [<file> ...] [--focus 0.4]
         adds photos to a poster pool:  assets/posters/<name>.jpg  + src/poster-photos.json
         "next" = next-round posters (photo strip on top), "results" = results
         posters (full photo). The two pools are kept separate.
 
-Sponsor originals stay in design/sponsors (not published). The web copies are
+Logo originals stay in design/teams and design/sponsors (not published). The web copies are
 trimmed to the logo itself, so the site can size every logo to the same visual
 weight. Photos are resized to 2000 px on the long side; the originals are not kept.
 """
@@ -21,23 +29,6 @@ from PIL import Image, ImageOps
 
 ROOT = Path(__file__).resolve().parent.parent
 
-# Display order in the footer and on the posters. `scale` nudges logos whose
-# drawing is lighter or heavier than their box suggests (1 = neutral).
-SPONSORS = [
-    ('dobeles-novads', 'Dobeles novada pašvaldība', 1.0),
-    ('jelgava', 'Jelgava', 1.15),
-    ('jssc', 'Jelgavas Sporta servisa centrs', 1.0),
-    ('tervete', 'Tērvetes alus darītava', 1.0),
-    ('jaunpils', 'Jaunpils pienotava', 1.0),
-    ('dobeles-dzirnavnieks', 'Dobeles dzirnavnieks', 1.0),
-    ('nakotne', 'Nākotne', 1.0),
-    ('nordcrunch', 'Nordcrunch', 1.0),
-    ('ozols-pub', 'Ozols Pub', 1.0),
-    ('garage-barber', 'Garage Barber', 1.0),
-    ('sporta-bode', 'Sporta bode — sportabode.eu', 1.0),
-    ('balevich-media', 'Balevich Media', 1.0),
-    ('kebabmix', 'Kebabmix', 1.0),
-]
 LOGO_BOX = (400, 200)      # max size of a web copy (enough for 2x screens and the posters)
 PHOTO_W, PHOTO_MAX_H = 2000, 2000   # long side 2000 px: enough for full-photo 1080×1920 posters
 
@@ -53,20 +44,37 @@ def trim(im, pad=0.02):
     return im.crop((max(0, x0 - p), max(0, y0 - p), min(im.width, x1 + p), min(im.height, y1 + p)))
 
 
+def teams(ids):
+    sys.path.insert(0, str(ROOT / 'tools'))
+    from sheet_sync import make_logo
+    src_dir = ROOT / 'design' / 'teams'
+    files = {f.stem: f for f in src_dir.iterdir() if f.suffix.lower() in ('.png', '.jpg', '.jpeg', '.webp')}
+    for tid in ids or sorted(files):
+        webp, w, h, transparent = make_logo(files[tid].read_bytes(), 'teams')
+        dest = ROOT / 'assets' / 'teams' / f'{tid}.webp'
+        dest.write_bytes(webp)
+        print(f'{tid:12s} {w}x{h}  {len(webp) // 1024} KB' + ('' if transparent else '  (no transparent background)'))
+
+
 def sponsors():
+    """Re-make the web copies from the originals in design/sponsors. The list,
+    names, order and `scale` (a nudge for logos whose drawing is lighter or
+    heavier than their box suggests) stay as they are in src/sponsors.json."""
     out_dir = ROOT / 'assets' / 'sponsors'
-    out_dir.mkdir(parents=True, exist_ok=True)
-    manifest = []
-    for sid, name, scale in SPONSORS:
-        im = Image.open(ROOT / 'design' / 'sponsors' / f'{sid}.png').convert('RGBA')
-        im = trim(im)
+    mpath = ROOT / 'src' / 'sponsors.json'
+    manifest = json.loads(mpath.read_text())
+    for m in manifest:
+        orig = ROOT / 'design' / 'sponsors' / f'{m["id"]}.png'
+        if not orig.exists():
+            print(f'{m["id"]:22s} no original in design/sponsors, kept as is')
+            continue
+        im = trim(Image.open(orig).convert('RGBA'))
         im.thumbnail(LOGO_BOX, Image.LANCZOS)
-        dest = out_dir / f'{sid}.webp'
+        dest = out_dir / f'{m["id"]}.webp'
         im.save(dest, 'WEBP', quality=86, method=6)
-        manifest.append({'id': sid, 'name': name, 'src': f'assets/sponsors/{sid}.webp',
-                         'w': im.width, 'h': im.height, 'scale': scale})
-        print(f'{sid:22s} {im.width}x{im.height}  {dest.stat().st_size // 1024} KB')
-    (ROOT / 'src' / 'sponsors.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=1) + '\n')
+        m['w'], m['h'] = im.width, im.height
+        print(f'{m["id"]:22s} {im.width}x{im.height}  {dest.stat().st_size // 1024} KB')
+    mpath.write_text(json.dumps(manifest, ensure_ascii=False, indent=1) + '\n')
 
 
 def photos(files, focus, use):
@@ -90,7 +98,9 @@ def photos(files, focus, use):
 
 if __name__ == '__main__':
     args = sys.argv[1:]
-    if args[:1] == ['sponsors']:
+    if args[:1] == ['teams']:
+        teams(args[1:])
+    elif args[:1] == ['sponsors']:
         sponsors()
     elif args[:1] == ['photos']:
         focus, use = 0.4, None

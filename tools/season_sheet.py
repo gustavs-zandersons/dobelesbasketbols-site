@@ -1,10 +1,12 @@
 """Builds the Google Sheets template (as .xlsx) for the 2026/27 season:
-manual inputs + fallback schedule + sponsors page content for the site.
+settings, teams, halls and sponsors for the site + the season plan.
 
     python3 tools/season_sheet.py <output.xlsx>
 
 Then recalculate the formulas (LibreOffice) before sending the file.
-The "Sponsori" rows are prefilled from src/sponsor-info.json.
+"Iestatījumi", "Komandas", "Zāles" and "Sponsori" are prefilled from
+src/sheet.json (what the site has now), so importing the template with
+tools/sheet_sync.py gives back the same data.
 """
 import json
 import sys
@@ -18,6 +20,10 @@ from openpyxl.utils import get_column_letter
 
 OUT = sys.argv[1] if len(sys.argv) > 1 else 'Dobeles_basketbols_2026-27.xlsx'
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / 'tools'))
+from sheet_sync import SETTINGS, dig, site_logo_link  # noqa: E402  (same names as the importer)
+
+SHEET = json.loads((ROOT / 'src' / 'sheet.json').read_text())
 KG = 'Playoff kvalifikācijas grupa'
 
 FONT = 'Arial'
@@ -80,9 +86,27 @@ ws.column_dimensions['B'].width = 100
 ws.sheet_view.showGridLines = False
 rows = [
     ('title', 'Dobeles basketbols 2026/27 — sezonas tabula'),
-    ('text', 'Šī tabula ir mājaslapas rezerves avots un vieta manuālajiem datiem. Mājaslapa to nolasa automātiski ik pēc dažām stundām.'),
+    ('text', 'No šīs tabulas mājaslapa ņem iestatījumus, komandas, zāles un sponsorus. Mājaslapa atjaunojas, kad GitHub palaiž „Atjaunot datus no tabulas” (sk. zemāk).'),
     ('gap', ''),
-    ('h', 'Kā dati apvienojas'),
+    ('h', 'Ko mājaslapa nolasa šobrīd'),
+    ('kv', ('Jau tagad', 'Lapas „Iestatījumi”, „Komandas”, „Zāles” un „Sponsori”.')),
+    ('kv', ('Vēl ne', 'Lapas „Kalendārs”, „MVP” un „Lēmumi”. Līdz tam mājaslapā redzamas demo spēles ar īstajām komandām un testa versijas paziņojums.')),
+    ('kv', ('Vēlāk', 'Pēc izlozes — kalendārs no šīs tabulas. Kad būs LBS atļauja — rezultāti un statistika no basket.lv.')),
+    ('gap', ''),
+    ('h', 'Kā atjaunot mājaslapu'),
+    ('kv', ('Poga', 'GitHub → dobelesbasketbols-site → Actions → „Atjaunot datus no tabulas” → Run workflow. Pēc 2–3 minūtēm izmaiņas ir mājaslapā.')),
+    ('kv', ('Ja ir kļūdas', 'Mājaslapa paliek tāda, kāda bija, un GitHub atsūta e-pastu. Darbības lapā ir saraksts: lapa, rinda un kas jālabo.')),
+    ('kv', ('Tikko laboji?', 'Google publicēto versiju atjauno dažu minūšu laikā. Ja izmaiņas neparādās, pagaidi un palaid vēlreiz.')),
+    ('gap', ''),
+    ('h', 'Logo (komandām un sponsoriem)'),
+    ('kv', ('1. Mape', 'Google Drive izveido mapi (piem., „Logo”) un ielādē tur logo: PNG ar caurspīdīgu fonu. Der arī JPG vai WebP, SVG neder.')),
+    ('kv', ('2. Piekļuve', 'Mapei: Kopīgot → Vispārējā piekļuve → „Ikviens, kam ir saite” → Skatītājs (Share → General access → Anyone with the link → Viewer).')),
+    ('kv', ('3. Saite', 'Katram failam: Kopīgot → Kopēt saiti (Share → Copy link). Ielīmē to kolonnā „Logo (saite)” pie komandas vai sponsora.')),
+    ('kv', ('Jau aizpildīts', 'Ja logo jau ir mājaslapā, kolonnā „Logo (saite)” ir tā adrese mājaslapā (…/assets/…webp). To neko nemaina — logo paliek.')),
+    ('kv', ('Tukša šūna', 'Paliek logo, kas mājaslapā jau ir. Ja komandai logo nav, rāda iniciāļus.')),
+    ('kv', ('Nomainīt logo', 'Adreses vietā ielīmē Google Drive saiti uz jauno failu un atjauno mājaslapu.')),
+    ('gap', ''),
+    ('h', 'Kā dati apvienosies sezonas laikā'),
     ('kv', ('basket.lv', 'Galvenais avots. Ja spēle ir basket.lv, mājaslapa ņem no turienes datumu, laiku, zāli, komandas, rezultātu un statistiku.')),
     ('kv', ('Šī tabula', 'Rezerves plāns visai sezonai (arī spēlēm, kuru komandas vēl nav zināmas) un manuālie dati: MVP, komiteju lēmumi, komandas, zāles.')),
     ('kv', ('Lēmumi', 'Tabulas lapa „Lēmumi” vienmēr ir svarīgāka par basket.lv (piem., neierašanās → 20:0).')),
@@ -94,13 +118,13 @@ rows = [
     ('fill_calc', ('Sarkans teksts', 'Kolonna „Pārbaude” — ja tur ir teksts, rindā ir kļūda.')),
     ('gap', ''),
     ('h', 'Lapas'),
-    ('kv', ('Iestatījumi', 'Sezona, kausu nosaukumi, MVP balvas sponsori, basket.lv saites.')),
-    ('kv', ('Komandas', 'Visas komandas. Kolonnu „Grupa” aizpilda pēc izlozes. „basket.lv nosaukums” — tieši tā, kā komanda rakstīta basket.lv. Pilsēta, apraksts un saites nav obligāti — ja aizpildīti, tie redzami komandas lapā.')),
+    ('kv', ('Iestatījumi', 'Sezona, kausu nosaukumi, MVP balvas sponsori, kājenes teksts un turnīra sociālo tīklu saites, sponsoru lapas teksts, basket.lv saites.')),
+    ('kv', ('Komandas', 'Visas 12 komandas. Kolonnu „Grupa” aizpilda pēc izlozes. „basket.lv nosaukums” — tieši tā, kā komanda rakstīta basket.lv. Logo — saite uz failu Google Drive. Pilsēta, apraksts un saites nav obligāti — ja aizpildīti, tie redzami komandas lapā.')),
     ('kv', ('Zāles', 'Zāles ar adresēm. Spēlēs zāli norāda ar tās ID (dobele, jelgava).')),
     ('kv', ('Kalendārs', 'Visas sezonas spēles — viena rinda = viena spēle. Kārta = visas spēles vienā datumā un zālē (ne vairāk kā 4).')),
     ('kv', ('MVP', 'Katras kārtas MVP katram kausam. Statistika tiek ņemta no basket.lv automātiski.')),
     ('kv', ('Lēmumi', 'Neierašanās, anulēti rezultāti, labojumi, izlozes.')),
-    ('kv', ('Sponsori', 'Sponsoru lapa mājaslapā: līmenis (Ģenerālsponsors / Atbalstītājs), secība, apraksts un saites. Tukša saite — poga netiek rādīta.')),
+    ('kv', ('Sponsori', 'Sponsoru lapa un logo kājenē: līmenis (Ģenerālsponsors / Atbalstītājs), secība, apraksts, saites, logo. Tukša saite — poga netiek rādīta. Izdzēsta rinda — sponsors pazūd no mājaslapas.')),
     ('kv', ('Pārbaude', 'Kopsavilkums: cik spēļu ir ieplānotas un vai tabulā nav kļūdu.')),
     ('kv', ('Saraksti', 'Izvēlņu saraksti. Nemainīt.')),
     ('gap', ''),
@@ -112,15 +136,18 @@ rows = [
     ('kv', ('Kad komandas zināmas', 'Var atstāt kodu — mājaslapa pati ieliks komandu pēc tabulas. Vai arī ierakstīt komandas ID.')),
     ('gap', ''),
     ('h', 'Piemēru rindas (tikai paraugs — tabulā tās nav jāievada)'),
+    ('ex', ('Komandas', 'buki · BK Buki / Sandramebeles.lv · Buki · BK Buki · A · https://drive.google.com/file/d/1AbC…/view · Dobele · Īss apraksts … · https://… · https://www.facebook.com/… · · ')),
     ('ex', ('Kalendārs', 'DBCK-GR-01 · DBČK · Grupu turnīrs · 1. kārta · — · — · 25.10.2026 · 11:00 · dobele · buki · doks · Plānota')),
     ('ex', ('Kalendārs (izslēgšana)', 'DBCK-SF1-3 · DBČK · Pusfināls · — · SF1 · 3 · 04.04.2027 · 14:00 · dobele · K1 · K4 · Ja vajag')),
     ('ex', ('MVP', 'DBČK · 25.10.2026 · Mārtiņš Ozols · skandijs')),
     ('ex', ('Lēmumi', 'DBCK-GR-07 · Neieradās viesi · — · 09.11.2026 · Sacensību komiteja · Komanda neieradās')),
     ('ex', ('Lēmumi (izloze)', 'DBCK-GR-30 · Izloze · buki, doks · 15.12.2026 · Sacensību komiteja · A grupas 3.–4. vieta')),
-    ('ex', ('Sponsori', 'tervete · Tērvetes alus darītava · Atbalstītājs · 4 · Īss apraksts … · https://www.tervete.lv · https://www.facebook.com/… · · ')),
+    ('ex', ('Sponsori', 'tervete · Alus darītava „Tērvete” · Atbalstītājs · 4 · Īss apraksts … · https://www.tervete.lv · https://www.facebook.com/… · · · https://…/assets/sponsors/tervete.webp')),
     ('gap', ''),
     ('h', 'Noteikumi, lai mājaslapa varētu nolasīt datus'),
-    ('kv', ('1', 'Nemainīt lapu un kolonnu nosaukumus un to secību.')),
+    ('kv', ('1', 'Nemainīt lapu un kolonnu nosaukumus un to secību. Lapā „Iestatījumi” nemainīt kolonnu „Parametrs”.')),
+    ('kv', ('ID', 'Komandu, zāļu un sponsoru ID: mazie latīņu burti bez garumzīmēm, cipari un domuzīme (piem., „spriditis”, „ozols-pub”). Pēc sezonas sākuma ID nemainīt.')),
+    ('kv', ('Saites', 'Visas saites pilnas, sākas ar https://.')),
     ('kv', ('2', 'Datumu rakstīt kā DD.MM.GGGG, laiku kā HH:MM.')),
     ('kv', ('3', 'Spēles ID nemainīt — uz to atsaucas lapas „MVP” un „Lēmumi”. Jaunai spēlei pievieno jaunu rindu ar jaunu ID.')),
     ('kv', ('4', 'Spēli nedzēst — ja tā nenotiks, statusu maina uz „Atcelta”.')),
@@ -129,7 +156,8 @@ rows = [
     ('h', 'Pēc augšupielādes Google Drive (vienreiz)'),
     ('kv', ('Atvērt', 'Augšupielādē failu Google Drive un atver ar Google Sheets (Fails → Saglabāt kā Google izklājlapu).')),
     ('kv', ('Aizsargāt', 'Dati → Aizsargāt lapas un diapazonus: aizsargā pelēkās kolonnas un lapu „Saraksti”, lai tās varētu mainīt tikai tu.')),
-    ('kv', ('Publicēt', 'Fails → Kopīgot → Publicēt tīmeklī → „Viss dokuments”, CSV. Saiti iedod Claude — mājaslapa no tās nolasīs datus.')),
+    ('kv', ('Publicēt', 'Fails → Kopīgot → Publicēt tīmeklī → „Viss dokuments” → Publicēt (File → Share → Publish to web → Entire document). Atstāj ieslēgtu automātisko atkārtoto publicēšanu. Saiti iedod Claude — mājaslapa no tās nolasīs datus.')),
+    ('kv', ('Svarīgi', 'Publicētu tabulu var izlasīt ikviens, kam ir saite. Neraksti tajā tālruņus, e-pastus vai citus personas datus.')),
     ('kv', ('Kopīgot', 'Pārējiem organizatoriem dod rediģēšanas tiesības (Kopīgot → Redaktors).')),
 ]
 r = 1
@@ -161,73 +189,91 @@ for kind, val in rows:
 
 # ---------------------------------------------------------------- Iestatījumi
 ws = wb.create_sheet('Iestatījumi')
-header(ws, ['Parametrs', 'Vērtība', 'Paskaidrojums'], [30, 52, 60])
-settings = [
-    ('Sezona', '2026/27', 'Sezonas nosaukums mājaslapā.'),
-    ('DBČK nosaukums', 'Dobeles Basketbola čempionu kauss', 'Pilns kausa nosaukums (arī plakātos).'),
-    ('JSSC nosaukums', 'Jelgavas Sporta servisa centra Izaicinājuma kauss', 'Pilns kausa nosaukums (arī plakātos).'),
-    ('DBČK MVP balvas sponsors', 'Tērvetes alus darītava', 'Vienam kausam viens sponsors visai sezonai. Logo ir mājaslapas failos.'),
-    ('JSSC MVP balvas sponsors', 'Tērvetes alus darītava', 'Vienam kausam viens sponsors visai sezonai. Logo ir mājaslapas failos.'),
-    ('DBČK basket.lv saite', '', 'Saite uz Dobeles kausa sacensībām basket.lv.'),
-    ('JSSC basket.lv saite', '', 'Saite uz Izaicinājuma kausa sacensībām basket.lv.'),
-]
+header(ws, ['Parametrs', 'Vērtība', 'Paskaidrojums'], [30, 60, 62])
+HELP = {
+    'Sezona': 'Sezonas nosaukums mājaslapā, piem., 2026/27.',
+    'DBČK nosaukums': 'Pilns kausa nosaukums (sākumlapas virsraksts, kopvērtējums).',
+    'JSSC nosaukums': 'Pilns kausa nosaukums (sākumlapas virsraksts, kopvērtējums).',
+    'DBČK MVP balvas sponsors': 'Nosaukums tieši kā lapā „Sponsori”. Ja maini sponsoru, atsūti Claude baltu logo versiju MVP blokam.',
+    'JSSC MVP balvas sponsors': 'Nosaukums tieši kā lapā „Sponsori”. Ja maini sponsoru, atsūti Claude baltu logo versiju MVP blokam.',
+    'DBČK basket.lv saite': 'Saite uz Dobeles kausa sacensībām basket.lv. Vēl netiek izmantota.',
+    'JSSC basket.lv saite': 'Saite uz Izaicinājuma kausa sacensībām basket.lv. Vēl netiek izmantota.',
+    'Sponsoru lapas teksts': 'Pateicības teksts lapas „Sponsori” augšā. Tukšs — teksta nav.',
+    'Kājenes teksts': 'Teksts lapas apakšā (kas organizē sacensības). Tukšs — teksta nav.',
+    'Turnīra Facebook': 'Turnīra lapa (pilna saite ar https://). Tukša — ikona kājenē netiek rādīta.',
+    'Turnīra Instagram': 'Turnīra konts (pilna saite ar https://). Tukša — ikona netiek rādīta.',
+    'Turnīra YouTube': 'Turnīra kanāls (pilna saite ar https://). Tukša — ikona netiek rādīta.',
+    'Turnīra TikTok': 'Turnīra konts (pilna saite ar https://). Tukša — ikona netiek rādīta.',
+}
+settings = [(param, dig(SHEET['settings'], key) or None, HELP[param]) for param, key, *_ in SETTINGS]
 for i, row in enumerate(settings, start=2):
     for j, v in enumerate(row, start=1):
         ws.cell(row=i, column=j, value=v)
 style_rows(ws, 2, 1 + len(settings), 3, ['auto', 'in', 'auto'])
 for i in range(2, 2 + len(settings)):
+    ws.cell(row=i, column=2).alignment = Alignment(wrap_text=True, vertical='top')
+    ws.cell(row=i, column=3).alignment = Alignment(wrap_text=True, vertical='top')
     ws.cell(row=i, column=3).font = f(color='5B6478')
+    v = ws.cell(row=i, column=2).value or ''
+    ws.row_dimensions[i].height = max(30, 15 * (len(str(v)) // 60 + 1) + 4)
+    ws.cell(row=i, column=2).number_format = '@'   # "2026/27" must stay text
+ws.cell(row=1, column=1).comment = Comment('Parametru nosaukumus nemainīt — mājaslapa tos meklē pēc nosaukuma.', 'Claude')
 
 # ---------------------------------------------------------------- Komandas
 ws = wb.create_sheet('Komandas')
 # Columns G–L are optional (shown on the team page only when filled).
-header(ws, ['ID', 'Pilnais nosaukums', 'Īsais nosaukums', 'basket.lv nosaukums', 'Grupa', 'Logo fails',
-            'Pilsēta', 'Apraksts', 'Mājaslapa', 'Facebook', 'Instagram', 'TikTok', 'Piezīme'],
-       [14, 34, 18, 34, 9, 26, 16, 50, 28, 28, 28, 28, 34])
-teams = [
-    ('buki', 'BK Buki / Sandramebeles.lv', 'Buki', 'buki.webp'),
-    ('vilki', 'Vilki', 'Vilki', 'vilki.webp'),
-    ('livberze', 'BK Līvbērze', 'Līvbērze', 'livberze.webp'),
-    ('ile', 'Īle / Penkule', 'Īle', 'ile.webp'),
-    ('doks', 'Doks', 'Doks', 'doks.webp'),
-    ('auce', 'BK Auce', 'Auce', ''),
-    ('skandijs', 'Skandijs / HQ Chipper Parts', 'Skandijs', 'skandijs.webp'),
-    ('jaunpils', 'Jaunpils', 'Jaunpils', 'jaunpils.webp'),
-    ('broceni', 'Brocēni', 'Brocēni', 'broceni.webp'),
-    ('valauto', 'Valauto', 'Valauto', 'valauto.webp'),
-    ('spriditis', 'TSK Sprīdītis', 'Sprīdītis', 'spriditis.webp'),
-    ('bene', 'BK Bēne', 'Bēne', ''),
-]
+header(ws, ['ID', 'Pilnais nosaukums', 'Īsais nosaukums', 'basket.lv nosaukums', 'Grupa', 'Logo (saite)',
+            'Pilsēta', 'Apraksts', 'Mājaslapa', 'Facebook', 'Instagram', 'TikTok', 'Piezīme', 'Pārbaude'],
+       [14, 34, 18, 30, 9, 34, 16, 50, 28, 28, 28, 28, 30, 44])
 TEAM_ROWS = 20   # room for changes
-for i, (tid, full, short, logo) in enumerate(teams, start=2):
-    ws.cell(row=i, column=1, value=tid)
-    ws.cell(row=i, column=2, value=full)
-    ws.cell(row=i, column=3, value=short)
-    ws.cell(row=i, column=6, value=logo)
-    if not logo:
-        ws.cell(row=i, column=13, value='Logo vēl nav — atsūtīt PNG.')
-style_rows(ws, 2, 1 + TEAM_ROWS, 13, ['in', 'in', 'in', 'in', 'in', 'auto', 'in', 'in', 'in', 'in', 'in', 'in', 'in'])
+for i, t in enumerate(SHEET['teams'], start=2):
+    has_logo = (ROOT / 'assets' / 'teams' / f'{t["id"]}.webp').exists()
+    vals = [t['id'], t['name'], t['short'], '; '.join(t.get('basket', [])) or None, t.get('group') or None,
+            site_logo_link('teams', t['id']) if has_logo else None, t.get('city'), t.get('description'), t.get('website'), t.get('facebook'), t.get('instagram'), t.get('tiktok')]
+    for j, v in enumerate(vals, start=1):
+        ws.cell(row=i, column=j, value=v)
+    if not has_logo:
+        ws.cell(row=i, column=13, value='Logo vēl nav — ieliec saiti kolonnā „Logo (saite)”.')
+style_rows(ws, 2, 1 + TEAM_ROWS, 14, ['in'] * 13 + ['calc'])
 for r in range(2, 2 + TEAM_ROWS):
+    R_ = str(r)
     ws.cell(row=r, column=8).alignment = Alignment(wrap_text=True, vertical='top')
-ws.cell(row=1, column=1).comment = Comment('Īss ID bez garumzīmēm un atstarpēm. Pēc sezonas sākuma nemainīt — uz to atsaucas kalendārs.', 'Claude')
+    for ci in (1, 3, 4, 5):
+        ws.cell(row=r, column=ci).number_format = '@'
+    link_checks = ''.join(
+        f'IF(AND({c}{R_}<>"",LEFT({c}{R_},8)<>"https://"),"{name}: saitei jāsākas ar https://. ","")&'
+        for c, name in (('F', 'Logo'), ('I', 'Mājaslapa'), ('J', 'Facebook'), ('K', 'Instagram'), ('L', 'TikTok')))
+    ws.cell(row=r, column=14, value=(
+        f'=IF(AND(A{R_}="",B{R_}="",C{R_}=""),"",TRIM('
+        f'IF(A{R_}="","Nav ID. ","")&'
+        f'IF(AND(A{R_}<>"",OR(NOT(EXACT(A{R_},LOWER(A{R_}))),ISNUMBER(FIND(" ",A{R_})))),"ID: tikai mazie burti, bez atstarpēm. ","")&'
+        f'IF(B{R_}="","Nav pilnā nosaukuma. ","")&'
+        f'IF(C{R_}="","Nav īsā nosaukuma. ",IF(LEN(C{R_})>12,"Īsais nosaukums garāks par 12 zīmēm. ",""))&'
+        f'IF(AND(E{R_}<>"",E{R_}<>"A",E{R_}<>"B"),"Grupa: A vai B. ","")&'
+        + link_checks +
+        f'IF(AND(A{R_}<>"",COUNTIF($A$2:$A${1 + TEAM_ROWS},A{R_})>1),"Atkārtots ID. ","")'
+        f'))'))
+ws.cell(row=1, column=1).comment = Comment('Īss ID: mazie latīņu burti bez garumzīmēm, cipari, domuzīme. Pēc sezonas sākuma nemainīt — uz to atsaucas kalendārs.', 'Claude')
+ws.cell(row=1, column=3).comment = Comment('Rāda tabulās, kalendārā un plakātos. Līdz 12 zīmēm.', 'Claude')
 ws.cell(row=1, column=4).comment = Comment('Tieši tā, kā komanda rakstīta basket.lv. Ja nosaukumi ir vairāki, atdali ar semikolu (;).', 'Claude')
-ws.cell(row=1, column=5).comment = Comment('A vai B — aizpilda pēc izlozes.', 'Claude')
-ws.cell(row=1, column=6).comment = Comment('Logo fails mājaslapā (assets/teams/). Aizpilda Claude, kad logo atsūtīts.', 'Claude')
+ws.cell(row=1, column=5).comment = Comment('A vai B — aizpilda pēc izlozes. Kamēr nav 6 + 6, demo spēlēs grupas ir simulētas.', 'Claude')
+ws.cell(row=1, column=6).comment = Comment('Saite uz logo. Ja logo jau ir mājaslapā, šeit ir tā adrese mājaslapā — neko nemainīt. Jaunam vai citam logo: Google Drive faila saite (Kopīgot → Kopēt saiti; piekļuve „Ikviens, kam ir saite”), PNG ar caurspīdīgu fonu.', 'Claude')
 ws.cell(row=1, column=7).comment = Comment('Nav obligāti. Pilsēta vai novads komandas lapā.', 'Claude')
 ws.cell(row=1, column=8).comment = Comment('Nav obligāti. Īss apraksts komandas lapā (2–4 teikumi).', 'Claude')
 ws.cell(row=1, column=9).comment = Comment('Nav obligāti. Pilna saite, sākas ar https://. Tukša šūna — poga netiek rādīta.', 'Claude')
+ws.cell(row=1, column=14).comment = Comment('Aprēķinās automātiski. Ja šeit parādās teksts, rindā ir kļūda.', 'Claude')
 dv_list(ws, '"A,B"', f'E2:E{1 + TEAM_ROWS}')
 
 # ---------------------------------------------------------------- Zāles
 ws = wb.create_sheet('Zāles')
 header(ws, ['ID', 'Nosaukums', 'Adrese', 'Piezīme'], [14, 30, 34, 40])
-halls = [('dobele', 'Dobeles Sporta halle', 'Tērvetes iela 10, Dobele', ''),
-         ('jelgava', 'Jelgavas Sporta halle', 'Mātera iela 44A, Jelgava', 'Nosaukums jāprecizē.')]
 HALL_ROWS = 6
-for i, row in enumerate(halls, start=2):
-    for j, v in enumerate(row, start=1):
+for i, h in enumerate(SHEET['venues'], start=2):
+    note = 'Nosaukums jāprecizē.' if h['name'] == 'Jelgavas Sporta halle' else None
+    for j, v in enumerate((h['id'], h['name'], h.get('address'), note), start=1):
         ws.cell(row=i, column=j, value=v)
 style_rows(ws, 2, 1 + HALL_ROWS, 4, ['in', 'in', 'in', 'in'])
+ws.cell(row=1, column=1).comment = Comment('Īss ID (mazie burti). Kalendārā zāli norāda ar šo ID.', 'Claude')
 
 # ---------------------------------------------------------------- Kalendārs
 ws = wb.create_sheet('Kalendārs')
@@ -336,44 +382,48 @@ dv_list(ws, '=Saraksti!$G$2:$G$6', f'B2:B{1 + DEC_ROWS}')
 ws.cell(row=1, column=3).comment = Comment('Labojumam: rezultāts (78:71). Izlozei: komandu ID secībā (buki, doks). Citiem — tukšs.', 'Claude')
 
 # ---------------------------------------------------------------- Sponsori
-# One row per sponsor on the site's "Sponsori" page. The logo files are on the
-# site already (matched by ID); an empty link cell means no button.
+# One row per sponsor: the site's "Sponsori" page and the footer logos.
+# Existing sponsors already have a logo on the site (matched by ID); the logo
+# link is only needed for a new or changed logo. An empty link cell = no button.
 ws = wb.create_sheet('Sponsori')
-header(ws, ['ID', 'Nosaukums', 'Līmenis', 'Secība', 'Apraksts', 'Mājaslapa', 'Facebook', 'Instagram', 'TikTok', 'Logo fails', 'Pārbaude'],
-       [20, 30, 17, 8, 60, 30, 30, 30, 30, 26, 40])
-info = json.loads((ROOT / 'src' / 'sponsor-info.json').read_text())
-logos = {x['id']: x['src'].split('/')[-1] for x in json.loads((ROOT / 'src' / 'sponsors.json').read_text())}
+header(ws, ['ID', 'Nosaukums', 'Līmenis', 'Secība', 'Apraksts', 'Mājaslapa', 'Facebook', 'Instagram', 'TikTok', 'Logo (saite)', 'Pārbaude'],
+       [20, 30, 17, 8, 60, 30, 30, 30, 30, 34, 44])
 SP_ROWS = 30
-for i, row in enumerate(info, start=2):
+for i, row in enumerate(SHEET['sponsors'], start=2):
     vals = [row['id'], row['name'], row['level'], row['order'], row['description'] or None,
-            row['website'] or None, row['facebook'] or None, row['instagram'] or None, row['tiktok'] or None, logos.get(row['id'])]
+            row['website'] or None, row['facebook'] or None, row['instagram'] or None, row['tiktok'] or None,
+            site_logo_link('sponsors', row['id']) if (ROOT / 'assets' / 'sponsors' / f'{row["id"]}.webp').exists() else None]
     for j, v in enumerate(vals, start=1):
         ws.cell(row=i, column=j, value=v)
-style_rows(ws, 2, 1 + SP_ROWS, 11, ['auto', 'in', 'in', 'in', 'in', 'in', 'in', 'in', 'in', 'auto', 'calc'])
+style_rows(ws, 2, 1 + SP_ROWS, 11, ['auto', 'in', 'in', 'in', 'in', 'in', 'in', 'in', 'in', 'in', 'calc'])
 for r in range(2, 2 + SP_ROWS):
     ws.cell(row=r, column=5).alignment = Alignment(wrap_text=True, vertical='top')
     ws.row_dimensions[r].height = 30
     ws.cell(row=r, column=4).alignment = Alignment(horizontal='center', vertical='center')
+    ws.cell(row=r, column=1).number_format = '@'
     R_ = str(r)
     link_checks = ''.join(
         f'IF(AND({c}{R_}<>"",LEFT({c}{R_},8)<>"https://"),"{name}: saitei jāsākas ar https://. ","")&'
-        for c, name in (('F', 'Mājaslapa'), ('G', 'Facebook'), ('H', 'Instagram'), ('I', 'TikTok')))
+        for c, name in (('F', 'Mājaslapa'), ('G', 'Facebook'), ('H', 'Instagram'), ('I', 'TikTok'), ('J', 'Logo')))
     ws.cell(row=r, column=11, value=(
-        f'=IF(A{R_}="","",TRIM('
+        f'=IF(AND(A{R_}="",B{R_}=""),"",TRIM('
+        f'IF(A{R_}="","Nav ID. ","")&'
+        f'IF(AND(A{R_}<>"",OR(NOT(EXACT(A{R_},LOWER(A{R_}))),ISNUMBER(FIND(" ",A{R_})))),"ID: tikai mazie burti, bez atstarpēm. ","")&'
         f'IF(B{R_}="","Nav nosaukuma. ","")&'
         f'IF(ISNA(MATCH(C{R_},Saraksti!$I$2:$I$3,0)),"Izvēlies līmeni. ","")&'
-        f'IF(J{R_}="","Nav logo — atsūtīt Claude. ","")&'
+        f'IF(AND(D{R_}<>"",NOT(ISNUMBER(D{R_}))),"Secībai jābūt skaitlim. ","")&'
         + link_checks +
-        f'IF(COUNTIF($A$2:$A${1 + SP_ROWS},A{R_})>1,"Atkārtots ID. ","")'
+        f'IF(AND(A{R_}<>"",COUNTIF($A$2:$A${1 + SP_ROWS},A{R_})>1),"Atkārtots ID. ","")'
         f'))'))
 # New sponsor rows below the prefilled ones: ID is editable there.
-for r in range(2 + len(info), 2 + SP_ROWS):
+for r in range(2 + len(SHEET['sponsors']), 2 + SP_ROWS):
     ws.cell(row=r, column=1).fill = PatternFill('solid', fgColor=INPUT)
 dv_list(ws, '=Saraksti!$I$2:$I$3', f'C2:C{1 + SP_ROWS}')
-ws.cell(row=1, column=1).comment = Comment('Saista rindu ar logo mājaslapā. Nemainīt. Jaunam sponsoram — atsūti logo Claude, viņš ieliks ID un logo.', 'Claude')
-ws.cell(row=1, column=4).comment = Comment('Secība lapā līmeņa ietvaros: 1 = pirmais.', 'Claude')
+ws.cell(row=1, column=1).comment = Comment('Saista rindu ar logo mājaslapā — esošajiem nemainīt. Jaunam sponsoram: ID (mazie burti, piem., „ozols-pub”) un logo saite.', 'Claude')
+ws.cell(row=1, column=4).comment = Comment('Secība lapā līmeņa ietvaros: 1 = pirmais. Tāda pati secība kājenē.', 'Claude')
 ws.cell(row=1, column=5).comment = Comment('Īss apraksts uznirstošajā logā (2–4 teikumi).', 'Claude')
 ws.cell(row=1, column=6).comment = Comment('Pilna saite, sākas ar https://. Tukša šūna — poga netiek rādīta.', 'Claude')
+ws.cell(row=1, column=10).comment = Comment('Saite uz logo. Ja logo jau ir mājaslapā, šeit ir tā adrese mājaslapā — neko nemainīt. Jaunam vai citam logo: Google Drive faila saite (Kopīgot → Kopēt saiti; piekļuve „Ikviens, kam ir saite”).', 'Claude')
 ws.cell(row=1, column=11).comment = Comment('Aprēķinās automātiski. Ja šeit parādās teksts, rindā ir kļūda.', 'Claude')
 
 # ---------------------------------------------------------------- Pārbaude
@@ -412,6 +462,9 @@ ws.cell(row=note_row, column=1, value='DBČK pusfinālos 3. spēle notiek tikai,
 ws.cell(row=note_row + 2, column=1, value='Sponsoru rindas ar kļūdām').font = f(bold=True)
 ws.cell(row=note_row + 2, column=2, value='=COUNTIF(Sponsori!$K$2:$K$31,"?*")').font = f(bold=True, color=WARN, size=12)
 ws.cell(row=note_row + 2, column=3, value='Ja nav 0 — skaties kolonnu „Pārbaude” lapā „Sponsori”.').font = f(color='5B6478')
+ws.cell(row=note_row + 3, column=1, value='Komandu rindas ar kļūdām').font = f(bold=True)
+ws.cell(row=note_row + 3, column=2, value='=COUNTIF(Komandas!$N$2:$N$21,"?*")').font = f(bold=True, color=WARN, size=12)
+ws.cell(row=note_row + 3, column=3, value='Ja nav 0 — skaties kolonnu „Pārbaude” lapā „Komandas”.').font = f(color='5B6478')
 
 # ---------------------------------------------------------------- Saraksti
 ws = wb.create_sheet('Saraksti')
