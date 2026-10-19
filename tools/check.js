@@ -71,5 +71,9 @@ info.forEach(r => {
 });
 check(html.includes('id="sponsor-data"'), 'sponsor data is in the page');
 
+// 6. Optional team fields from the sheet's "Komandas" tab: links are full https addresses.
+data.teams.forEach(t => ['website', 'facebook', 'instagram', 'tiktok'].forEach(k =>
+  check(!t[k] || /^https:\/\/\S+$/.test(t[k]), 'team ' + t.id + ': ' + k + ' must start with https://')));
+
 if (failures) { console.error(failures + ' check(s) failed'); process.exit(1); }
 console.log('All checks passed (' + data.games.length + ' games).');
