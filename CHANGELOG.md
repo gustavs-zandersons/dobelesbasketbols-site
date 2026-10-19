@@ -1,7 +1,11 @@
 # Changelog
 
-## Season sheet sync, step 1 — not released yet (PR pending)
+## Season sheet sync, step 1 — released 19 Oct 2026 (PR #7)
 
+- **Real 2026/27 teams and sponsors from the organisers' sheet:** Lietus,
+  Jelgava BJSS U19 and U17 join (new logos); Līvbērze, Auce and Bēne leave.
+  Sponsor names, descriptions and links, the tournament's Facebook / Instagram /
+  YouTube in the footer, short names as the organisers set them.
 - **The site reads the season Google Sheet:** tabs "Iestatījumi", "Komandas",
   "Zāles" and "Sponsori" (`tools/sheet_sync.py` → `src/sheet.json`). Calendar,
   MVP and Lēmumi are not read yet.
