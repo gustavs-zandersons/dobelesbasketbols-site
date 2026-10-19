@@ -4,12 +4,12 @@
   "cups": {
    "dbck": {
     "name": "Dobeles Basketbola čempionu kauss",
-    "mvpSponsor": "Tērvetes alus darītava",
+    "mvpSponsor": "Alus darītava „Tērvete”",
     "basket": ""
    },
    "jssc": {
     "name": "Jelgavas Sporta servisa centra Izaicinājuma kauss",
-    "mvpSponsor": "Tērvetes alus darītava",
+    "mvpSponsor": "Alus darītava „Tērvete”",
     "basket": ""
    }
   },
@@ -26,21 +26,15 @@
  },
  "teams": [
   {
+   "id": "skandijs",
+   "name": "Skandijs / HQ Chipper Parts",
+   "short": "Skandijs",
+   "group": ""
+  },
+  {
    "id": "buki",
    "name": "BK Buki / Sandramebeles.lv",
    "short": "Buki",
-   "group": ""
-  },
-  {
-   "id": "vilki",
-   "name": "Vilki",
-   "short": "Vilki",
-   "group": ""
-  },
-  {
-   "id": "livberze",
-   "name": "BK Līvbērze",
-   "short": "Līvbērze",
    "group": ""
   },
   {
@@ -56,21 +50,9 @@
    "group": ""
   },
   {
-   "id": "auce",
-   "name": "BK Auce",
-   "short": "Auce",
-   "group": ""
-  },
-  {
-   "id": "skandijs",
-   "name": "Skandijs / HQ Chipper Parts",
-   "short": "Skandijs",
-   "group": ""
-  },
-  {
-   "id": "jaunpils",
-   "name": "Jaunpils",
-   "short": "Jaunpils",
+   "id": "valauto",
+   "name": "Valauto",
+   "short": "Valauto",
    "group": ""
   },
   {
@@ -80,9 +62,15 @@
    "group": ""
   },
   {
-   "id": "valauto",
-   "name": "Valauto",
-   "short": "Valauto",
+   "id": "lietus",
+   "name": "Lietus",
+   "short": "Lietus",
+   "group": ""
+  },
+  {
+   "id": "vilki",
+   "name": "Vilki",
+   "short": "Vilki",
    "group": ""
   },
   {
@@ -92,9 +80,21 @@
    "group": ""
   },
   {
-   "id": "bene",
-   "name": "BK Bēne",
-   "short": "Bēne",
+   "id": "jaunpils",
+   "name": "Jaunpils",
+   "short": "Jaunpils",
+   "group": ""
+  },
+  {
+   "id": "bjss-u19",
+   "name": "Jelgava BJSS U19",
+   "short": "BJSS U19",
+   "group": ""
+  },
+  {
+   "id": "bjss-u17",
+   "name": "Jelgava BJSS U17",
+   "short": "BJSS U17",
    "group": ""
   }
  ],
@@ -124,7 +124,7 @@
   },
   {
    "id": "jelgava",
-   "name": "Jelgava",
+   "name": "Jelgavas pilsētas pašvaldība",
    "level": "Ģenerālsponsors",
    "order": 2,
    "description": "",
@@ -146,7 +146,7 @@
   },
   {
    "id": "tervete",
-   "name": "Tērvetes alus darītava",
+   "name": "Alus darītava „Tērvete”",
    "level": "Atbalstītājs",
    "order": 4,
    "description": "",
@@ -157,7 +157,7 @@
   },
   {
    "id": "jaunpils",
-   "name": "Jaunpils pienotava",
+   "name": "Jaunpils Pienotava",
    "level": "Atbalstītājs",
    "order": 5,
    "description": "",
@@ -179,7 +179,7 @@
   },
   {
    "id": "nakotne",
-   "name": "Nākotne",
+   "name": "Gaļas pārstrādes uzņēmums „Nākotne”",
    "level": "Atbalstītājs",
    "order": 7,
    "description": "",
@@ -223,7 +223,7 @@
   },
   {
    "id": "sporta-bode",
-   "name": "Sporta bode",
+   "name": "Sporta Bode",
    "level": "Atbalstītājs",
    "order": 11,
    "description": "",
@@ -234,7 +234,7 @@
   },
   {
    "id": "balevich-media",
-   "name": "Balevich Media",
+   "name": "Balevich media",
    "level": "Atbalstītājs",
    "order": 12,
    "description": "",
