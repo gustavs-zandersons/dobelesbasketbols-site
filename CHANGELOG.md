@@ -21,6 +21,13 @@
 - **Sortable player tables:** click a column in the team roster or in a game's
   box score to sort (high → low, again for low → high; names A → Ž). Totals and
   "did not play" rows stay at the bottom. The roster starts sorted by points.
+- **Calendar list:** the next game day is filled gold with dark text, like
+  its square in the month grid.
+- **Menu:** only built pages (Sākums, Kalendārs, Kopvērtējums, Komandas,
+  Sponsori); the "Drīzumā" items are gone.
+- **Next-round posters:** the stage + round line moved from the header to
+  just above the games, styled and spaced like the Hope Cup label.
+- **Next-round card:** inside a step lighter again (blue / red).
 - **Links:** team names in the standings tables and on game pages open the
   team page.
 - **Season sheet:** optional team fields in "Komandas" (town, description,

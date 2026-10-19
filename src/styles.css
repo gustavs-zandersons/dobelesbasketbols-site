@@ -10,7 +10,7 @@
   --bg-head: #112C5B;
   --surface: #1A417F;
   --surface-hi: #24539F;
-  --ticket: #2D62B6;       /* inside of the next-round card: lighter than the page */
+  --ticket: #3A71C6;       /* inside of the next-round card: lighter than the page */
   --win: #1E9E58;          /* win / loss chips everywhere (U / Z) */
   --loss: #E0413F;
   --line: rgba(255, 255, 255, 0.14);
@@ -47,7 +47,7 @@
   --bg-head: #5E1224;
   --surface: #861C35;
   --surface-hi: #AA2C4A;
-  --ticket: #B5304F;
+  --ticket: #C43F5E;
   --fg-muted: #F2CDD6;
   --fg-dim: #D697A6;
   --title: #FFFFFF;
@@ -1679,7 +1679,10 @@ button.cal-day:hover { border-color: var(--accent); }
   cursor: pointer;
 }
 .cal-row:hover { background: var(--surface-hi); border-color: var(--line-strong); }
-.cal-row.next { border: 2px solid var(--accent-fill); }
+/* Next game day: filled like its square in the month grid. */
+.cal-row.next { background: var(--accent-fill); border-color: var(--accent-fill); color: var(--on-accent); }
+.cal-row.next:hover { background: var(--accent-fill); filter: brightness(1.05); }
+.cal-row.next .cal-date span, .cal-row.next .cal-rright, .cal-row.next .cal-rright b { color: var(--on-accent); }
 .cal-row.past { color: var(--fg-muted); }
 .cal-date { display: grid; line-height: 1; }
 .cal-date b { font-family: var(--font-display); font-weight: 400; font-size: 1.9rem; }
