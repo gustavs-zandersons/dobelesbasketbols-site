@@ -763,7 +763,46 @@
       '<p class="note">Treknrakstā — pamatsastāvs. 2P / 3P / SM — divu un trīs punktu metieni un soda metieni (iemesti/mesti). AB — atlēkušās bumbas (Uzb — uzbrukumā, Aizs — aizsardzībā). RP — rezultatīvas piespēles, PK — pārķertās bumbas, BL — bloķētie metieni, KĻ — kļūdas, PZ — piezīmes, EF — efektivitāte, +/− — punktu starpība, spēlētājam atrodoties laukumā.</p></section>';
 
     $('game-view').innerHTML = html;
+    makeSortable($('game-view'), -1);
     return true;
+  }
+
+  // ---------- Sortable player tables (box scores, team rosters) ----------
+  // Every header becomes a button. First click sorts high → low (names A → Ž),
+  // a second click reverses. Totals, percentage and "did not play" rows stay at the bottom.
+  function makeSortable(root, defaultCol) {
+    root.querySelectorAll('table.bx').forEach(function (table) {
+      table.querySelectorAll('thead th').forEach(function (th, i) {
+        th.setAttribute('aria-sort', i === defaultCol ? 'descending' : 'none');
+        th.innerHTML = '<button type="button" class="sort-btn" data-sort' + (i === 0 ? ' data-text' : '') + '>' + th.innerHTML + '</button>';
+      });
+    });
+  }
+  function cellValue(td, text) {
+    var t = (td && td.textContent || '').trim();
+    if (text) return t;
+    var m = /^(\d+):(\d\d)$/.exec(t);
+    if (m) return +m[1] * 60 + +m[2];
+    m = /^[+−-]?\d+(?:[.,]\d+)?/.exec(t.replace('−', '-'));
+    return m ? parseFloat(m[0].replace(',', '.')) : -Infinity;
+  }
+  function sortTable(btn) {
+    var th = btn.closest('th'), table = btn.closest('table'), tbody = table.tBodies[0];
+    var col = Array.prototype.indexOf.call(th.parentNode.children, th), text = btn.hasAttribute('data-text');
+    var cur = th.getAttribute('aria-sort');
+    var dir = cur === 'descending' ? 'ascending' : cur === 'ascending' ? 'descending' : (text ? 'ascending' : 'descending');
+    table.querySelectorAll('thead th').forEach(function (x) { x.setAttribute('aria-sort', 'none'); });
+    th.setAttribute('aria-sort', dir);
+    var fixed = function (r) { return r.classList.contains('dnp') || r.classList.contains('tot') || r.classList.contains('pct'); };
+    var rows = Array.prototype.filter.call(tbody.rows, function (r) { return !fixed(r); });
+    var rest = Array.prototype.filter.call(tbody.rows, fixed);
+    rows.sort(function (a, b) {
+      var x = cellValue(a.cells[col], text), y = cellValue(b.cells[col], text);
+      var d = text ? x.localeCompare(y, 'lv') : x - y;
+      return dir === 'ascending' ? d : -d;
+    });
+    rows.concat(rest).forEach(function (r) { tbody.appendChild(r); });
+    table.classList.add('is-sorted');
   }
 
   // ---------- Calendar page ----------
@@ -1383,7 +1422,8 @@
     { k: 'Atlēkušās bumbas', i: [10, 11] },
     { k: 'Rezultatīvas piespēles', i: [12] },
     { k: 'Pārķertās bumbas', i: [13] },
-    { k: 'Bloķētie metieni', i: [14] }
+    { k: 'Bloķētie metieni', i: [14] },
+    { k: 'Efektivitāte', i: [17] }
   ];
   function psum(p, idx) { return idx.reduce(function (a, i) { return a + p.sum[i]; }, 0); }
 
@@ -1470,17 +1510,14 @@
       var avgRow = function (c) {
         var v = perfValue(c, s), all = teamsIn.map(function (o) { return perfValue(c, o); });
         var rank = 1 + all.filter(function (ov) { return c.low ? ov < v : ov > v; }).length;
-        var best = c.low ? Math.min.apply(null, all) : Math.max.apply(null, all);
-        var bar = best > 0 ? Math.max(4, Math.round(100 * (c.low ? best / v : v / best))) : 0;
         var cupV = c.cup ? c.cup(L) : perfValue(c, L);
         var show = function (x, tt) { return c.m ? pct1(c.m(tt), c.a(tt)) : fmt1(x); };
         var sub = c.m ? '<small>' + fmt1(c.m(s) / s.sg) + '/' + fmt1(c.a(s) / s.sg) + ' spēlē</small>' : '';
         return '<div class="tm-avg-row' + (rank <= 3 ? ' is-top' : '') + '"><span class="tm-avg-k">' + esc(c.k) + sub + '</span>' +
           '<span class="tm-avg-v">' + show(v, s) + '</span><span class="tm-avg-c">' + show(cupV, L) + '</span>' +
-          '<span class="tm-avg-r"><span class="tm-rank">' + rank + '.</span></span>' +
-          '<span class="tm-avg-bar" aria-hidden="true"><i style="width:' + bar + '%"></i></span></div>';
+          '<span class="tm-avg-r"><span class="tm-rank">' + rank + '. no ' + teamsIn.length + '</span></span></div>';
       };
-      var head = '<div class="tm-avg-head"><span>Rādītājs</span><span>Komanda</span><span>Kausā</span><span>Vieta</span></div>';
+      var head = '<div class="tm-avg-head"><span>Rādītājs</span><span>Komanda</span><span>Kausa vidējais</span><span>Vieta kausā</span></div>';
       var col = function (groups) {
         return '<div class="tm-avg-col">' + head + groups.map(function (gp) {
           return '<p class="tm-avg-g">' + esc(gp.group) + '</p>' + gp.rows.map(avgRow).join('');
@@ -1488,7 +1525,7 @@
       };
       html += '<section class="tm-sec" aria-labelledby="tm-perf"><h2 class="g-title" id="tm-perf">Komandas sniegums <small>vidēji spēlē</small></h2>' +
         '<div class="tm-avg">' + col(PERF.slice(0, 2)) + col(PERF.slice(2)) + '</div>' +
-        '<p class="note">Kausā — visu šī kausa komandu vidējais. Vieta — starp ' + teamsIn.length + ' komandām, kas kausā aizvadījušas spēles.</p></section>';
+        '<p class="note">Kausa vidējais — visu šī kausa komandu vidējais rādītājs. Vieta kausā — komandas vieta šajā rādītājā starp ' + teamsIn.length + ' komandām, kas kausā aizvadījušas spēles.</p></section>';
 
       // 2) Leaders: top 3 per category, per game, at least half of the team's games.
       var minGp = Math.ceil(s.sg / 2);
@@ -1530,6 +1567,7 @@
     html += nextHtml + '<section class="tm-sec" aria-labelledby="tm-res"><h2 class="g-title" id="tm-res">Rezultāti</h2><ul class="tm-list">' +
       s.list.slice().reverse().map(function (x) { return teamRow(x, {}); }).join('') + '</ul></section>';
     $('teams-view').innerHTML = html;
+    makeSortable($('teams-view'), 2);   // roster starts sorted by points
   }
 
   // ---------- Sponsori page (same on both cups) ----------
@@ -1729,6 +1767,8 @@
       else window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
+    var sb = e.target.closest('[data-sort]');
+    if (sb) { sortTable(sb); return; }
     var tc = e.target.closest('[data-team-cup]');
     if (tc) {
       var tid = tc.getAttribute('data-team-id');

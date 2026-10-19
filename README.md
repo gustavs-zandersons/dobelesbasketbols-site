@@ -29,7 +29,8 @@ Team pages are calculated from results and box scores per cup: record, last
 five games, team averages with the cup average and rank, leaders (top three per
 category, per game, at least half of the team's games), roster averages
 (players matched by name — shirt numbers can change), next three games (both
-cups) and all results. Forfeits count in the record but not in the stats. Optional team
+cups) and all results. Player tables (team roster, game box scores) sort by any
+column on click. Forfeits count in the record but not in the stats. Optional team
 fields from the sheet's "Komandas" tab (`city`, `description`, `website`,
 `facebook`, `instagram`, `tiktok` on each team) show only when filled.
 

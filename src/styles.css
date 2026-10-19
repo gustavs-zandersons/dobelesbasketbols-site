@@ -2268,9 +2268,9 @@ p.sp-ph { padding: 12px 14px; border-radius: 10px; font-style: italic; }
 .tm-avg-col { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 6px 16px 10px; }
 .tm-avg-head, .tm-avg-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 76px 64px 46px;
+  grid-template-columns: minmax(0, 1fr) 78px 84px 84px;
   align-items: center;
-  column-gap: 8px;
+  column-gap: 10px;
 }
 .tm-avg-head {
   padding: 8px 0;
@@ -2282,7 +2282,8 @@ p.sp-ph { padding: 12px 14px; border-radius: 10px; font-style: italic; }
   padding: 14px 0 2px;
   font-family: var(--font-cond); font-weight: 700; font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
 }
-.tm-avg-row { grid-template-areas: "k v c r" "bar bar bar bar"; row-gap: 8px; padding: 12px 0 10px; }
+.tm-avg-head span { line-height: 1.25; }
+.tm-avg-row { grid-template-areas: "k v c r"; padding: 12px 0; }
 .tm-avg-row + .tm-avg-row { border-top: 1px solid var(--line); }
 .tm-avg-k { grid-area: k; display: grid; gap: 2px; font-weight: 600; line-height: 1.2; }
 .tm-avg-k small { font-weight: 500; font-size: 0.78rem; color: var(--fg-dim); }
@@ -2295,10 +2296,14 @@ p.sp-ph { padding: 12px 14px; border-radius: 10px; font-style: italic; }
   font: 700 0.85rem var(--font-cond);
 }
 .tm-avg-row.is-top .tm-rank { background: var(--accent-fill); color: var(--on-accent); }
-.tm-avg-bar { grid-area: bar; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.1); }
-.tm-avg-bar i { display: block; height: 100%; border-radius: 2px; background: var(--fg-dim); }
-.tm-avg-row.is-top .tm-avg-bar i { background: var(--accent); }
-@media (max-width: 420px) { .tm-avg-head, .tm-avg-row { grid-template-columns: minmax(0, 1fr) 66px 54px 40px; column-gap: 6px; } .tm-avg-v { font-size: 1.5rem; } }
+.tm-rank { white-space: nowrap; }
+@media (max-width: 480px) {
+  .tm-avg-col { padding-inline: 12px; }
+  .tm-avg-head, .tm-avg-row { grid-template-columns: minmax(0, 1fr) 62px 58px 62px; column-gap: 6px; }
+  .tm-avg-v { font-size: 1.45rem; }
+  .tm-avg-c { font-size: 0.88rem; }
+  .tm-rank { min-width: 0; font-size: 0.78rem; padding: 0 7px; }
+}
 
 /* Leaders: MVP-style cards with the top three. */
 .tm-ldrs { display: grid; gap: 12px; }
@@ -2350,3 +2355,20 @@ a.tm-row:hover { background: var(--surface-hi); border-color: var(--line-strong)
 .tm-row-r small { color: var(--fg-muted); font-size: 0.78rem; max-width: 16ch; }
 @media (max-width: 420px) { .tm-row-r small { display: none; } .tm-row { gap: 10px; } }
 .bx--roster { min-width: 680px; }
+
+/* Sortable player tables: header buttons with a small arrow on the sorted column. */
+.bx th .sort-btn {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex; align-items: center; justify-content: center; gap: 3px;
+  width: 100%; min-height: 28px;
+  cursor: pointer;
+  font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit;
+}
+.bx th.pl .sort-btn { justify-content: flex-start; }
+.bx th .sort-btn:hover { color: var(--fg); }
+.bx th .sort-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.bx th[aria-sort="descending"], .bx th[aria-sort="ascending"] { color: var(--accent); }
+.bx th[aria-sort="descending"] .sort-btn::after { content: "▼"; font-size: 0.6em; }
+.bx th[aria-sort="ascending"] .sort-btn::after { content: "▲"; font-size: 0.6em; }
+.bx.is-sorted tr.bench-start td { border-top: 1px solid var(--line); }

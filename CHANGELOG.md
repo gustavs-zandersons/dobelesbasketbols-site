@@ -7,14 +7,20 @@
 - **Team page:** back link and cup switch (Čempionu / Izaicinājuma kauss) on
   top; a highlighted block styled like the round MVP card (logo, name, group,
   table position, games / wins / losses, last five games) for the selected
-  cup; then, in order: team averages as a table (value, cup average, rank,
-  bar against the best team; points, shooting, other), leaders as MVP-style
+  cup; then, in order: team averages as a table (value, cup average, rank;
+  points, shooting, other), leaders as MVP-style
   cards with the top three per category (per game, at least half of the
   team's games), roster (name, games, points, rebounds, assists, FG %, 2P %,
   3P %, steals, blocks, efficiency per game; no shirt numbers), next three
   games in both cups, all results. Forfeits count in the record only.
 - **Win / loss chips everywhere:** green "U", red "Z" (team pages, calendar
   with a team filter).
+- **Team averages table:** columns "Komanda", "Kausa vidējais", "Vieta kausā"
+  (pill "2. no 12"); no bars.
+- **Leaders:** sixth card, Efektivitāte (per game).
+- **Sortable player tables:** click a column in the team roster or in a game's
+  box score to sort (high → low, again for low → high; names A → Ž). Totals and
+  "did not play" rows stay at the bottom. The roster starts sorted by points.
 - **Links:** team names in the standings tables and on game pages open the
   team page.
 - **Season sheet:** optional team fields in "Komandas" (town, description,
