@@ -1,5 +1,17 @@
 # Changelog
 
+## Round 7 — released 20 Oct 2026 (PR #11)
+
+- **Home header:**
+  - the cup logo is sized to the text: its top lines up with the top of
+    "Sezona 2026/27", its bottom with the bottom of the title's last line;
+  - the title size adapts so its longest line fits, the same for both cups
+    (phones: three lines; wider screens: two);
+  - the season bar runs the full width under the logo and the titles.
+- **Season bar:** a rocket badge at the start, matching the trophy at the end.
+  The rocket fills with the cup colour once the first game is played; the
+  trophy once the final is played.
+
 ## Round 6 — released 20 Oct 2026 (PR #10)
 
 - **Cup titles (home):** both cups break the same way, with the cup type on
