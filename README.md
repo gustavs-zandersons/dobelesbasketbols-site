@@ -11,7 +11,11 @@ calendar, standings, brackets and game box scores. Latvian only, mobile first.
 > round 2 and the first Hope Cup semifinal; Challenge Cup after the first leg of
 > the 1/8 finals). The real data sync from basket.lv comes later.
 
-Live (once GitHub Pages is enabled): https://gustavs-zandersons.github.io/dobelesbasketbols-site/
+Live: https://dobelesbasketbols.lv/ (GitHub Pages, custom domain; the old
+https://gustavs-zandersons.github.io/dobelesbasketbols-site/ address forwards there).
+Domain: registered at SigmaNet (LU MII); DNS zone kept there with DNSSEC — A/AAAA records
+to GitHub Pages, `www` CNAME to gustavs-zandersons.github.io, and the GitHub domain
+verification TXT record.
 
 ## What's in it
 

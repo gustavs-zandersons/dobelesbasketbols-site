@@ -51,8 +51,9 @@ MAX_DOWNLOAD = 10 * 1024 * 1024
 TEAM_BOX, TEAM_CANVAS = 240, 256      # team logos: square canvas, logo fitted inside
 # The site's own address. In the sheet, a logo link to the site itself
 # (…/assets/teams/<id>.webp) means "the logo the site already has".
-SITE_URL = 'https://gustavs-zandersons.github.io/dobelesbasketbols-site/'
-SITE_HOSTS = ('gustavs-zandersons.github.io',)   # add the own domain once the site moves
+SITE_URL = 'https://dobelesbasketbols.lv/'
+# Older sheet links may still use the github.io address (it forwards to the domain).
+SITE_HOSTS = ('dobelesbasketbols.lv', 'www.dobelesbasketbols.lv', 'gustavs-zandersons.github.io')
 SPONSOR_BOX = (400, 200)              # sponsor logos: same as tools/prepare_assets.py
 
 # Iestatījumi: parameter (column A) -> key in sheet.json settings, required?, kind
