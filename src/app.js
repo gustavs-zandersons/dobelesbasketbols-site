@@ -1067,7 +1067,7 @@
     var opts = '<option value="">Visas komandas</option>' + teamsSorted.map(function (t) {
       return '<option value="' + esc(t.id) + '"' + (c.team === t.id ? ' selected' : '') + '>' + esc(t.name) + '</option>';
     }).join('');
-    var CUPF = [{ k: 'all', l: 'Visi kausi', s: 'Visi' }, { k: 'dbck', l: 'Čempionu kauss', s: 'Dobele' }, { k: 'jssc', l: 'Izaicinājuma kauss', s: 'Jelgava' }];
+    var CUPF = [{ k: 'all', l: 'Visi kausi', s: 'Visi' }, { k: 'dbck', l: 'Čempionu kauss', s: 'Čempionu kauss' }, { k: 'jssc', l: 'Izaicinājuma kauss', s: 'Izaicinājuma kauss' }];
 
     var html = '<div class="page-head"><p class="eyebrow">Sezona ' + esc(SEASON_LABEL) + '</p><h1 class="page-title">Kalendārs</h1>' +
       '<p class="page-sub">Visas Dobeles čempionu kausa un Jelgavas Izaicinājuma kausa spēles. Izvēlies dienu, lai redzētu spēles.</p></div>';
