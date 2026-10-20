@@ -205,7 +205,7 @@ h1, h2, h3, p { margin: 0; }
   font-family: var(--font-display);
   font-weight: 400;
   font-size: clamp(1.65rem, 5vw, 3.3rem);
-  line-height: 1.04;
+  line-height: 1.16;          /* room for Č, Ē, Ā… above capitals on the second line */
   text-transform: uppercase;
   letter-spacing: 0.01em;
   color: var(--title);
@@ -442,7 +442,14 @@ img.badge {
 .res-slider.is-sliding .res-track > .res { flex: 0 0 var(--card); max-width: none; }
 .res-slider.is-dragging { cursor: grabbing; }
 .res-slider img { -webkit-user-drag: none; }
-@media (max-width: 559px) { .res-slider { --card: min(80vw, 320px); } }
+/* Phones: a card is ~83% of the width, so about a fifth of the next card shows. */
+@media (max-width: 559px) {
+  .res-slider { --card: min(calc((100vw - 44px) / 1.2), 320px); }
+  .res-slider.is-sliding {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 10px, #000 calc(100% - 10px), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 10px, #000 calc(100% - 10px), transparent 100%);
+  }
+}
 .res {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -1707,6 +1714,31 @@ button.cal-day:hover { border-color: var(--accent); }
 .cal-rright { display: flex; align-items: center; gap: 8px; color: var(--fg-muted); font-size: 0.9rem; white-space: nowrap; }
 .cal-rright b { color: var(--fg); font-variant-numeric: tabular-nums; }
 .cal-wl, .cal-res { display: inline-flex; align-items: center; gap: 6px; }
+/* Month list with a team selected: date · my team · time or score · opponent · cup logo. */
+.cal-row--tv { grid-template-columns: 64px minmax(0, 1fr) auto; }
+.cal-match { display: grid; grid-template-columns: 96px 92px 96px; align-items: center; justify-items: center; min-width: 0; }
+.cal-side { display: grid; justify-items: center; gap: 4px; min-width: 0; max-width: 100%; }
+.cal-side .badge { width: 40px; height: 40px; }
+.cal-tn { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.8rem; font-weight: 600; color: var(--fg-muted); }
+.cal-mid { font-family: var(--font-display); font-size: 1.5rem; line-height: 1; font-variant-numeric: tabular-nums; color: var(--fg); }
+.cal-mid.is-res { display: inline-flex; align-items: baseline; gap: 4px; font-size: 1.75rem; }
+.cal-mid.is-res b { font-weight: 400; color: var(--fg-dim); }
+.cal-mid.is-res b.is-win { color: var(--fg); }
+.cal-mid.is-res i { font-style: normal; font-size: 0.8em; color: var(--fg-dim); }
+.cal-rcup { width: 30px; height: 30px; }
+.cal-row.next .cal-tn, .cal-row.next .cal-mid, .cal-row.next .cal-mid i { color: var(--on-accent); }
+@media (max-width: 559px) {
+  .cal-row.cal-row--tv { grid-template-columns: 50px minmax(0, 1fr) auto; column-gap: 8px; padding: 10px 12px; }
+  .cal-row--tv .cal-date { grid-row: auto; }
+  .cal-match { grid-template-columns: minmax(0, 1fr) 70px minmax(0, 1fr); }
+  .cal-side .badge { width: 32px; height: 32px; }
+  .cal-tn { font-size: 0.72rem; }
+  .cal-mid { font-size: 1.25rem; }
+  .cal-mid.is-res { font-size: 1.4rem; gap: 3px; }
+  .cal-rcup { width: 20px; height: 20px; }
+}
+/* Month grid on phones: logos only; the result is one tap away. */
+@media (max-width: 759px) { .cal-day .cal-res { display: none; } }
 @media (max-width: 559px) {
   .cal-row { grid-template-columns: 58px minmax(0, 1fr); row-gap: 4px; }
   .cal-date { grid-row: span 2; }

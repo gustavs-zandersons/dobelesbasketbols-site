@@ -1136,15 +1136,27 @@
           var dg = days[ds], x = parse(ds);
           var cups = []; dg.forEach(function (g) { if (cups.indexOf(g.comp) < 0) cups.push(g.comp); });
           var played = dg.every(function (g) { return g.final; });
-          var right;
+          var dateHtml = '<span class="cal-date"><b>' + x.getDate() + '</b><span>' + MONTH_NOM[x.getMonth()].slice(0, 3) + ' · ' + DOW[(x.getDay() + 6) % 7] + '</span></span>';
+          var cls = 'cal-row' + (played ? ' past' : '') + (ds === nextDate ? ' next' : '');
           if (c.team && dg.length === 1) {
-            var tv = teamView(dg[0], c.team);
-            right = (tv.opp ? badge(tv.opp, 'sm') + '<span>' + esc(team(tv.opp).short) + '</span>' : '<span>Pretinieks vēl nav zināms</span>') + (tv.res ? '<b class="cal-wl">' + wl(tv.won) + esc(tv.res) + '</b>' : '<b>' + esc(dg[0].time) + '</b>');
-          } else {
-            right = '<span>' + games(dg.length) + '</span><b>' + (played ? 'Rezultāti' : esc(dg.map(function (g) { return g.time; }).sort()[0])) + '</b>';
+            // Team selected: date · my team · time or score · opponent · cup logo.
+            var g0 = dg[0], tv = teamView(g0, c.team);
+            var mine = g0.ht === c.team ? g0.hs : g0.as, theirs = g0.ht === c.team ? g0.as : g0.hs;
+            var side = function (id, label) {
+              return '<span class="cal-side">' + badge(id, 'lg') + '<span class="cal-tn">' + esc(id ? team(id).short : label) + '</span></span>';
+            };
+            var oppLabel = tv.opp ? '' : 'Vēl nav zināms';
+            var mid = g0.final
+              ? '<span class="cal-mid is-res"><b' + (mine > theirs ? ' class="is-win"' : '') + '>' + mine + '</b><i>:</i><b' + (theirs > mine ? ' class="is-win"' : '') + '>' + theirs + '</b></span>'
+              : '<span class="cal-mid">' + esc(g0.time) + '</span>';
+            var aria = x.getDate() + '. ' + MONTH_IN[x.getMonth()] + ', ' + team(c.team).short + ' pret ' + (tv.opp ? team(tv.opp).short : 'vēl nezināmu pretinieku') +
+              (g0.final ? ', rezultāts ' + mine + ':' + theirs : ', sākums ' + g0.time) + ', ' + CUPS[g0.comp].short;
+            return '<button type="button" class="' + cls + ' cal-row--tv" data-day="' + ds + '" aria-label="' + esc(aria) + '">' + dateHtml +
+              '<span class="cal-match">' + side(c.team) + mid + side(tv.opp, oppLabel) + '</span>' +
+              '<img class="cal-cup cal-rcup" src="' + MARK[g0.comp] + '" alt="' + esc(CUPS[g0.comp].short) + '"></button>';
           }
-          return '<button type="button" class="cal-row' + (played ? ' past' : '') + (ds === nextDate ? ' next' : '') + '" data-day="' + ds + '">' +
-            '<span class="cal-date"><b>' + x.getDate() + '</b><span>' + MONTH_NOM[x.getMonth()].slice(0, 3) + ' · ' + DOW[(x.getDay() + 6) % 7] + '</span></span>' +
+          var right = '<span>' + games(dg.length) + '</span><b>' + (played ? 'Rezultāti' : esc(dg.map(function (g) { return g.time; }).sort()[0])) + '</b>';
+          return '<button type="button" class="' + cls + '" data-day="' + ds + '">' + dateHtml +
             '<span class="cal-rmid">' + cups.map(function (k) { return '<img class="cal-cup" src="' + MARK[k] + '" alt="">'; }).join('') + '<span>' + esc(dayLabel(dg)) + '</span></span>' +
             '<span class="cal-rright">' + right + '</span></button>';
         }).join('') + '</div></section>';
