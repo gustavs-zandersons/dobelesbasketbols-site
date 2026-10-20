@@ -63,6 +63,8 @@ SETTINGS = [
     ('JSSC nosaukums', 'cups.jssc.name', True, 'text'),
     ('DBČK MVP balvas sponsors', 'cups.dbck.mvpSponsor', False, 'text'),
     ('JSSC MVP balvas sponsors', 'cups.jssc.mvpSponsor', False, 'text'),
+    ('DBČK mēneša MVP sponsors', 'cups.dbck.monthMvpSponsor', False, 'text'),
+    ('JSSC mēneša MVP sponsors', 'cups.jssc.monthMvpSponsor', False, 'text'),
     ('DBČK basket.lv saite', 'cups.dbck.basket', False, 'link'),
     ('JSSC basket.lv saite', 'cups.jssc.basket', False, 'link'),
     ('Sponsoru lapas teksts', 'sponsorsText', False, 'text'),
@@ -492,9 +494,10 @@ def sync(wb, write=True):
 
     names = {s['name'].casefold() for _, s, _ in sponsors}
     for cup in ('dbck', 'jssc'):
-        sp = dig(settings, f'cups.{cup}.mvpSponsor')
-        if sp and sp.casefold() not in names:
-            rep.warn('Iestatījumi', None, f'MVP balvas sponsors „{sp}” nav lapā „Sponsori” — MVP blokā rādīs tikai nosaukumu.')
+        for key, what in (('mvpSponsor', 'MVP balvas sponsors'), ('monthMvpSponsor', 'Mēneša MVP sponsors')):
+            sp = dig(settings, f'cups.{cup}.{key}')
+            if sp and sp.casefold() not in names:
+                rep.warn('Iestatījumi', None, f'{what} „{sp}” nav lapā „Sponsori” — MVP blokā rādīs tikai nosaukumu.')
 
     sources = json.loads(SOURCES_JSON.read_text()) if SOURCES_JSON.exists() else {}
     team_logos, sources = get_logos('teams', teams, sources, rep, 'Komandas')

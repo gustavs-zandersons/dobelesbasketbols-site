@@ -90,7 +90,7 @@ rows = [
     ('gap', ''),
     ('h', 'Ko mājaslapa nolasa šobrīd'),
     ('kv', ('Jau tagad', 'Lapas „Iestatījumi”, „Komandas”, „Zāles” un „Sponsori”.')),
-    ('kv', ('Vēl ne', 'Lapas „Kalendārs”, „MVP” un „Lēmumi”. Līdz tam mājaslapā redzamas demo spēles ar īstajām komandām un testa versijas paziņojums.')),
+    ('kv', ('Vēl ne', 'Lapas „Kalendārs”, „MVP”, „Mēneša MVP” un „Lēmumi”. Līdz tam mājaslapā redzamas demo spēles ar īstajām komandām un testa versijas paziņojums.')),
     ('kv', ('Vēlāk', 'Pēc izlozes — kalendārs no šīs tabulas. Kad būs LBS atļauja — rezultāti un statistika no basket.lv.')),
     ('gap', ''),
     ('h', 'Kā atjaunot mājaslapu'),
@@ -118,11 +118,12 @@ rows = [
     ('fill_calc', ('Sarkans teksts', 'Kolonna „Pārbaude” — ja tur ir teksts, rindā ir kļūda.')),
     ('gap', ''),
     ('h', 'Lapas'),
-    ('kv', ('Iestatījumi', 'Sezona, kausu nosaukumi, MVP balvas sponsori, kājenes teksts un turnīra sociālo tīklu saites, sponsoru lapas teksts, basket.lv saites.')),
+    ('kv', ('Iestatījumi', 'Sezona, kausu nosaukumi, kārtas un mēneša MVP balvu sponsori, kājenes teksts un turnīra sociālo tīklu saites, sponsoru lapas teksts, basket.lv saites.')),
     ('kv', ('Komandas', 'Visas 12 komandas. Kolonnu „Grupa” aizpilda pēc izlozes. „basket.lv nosaukums” — tieši tā, kā komanda rakstīta basket.lv. Logo — saite uz failu Google Drive. Pilsēta, apraksts un saites nav obligāti — ja aizpildīti, tie redzami komandas lapā.')),
     ('kv', ('Zāles', 'Zāles ar adresēm. Spēlēs zāli norāda ar tās ID (dobele, jelgava).')),
     ('kv', ('Kalendārs', 'Visas sezonas spēles — viena rinda = viena spēle. Kārta = visas spēles vienā datumā un zālē (ne vairāk kā 4).')),
     ('kv', ('MVP', 'Katras kārtas MVP katram kausam. Statistika tiek ņemta no basket.lv automātiski.')),
+    ('kv', ('Mēneša MVP', 'Katra mēneša MVP katram kausam. Sākumlapā redzams kopā ar nākamā mēneša pirmās kārtas rezultātiem (pēdējais mēnesis — pēc sezonas pēdējās kārtas). Statistika — spēlētāja vidējie rādītāji tajā mēnesī, no basket.lv.')),
     ('kv', ('Lēmumi', 'Neierašanās, anulēti rezultāti, labojumi, izlozes.')),
     ('kv', ('Sponsori', 'Sponsoru lapa un logo kājenē: līmenis (Ģenerālsponsors / Atbalstītājs), secība, apraksts, saites, logo. Tukša saite — poga netiek rādīta. Izdzēsta rinda — sponsors pazūd no mājaslapas.')),
     ('kv', ('Pārbaude', 'Kopsavilkums: cik spēļu ir ieplānotas un vai tabulā nav kļūdu.')),
@@ -196,6 +197,8 @@ HELP = {
     'JSSC nosaukums': 'Pilns kausa nosaukums (sākumlapas virsraksts, kopvērtējums).',
     'DBČK MVP balvas sponsors': 'Nosaukums tieši kā lapā „Sponsori”. Ja maini sponsoru, atsūti Claude baltu logo versiju MVP blokam.',
     'JSSC MVP balvas sponsors': 'Nosaukums tieši kā lapā „Sponsori”. Ja maini sponsoru, atsūti Claude baltu logo versiju MVP blokam.',
+    'DBČK mēneša MVP sponsors': 'Mēneša MVP balvas sponsors. Nosaukums tieši kā lapā „Sponsori”. Tukšs — bloks bez sponsora.',
+    'JSSC mēneša MVP sponsors': 'Mēneša MVP balvas sponsors. Nosaukums tieši kā lapā „Sponsori”. Tukšs — bloks bez sponsora.',
     'DBČK basket.lv saite': 'Saite uz Dobeles kausa sacensībām basket.lv. Vēl netiek izmantota.',
     'JSSC basket.lv saite': 'Saite uz Izaicinājuma kausa sacensībām basket.lv. Vēl netiek izmantota.',
     'Sponsoru lapas teksts': 'Pateicības teksts lapas „Sponsori” augšā. Tukšs — teksta nav.',
@@ -370,6 +373,20 @@ dv_list(ws, '=Saraksti!$A$2:$A$21', f'D2:D{1 + MVP_ROWS}')
 dv_list(ws, f'=Kalendārs!$A$2:$A${last}', f'E2:E{1 + MVP_ROWS}', prompt='Nav obligāti: spēle, kurā MVP spēlēja.', strict=False)
 ws.cell(row=1, column=3).comment = Comment('Vārds un uzvārds tieši tā, kā basket.lv protokolā — tad statistika pievienosies automātiski.', 'Claude')
 
+# ---------------------------------------------------------------- Mēneša MVP
+ws = wb.create_sheet('Mēneša MVP')
+header(ws, ['Kauss', 'Mēnesis', 'Spēlētājs', 'Komanda', 'Piezīme'], [9, 18, 28, 14, 36])
+MONTH_MVP_ROWS = 20
+style_rows(ws, 2, 1 + MONTH_MVP_ROWS, 5, ['in'] * 5)
+_y1 = int(str(SHEET['settings']['season'])[:4])
+SEASON_MONTHS = [f'{m} {_y1}' for m in ('Oktobris', 'Novembris', 'Decembris')] + \
+                [f'{m} {_y1 + 1}' for m in ('Janvāris', 'Februāris', 'Marts', 'Aprīlis')]
+dv_list(ws, '=Saraksti!$B$2:$B$3', f'A2:A{1 + MONTH_MVP_ROWS}')
+dv_list(ws, '"' + ','.join(SEASON_MONTHS) + '"', f'B2:B{1 + MONTH_MVP_ROWS}')
+dv_list(ws, '=Saraksti!$A$2:$A$21', f'D2:D{1 + MONTH_MVP_ROWS}')
+ws.cell(row=1, column=2).comment = Comment('Mēnesis, par kuru balva. Sākumlapā redzams kopā ar nākamā mēneša pirmās kārtas rezultātiem.', 'Claude')
+ws.cell(row=1, column=3).comment = Comment('Vārds un uzvārds tieši tā, kā basket.lv protokolā — tad mēneša statistika pievienosies automātiski.', 'Claude')
+
 # ---------------------------------------------------------------- Lēmumi
 ws = wb.create_sheet('Lēmumi')
 header(ws, ['Spēles ID', 'Veids', 'Vērtība', 'Lēmuma datums', 'Kas pieņēma', 'Piezīme'], [16, 22, 24, 14, 22, 44])
@@ -497,7 +514,7 @@ for r in range(2, 2 + max(len(codes) + 20, 20)):
             c.fill = PatternFill('solid', fgColor=AUTO); c.border = BORDER
 
 # Tab colours: inputs yellow-ish, reference grey
-for name, color in (('Kā lietot', NAVY), ('Kalendārs', 'E9B716'), ('MVP', 'E9B716'), ('Lēmumi', 'E9B716'),
+for name, color in (('Kā lietot', NAVY), ('Kalendārs', 'E9B716'), ('MVP', 'E9B716'), ('Mēneša MVP', 'E9B716'), ('Lēmumi', 'E9B716'),
                     ('Komandas', 'E9B716'), ('Zāles', 'E9B716'), ('Iestatījumi', 'E9B716'), ('Sponsori', 'E9B716'),
                     ('Pārbaude', 'C0392B'), ('Saraksti', '8A909C')):
     wb[name].sheet_properties.tabColor = color

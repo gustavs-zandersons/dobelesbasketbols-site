@@ -32152,5 +32152,77 @@
    "ast": 2,
    "eff": 19
   }
+ ],
+ "monthMvps": [
+  {
+   "comp": "dbck",
+   "month": "2026-10",
+   "team": "buki",
+   "idx": 0,
+   "player": "Toms Lapiņš"
+  },
+  {
+   "comp": "dbck",
+   "month": "2026-11",
+   "team": "vilki",
+   "idx": 0,
+   "player": "Jānis Pētersons"
+  },
+  {
+   "comp": "dbck",
+   "month": "2026-12",
+   "team": "jaunpils",
+   "idx": 1,
+   "player": "Sandis Siliņš"
+  },
+  {
+   "comp": "dbck",
+   "month": "2027-01",
+   "team": "jaunpils",
+   "idx": 2,
+   "player": "Jānis Dzenis"
+  },
+  {
+   "comp": "dbck",
+   "month": "2027-02",
+   "team": "skandijs",
+   "idx": 0,
+   "player": "Edgars Kalniņš"
+  },
+  {
+   "comp": "dbck",
+   "month": "2027-03",
+   "team": "skandijs",
+   "idx": 0,
+   "player": "Edgars Kalniņš"
+  },
+  {
+   "comp": "dbck",
+   "month": "2027-04",
+   "team": "skandijs",
+   "idx": 0,
+   "player": "Edgars Kalniņš"
+  },
+  {
+   "comp": "jssc",
+   "month": "2027-01",
+   "team": "valauto",
+   "idx": 0,
+   "player": "Ainārs Zvirbulis"
+  },
+  {
+   "comp": "jssc",
+   "month": "2027-02",
+   "team": "bjss-u19",
+   "idx": 0,
+   "player": "Rihards Freimanis"
+  },
+  {
+   "comp": "jssc",
+   "month": "2027-04",
+   "team": "lietus",
+   "idx": 0,
+   "player": "Edijs Upītis"
+  }
  ]
 }

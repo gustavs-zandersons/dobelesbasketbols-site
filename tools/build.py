@@ -113,19 +113,29 @@ def socials_html(links):
     return ('      <div class="socials">\n' + '\n'.join(rows) + '\n      </div>') if rows else ''
 
 
+def mvp_sponsor(name, by_name):
+    """Round / monthly MVP sponsor for the dark strip above the MVP card: the
+    logo version made for dark backgrounds (assets/sponsors/mvp-<id>-white.webp,
+    or mvp-<id>.webp for a colour logo that already reads on dark), else the name."""
+    if not name:
+        return None
+    sid, logo = by_name.get(name.casefold()), ''
+    for fn in (f'mvp-{sid}-white.webp', f'mvp-{sid}.webp') if sid else ():
+        if (ROOT / 'assets' / 'sponsors' / fn).exists():
+            logo = f'assets/sponsors/{fn}'
+            break
+    return {'name': name, 'logo': logo}
+
+
 def site_settings(sheet, sponsors):
-    """Settings for the page script (sheet: Iestatījumi). The MVP sponsor's logo is
-    the white version (assets/sponsors/mvp-<id>-white.webp) when there is one."""
+    """Settings for the page script (sheet: Iestatījumi)."""
     st = sheet['settings']
     by_name = {s['name'].casefold(): s['id'] for s in sheet['sponsors']}
     cups = {}
     for cup in ('dbck', 'jssc'):
         c = st['cups'][cup]
-        sp, logo = c.get('mvpSponsor', ''), ''
-        sid = by_name.get(sp.casefold()) if sp else None
-        if sid and (ROOT / 'assets' / 'sponsors' / f'mvp-{sid}-white.webp').exists():
-            logo = f'assets/sponsors/mvp-{sid}-white.webp'
-        cups[cup] = {'name': c['name'], 'mvpSponsor': {'name': sp, 'logo': logo} if sp else None}
+        cups[cup] = {'name': c['name'], 'mvpSponsor': mvp_sponsor(c.get('mvpSponsor', ''), by_name),
+                     'monthMvpSponsor': mvp_sponsor(c.get('monthMvpSponsor', ''), by_name)}
     return {'season': st['season'], 'cups': cups, 'sponsorsText': st.get('sponsorsText', '')}
 
 
