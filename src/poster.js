@@ -30,7 +30,8 @@
     story: {
       w: 1080, h: 1920, side: 104, photo: 500, ridge: 50, sponsorTop: 1446, bar: 62,
       title: 62, titleMin: 50, date: 39, stage: 30, team: 58, timeBox: [144, 64], row: [130, 140], headTop: 84,
-      logoRows: [4, 5, 4], logoArea: 8600, logoMax: [180, 100], logoGap: 34, notice: 26
+      logoRows: [4, 5, 4], logoArea: 8600, logoMax: [180, 100], logoGap: 34, notice: 26,
+      logoSide: 190   // sponsor logos stay well inside the edges (Reels previews crop the sides)
     }
   };
 
@@ -135,7 +136,7 @@
     var rows = [], i = 0;
     F.logoRows.forEach(function (n) { if (i < list.length) { rows.push(list.slice(i, i + n)); i += n; } });
     if (i < list.length) rows[rows.length - 1] = rows[rows.length - 1].concat(list.slice(i));
-    var avail = F.w - 2 * F.side + 40, k = 1, gapY = F.logoGap * 0.9;
+    var avail = F.w - 2 * (F.logoSide || F.side) + (F.logoSide ? 0 : 40), k = 1, gapY = F.logoGap * 0.9;
     // Shrink everything until each row fits the width and all rows fit the height.
     for (var tries = 0; tries < 30; tries++) {
       var tooWide = rows.some(function (row) {
