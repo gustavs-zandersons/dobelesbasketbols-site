@@ -1699,10 +1699,12 @@
   ];
   function psum(p, idx) { return idx.reduce(function (a, i) { return a + p.sum[i]; }, 0); }
 
-  function cupSwitch(id) {
+  // Cup switch for the team and leaders pages; "ldr" switches the leaders page.
+  function cupSwitch(id, page) {
     return '<div class="seg tm-seg" role="group" aria-label="Kauss">' + ['dbck', 'jssc'].map(function (c) {
       var l = c === 'dbck' ? ['Čempionu kauss', 'Dobele'] : ['Izaicinājuma kauss', 'Jelgava'];
-      return '<button type="button" data-team-cup="' + c + '" data-team-id="' + esc(id || '') + '" aria-pressed="' + (state.cup === c) + '"><span class="lg">' + l[0] + '</span><span class="sm">' + l[1] + '</span></button>';
+      var attr = page === 'ldr' ? 'data-ldr-cup="' + c + '"' : 'data-team-cup="' + c + '" data-team-id="' + esc(id || '') + '"';
+      return '<button type="button" ' + attr + ' aria-pressed="' + (state.cup === c) + '"><span class="lg">' + l[0] + '</span><span class="sm">' + l[1] + '</span></button>';
     }).join('') + '</div>';
   }
 
@@ -1843,6 +1845,96 @@
     makeSortable($('teams-view'), 2);   // roster starts sorted by points
   }
 
+  // ---------- Līderi page: top 5 players of the whole cup ----------
+  // Same numbers as the team pages (cupStats), pooled over all teams.
+  // Averages and percentages count players with at least half of their
+  // team's games; percentages also need a minimum number of attempts per
+  // game (min). Box row: 3 pts, 4/5 2P, 6/7 3P, 8/9 FT, 10+11 reb, 12 ast,
+  // 13 stl, 14 blk, 17 eff, 2 seconds.
+  var LDR = [
+    { id: 'ld-att', title: 'Uzbrukums un efektivitāte', sub: 'vidēji spēlē', cats: [
+      { k: 'Punkti', i: [3] },
+      { k: 'Rezultatīvas piespēles', i: [12] },
+      { k: 'Efektivitāte', i: [17] }
+    ] },
+    { id: 'ld-pct', title: 'Precizitāte', sub: 'trāpījumu procents', cats: [
+      { k: 'Metieni no spēles', m: [4, 6], a: [5, 7], min: 5 },
+      { k: 'Divpunktu metieni', m: [4], a: [5], min: 3 },
+      { k: 'Trīspunktu metieni', m: [6], a: [7], min: 2 },
+      { k: 'Soda metieni', m: [8], a: [9], min: 2 }
+    ] },
+    { id: 'ld-def', title: 'Aizsardzība', sub: 'vidēji spēlē', cats: [
+      { k: 'Atlēkušās bumbas', i: [10, 11] },
+      { k: 'Pārķertās bumbas', i: [13] },
+      { k: 'Bloķētie metieni', i: [14] }
+    ] },
+    { id: 'ld-spec', title: 'Īpašā kategorija', cats: [
+      { k: 'Dzelzs vīrs', cap: 'visvairāk aizvadīto spēļu', iron: true }
+    ] }
+  ];
+  function attemptsText(n) { return 'vismaz ' + n + ' metieni spēlē'; }
+  function ldrTop(pool, c) {
+    var list;
+    if (c.iron) {
+      list = pool.slice().sort(function (x, y) { return y.gp - x.gp || y.sum[2] - x.sum[2] || x.name.localeCompare(y.name, 'lv'); });
+      return list.slice(0, 5).map(function (p) { return { p: p, v: String(p.gp), sub: Math.round(p.sum[2] / 60) + ' min' }; });
+    }
+    var q = pool.filter(function (p) { return p.gp >= p.minGp && (!c.min || psum(p, c.a) >= c.min * p.gp); });
+    if (c.m) {
+      list = q.map(function (p) { return { p: p, m: psum(p, c.m), a: psum(p, c.a) }; })
+        .sort(function (x, y) { return y.m / y.a - x.m / x.a || y.m - x.m || x.p.name.localeCompare(y.p.name, 'lv'); });
+      return list.slice(0, 5).map(function (x) {
+        return { p: x.p, v: pct1(x.m, x.a).replace('%', '<span class="ld-pc">%</span>'), sub: x.m + '/' + x.a };
+      });
+    }
+    list = q.slice().sort(function (x, y) { return psum(y, c.i) / y.gp - psum(x, c.i) / x.gp || psum(y, c.i) - psum(x, c.i) || x.name.localeCompare(y.name, 'lv'); });
+    return list.slice(0, 5).map(function (p) { return { p: p, v: fmt1(psum(p, c.i) / p.gp), sub: '' }; });
+  }
+  function ldrCard(pool, c) {
+    var top = ldrTop(pool, c);
+    var cap = c.cap || (c.min ? attemptsText(c.min) : '');
+    var html = '<article class="ld-card"><p class="ld-head"><span class="mvp-k">' + esc(c.k) + '</span>' + (cap ? '<span class="ld-cap">' + esc(cap) + '</span>' : '') + '</p>';
+    if (!top.length) return html + '<p class="ld-none">Vēl nav spēlētāju, kas atbilst nosacījumiem.</p></article>';
+    var tm = function (p) { return team(p.team).short; };
+    var one = top[0];
+    html += '<div class="ld-1"><div class="ld-1-id"><p class="ld-1-name">' + esc(one.p.name) + '</p>' +
+      '<p class="ld-tm">' + badge(one.p.team, 'sm') + '<span>' + esc(tm(one.p)) + '</span></p></div>' +
+      '<p class="ld-1-v"><b>' + one.v + '</b>' + (one.sub ? '<small>' + esc(one.sub) + '</small>' : '') + '</p></div>';
+    if (top.length > 1) {
+      html += '<ol class="ld-rest" start="2">' + top.slice(1).map(function (x, i) {
+        return '<li><span class="n">' + (i + 2) + '.</span>' + badge(x.p.team, 'sm') +
+          '<span class="ld-who"><span class="nm">' + esc(x.p.name) + '</span><small>' + esc(tm(x.p)) + '</small></span>' +
+          '<span class="ld-v"><b>' + x.v + '</b>' + (x.sub ? '<small>' + esc(x.sub) + '</small>' : '') + '</span></li>';
+      }).join('') + '</ol>';
+    }
+    return html + '</article>';
+  }
+  function renderLeaders() {
+    var cup = state.cup, S = cupStats(cup), pool = [], forfeits = 0;
+    Object.keys(S).forEach(function (tid) {
+      var s = S[tid], t = team(tid);
+      forfeits += s.list.length - s.sg;
+      Object.keys(s.players).forEach(function (k) {
+        var p = s.players[k];
+        pool.push({ team: tid, idx: p.idx, gp: p.gp, sum: p.sum, minGp: Math.ceil(s.sg / 2), name: t.players[p.idx].name });
+      });
+    });
+    var html = '<div class="ld-top"><div class="page-head"><p class="eyebrow">Sezona ' + esc(SEASON_LABEL) + '</p><h1 class="page-title">Līderi</h1>' +
+      '<p class="page-sub">Labākie piecinieki visā kausā. Vidējos rādītājus un precizitāti ieskaita spēlētājiem, kas aizvadījuši vismaz pusi no savas komandas spēlēm.</p></div>' +
+      cupSwitch('', 'ldr') + '</div>';
+    if (!pool.length) {
+      html += '<div class="empty"><strong>' + (cup === 'jssc' ? 'Izaicinājuma kausā' : 'Čempionu kausā') + ' vēl nav aizvadīta neviena spēle.</strong>Līderi parādīsies pēc pirmās spēles.</div>';
+    } else {
+      html += LDR.map(function (sec) {
+        return '<section class="ld-sec" aria-labelledby="' + sec.id + '"><h2 class="g-title" id="' + sec.id + '">' + esc(sec.title) + (sec.sub ? ' <small>' + esc(sec.sub) + '</small>' : '') + '</h2>' +
+          '<div class="ld-grid ld-grid--' + sec.cats.length + '">' + sec.cats.map(function (c) { return ldrCard(pool, c); }).join('') + '</div>' +
+          (sec.id === 'ld-spec' ? '<p class="note">Ja spēļu skaits vienāds, augstāk ir spēlētājs ar vairāk nospēlētām minūtēm.</p>' : '') + '</section>';
+      }).join('') +
+        (forfeits ? '<p class="note">Spēles ar tehnisko rezultātu statistikā netiek ieskaitītas.</p>' : '');
+    }
+    $('leaders-view').innerHTML = html;
+  }
+
   // ---------- Sponsori page (same on both cups) ----------
   // Data comes from the season sheet's "Sponsori" tab: level, order,
   // description and links; an empty link means no button.
@@ -1920,6 +2012,9 @@
     } else if ((m = /^(dobele|jelgava)-komanda-([a-z0-9-]+)$/.exec(h)) && DATA.teams.some(function (t) { return t.id === m[2]; })) {
       state.view = 'team'; state.gameId = null; state.teamId = m[2];
       state.cup = m[1] === 'jelgava' ? 'jssc' : 'dbck';
+    } else if ((m = /^(dobele|jelgava)-lideri$/.exec(h))) {
+      state.view = 'leaders'; state.gameId = null;
+      state.cup = m[1] === 'jelgava' ? 'jssc' : 'dbck';
     } else if ((m = /^(dobele|jelgava)-sponsori$/.exec(h))) {
       state.view = 'sponsors'; state.gameId = null;
       state.cup = m[1] === 'jelgava' ? 'jssc' : 'dbck';
@@ -1946,21 +2041,25 @@
       b.setAttribute('aria-pressed', String(b.getAttribute('data-demo') === state.demo));
     });
     var hero = document.querySelector('.hero');
-    var NAVV = { home: ['home'], cal: ['calendar'], std: ['standings'], sp: ['sponsors'], tm: ['teams', 'team'] };
+    var NAVV = { home: ['home'], cal: ['calendar'], std: ['standings'], sp: ['sponsors'], tm: ['teams', 'team'], ld: ['leaders'] };
     document.querySelectorAll('[data-nav]').forEach(function (n) {
       if ((NAVV[n.getAttribute('data-nav')] || []).indexOf(state.view) >= 0) n.setAttribute('aria-current', 'page'); else n.removeAttribute('aria-current');
     });
     var stdLink = $('nav-std'); if (stdLink) stdLink.setAttribute('href', '#' + CUPS[state.cup].hash + '-kopvertejums');
     var spLink = $('nav-sp'); if (spLink) spLink.setAttribute('href', '#' + CUPS[state.cup].hash + '-sponsori');
     var tmLink = $('nav-tm'); if (tmLink) tmLink.setAttribute('href', '#' + CUPS[state.cup].hash + '-komandas');
-    var team = state.view === 'teams' || state.view === 'team';
+    var ldLink = $('nav-ld'); if (ldLink) ldLink.setAttribute('href', '#' + CUPS[state.cup].hash + '-lideri');
+    var team = state.view === 'teams' || state.view === 'team', ldr = state.view === 'leaders';
     $('sponsors-view').hidden = state.view !== 'sponsors';
     $('teams-view').hidden = !team;
     if (!team) $('teams-view').innerHTML = '';
-    if (state.view === 'sponsors' || team) {
+    $('leaders-view').hidden = !ldr;
+    if (!ldr) $('leaders-view').innerHTML = '';
+    if (state.view === 'sponsors' || team || ldr) {
       hero.hidden = true; $('main').hidden = true; $('game-view').hidden = true;
       $('calendar-view').hidden = true; $('standings-view').hidden = true; $('standings-view').innerHTML = '';
       if (state.view === 'sponsors') renderSponsors();
+      else if (ldr) renderLeaders();
       else if (state.view === 'teams') renderTeams();
       else renderTeam(state.teamId);
       return;
@@ -2049,12 +2148,14 @@
       window.location.hash = CUPS[tc.getAttribute('data-team-cup')].hash + (tid ? '-komanda-' + tid : '-komandas');
       return;
     }
+    var lc = e.target.closest('[data-ldr-cup]');
+    if (lc) { window.location.hash = CUPS[lc.getAttribute('data-ldr-cup')].hash + '-lideri'; return; }
     var spt = e.target.closest('[data-sponsor]');
     if (spt) { openSponsor(spt.getAttribute('data-sponsor'), spt); return; }
-    if (e.target.closest('[data-nav="cal"]') || e.target.closest('[data-nav="std"]') || e.target.closest('[data-nav="sp"]') || e.target.closest('[data-nav="tm"]')) closeDrawer();
-    // On the standings, sponsors and team pages the header logos switch the cup but stay on the page.
+    if (e.target.closest('[data-nav="cal"]') || e.target.closest('[data-nav="std"]') || e.target.closest('[data-nav="sp"]') || e.target.closest('[data-nav="tm"]') || e.target.closest('[data-nav="ld"]')) closeDrawer();
+    // On the standings, sponsors, team and leaders pages the header logos switch the cup but stay on the page.
     var cupLink = e.target.closest('.cup-switch a[data-cup]');
-    var STAY = { standings: '-kopvertejums', sponsors: '-sponsori', teams: '-komandas', team: '-komanda-' + state.teamId };
+    var STAY = { standings: '-kopvertejums', sponsors: '-sponsori', teams: '-komandas', team: '-komanda-' + state.teamId, leaders: '-lideri' };
     if (cupLink && STAY[state.view]) {
       e.preventDefault();
       window.location.hash = CUPS[cupLink.getAttribute('data-cup')].hash + STAY[state.view];
