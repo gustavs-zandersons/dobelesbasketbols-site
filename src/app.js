@@ -1699,12 +1699,10 @@
   ];
   function psum(p, idx) { return idx.reduce(function (a, i) { return a + p.sum[i]; }, 0); }
 
-  // Cup switch for the team and leaders pages; "ldr" switches the leaders page.
-  function cupSwitch(id, page) {
+  function cupSwitch(id) {
     return '<div class="seg tm-seg" role="group" aria-label="Kauss">' + ['dbck', 'jssc'].map(function (c) {
       var l = c === 'dbck' ? ['Čempionu kauss', 'Dobele'] : ['Izaicinājuma kauss', 'Jelgava'];
-      var attr = page === 'ldr' ? 'data-ldr-cup="' + c + '"' : 'data-team-cup="' + c + '" data-team-id="' + esc(id || '') + '"';
-      return '<button type="button" ' + attr + ' aria-pressed="' + (state.cup === c) + '"><span class="lg">' + l[0] + '</span><span class="sm">' + l[1] + '</span></button>';
+      return '<button type="button" data-team-cup="' + c + '" data-team-id="' + esc(id || '') + '" aria-pressed="' + (state.cup === c) + '"><span class="lg">' + l[0] + '</span><span class="sm">' + l[1] + '</span></button>';
     }).join('') + '</div>';
   }
 
@@ -1924,9 +1922,9 @@
         pool.push({ team: tid, idx: p.idx, gp: p.gp, sum: p.sum, minGp: Math.ceil(s.sg / 2), name: t.players[p.idx].name });
       });
     });
-    var html = '<div class="ld-top"><div class="page-head"><p class="eyebrow">Sezona ' + esc(SEASON_LABEL) + '</p><h1 class="page-title">Līderi</h1>' +
-      '<p class="page-sub">Labākie piecinieki visā kausā. Vidējos rādītājus un precizitāti ieskaita spēlētājiem, kas aizvadījuši vismaz pusi no savas komandas spēlēm.</p></div>' +
-      cupSwitch('', 'ldr') + '</div>';
+    // No cup switch here: the header logos change the cup (and stay on this page).
+    var html = '<div class="page-head"><p class="eyebrow">' + esc(CUPS[cup].name) + ' · sezona ' + esc(SEASON_LABEL) + '</p><h1 class="page-title">Līderi</h1>' +
+      '<p class="page-sub">Labākie piecinieki visā kausā. Vidējos rādītājus un precizitāti ieskaita spēlētājiem, kas aizvadījuši vismaz pusi no savas komandas spēlēm.</p></div>';
     if (!pool.length) {
       html += '<div class="empty"><strong>' + (cup === 'jssc' ? 'Izaicinājuma kausā' : 'Čempionu kausā') + ' vēl nav aizvadīta neviena spēle.</strong>Līderi parādīsies pēc pirmās spēles.</div>';
     } else {
@@ -2153,8 +2151,6 @@
       window.location.hash = CUPS[tc.getAttribute('data-team-cup')].hash + (tid ? '-komanda-' + tid : '-komandas');
       return;
     }
-    var lc = e.target.closest('[data-ldr-cup]');
-    if (lc) { window.location.hash = CUPS[lc.getAttribute('data-ldr-cup')].hash + '-lideri'; return; }
     var spt = e.target.closest('[data-sponsor]');
     if (spt) { openSponsor(spt.getAttribute('data-sponsor'), spt); return; }
     if (e.target.closest('[data-nav="cal"]') || e.target.closest('[data-nav="std"]') || e.target.closest('[data-nav="sp"]') || e.target.closest('[data-nav="tm"]') || e.target.closest('[data-nav="ld"]')) closeDrawer();
