@@ -812,6 +812,7 @@
   // Season progress (home page only): first game → final, filled by date,
   // with a small tick where each stage starts.
   var TROPHY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5v1.5A3.5 3.5 0 0 0 8.5 11M16 6h3v1.5a3.5 3.5 0 0 1-3.5 3.5"/><path d="M12 13v4M8.5 20h7M10 17h4"/></svg>';
+  var ROCKET = '<svg viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(12 12) rotate(45) scale(1.1) translate(-12 -12.2)"><path d="M12 2.5c2.5 2 3.7 5 3.7 8.8V16H8.3v-4.7c0-3.8 1.2-6.8 3.7-8.8z"/><circle cx="12" cy="8.8" r="1.5"/><path d="M8.3 11.8 5.8 14.6v2.8l2.5-1.6M15.7 11.8l2.5 2.8v2.8l-2.5-1.6"/><path d="M10.4 16v.6c0 1.3.6 2.6 1.6 3.9 1-1.3 1.6-2.6 1.6-3.9V16"/></g></svg>';
   function seasonStages(cup) {
     var first = function (f) { return DATA.games.filter(f).map(function (g) { return g.date; }).sort()[0]; };
     if (cup === 'dbck') {
@@ -847,9 +848,11 @@
     }).join('');
     var said = 'Sezonas gaita: ' + dateShort(dates[0]) + '–' + dateShort(dates[dates.length - 1]) + '. ' +
       (done ? 'Sezona noslēgusies.' : now < start ? 'Sezona vēl nav sākusies.' : 'Aizvadīti ' + Math.round(p * 100) + '%' + (current ? ', pašlaik — ' + current.name : '') + '.');
-    return '<div class="season-track" aria-hidden="true"><span class="season-fill" style="width:' + pc(p) + '"></span>' + ticks +
+    // Rocket at the start, trophy at the end; each lights up once reached.
+    return '<span class="season-end season-go' + (now >= start ? ' is-on' : '') + '" aria-hidden="true">' + ROCKET + '</span>' +
+      '<div class="season-track" aria-hidden="true"><span class="season-fill" style="width:' + pc(p) + '"></span>' + ticks +
       (done ? '' : '<span class="season-dot" style="left:' + pc(p) + '"></span>') + '</div>' +
-      '<span class="season-cup' + (done ? ' is-done' : '') + '" aria-hidden="true">' + TROPHY + '</span>' +
+      '<span class="season-end season-cup' + (done ? ' is-on' : '') + '" aria-hidden="true">' + TROPHY + '</span>' +
       '<div class="season-dates" aria-hidden="true"><span>' + dateShort(dates[0]) + '</span><span>' + dateShort(dates[dates.length - 1]) + '</span></div>' +
       '<span class="sr-only">' + esc(said) + '</span>';
   }

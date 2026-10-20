@@ -222,12 +222,12 @@ h1, h2, h3, p { margin: 0; }
 @media (max-width: 559px) {
   .hero-title .ht-part { display: block; }
 }
-/* Season progress under the title: thin track, fill = time passed,
-   ticks where stages start, trophy at the final. */
+/* Season progress under the title: rocket at the first game, thin track,
+   fill = time passed, ticks where stages start, trophy at the final. */
 .season {
   grid-column: 1 / -1;          /* under the logo and the titles */
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   column-gap: 12px;
   row-gap: 4px;
@@ -251,15 +251,15 @@ h1, h2, h3, p { margin: 0; }
   background: var(--title);
   box-shadow: 0 0 0 3px var(--bg-deep);
 }
-.season-cup {
+.season-end {
   width: 28px; height: 28px;
   display: grid; place-items: center;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.12);
   color: var(--fg-muted);
 }
-.season-cup svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.season-cup.is-done { background: var(--title); color: var(--bg-deep); }
+.season-end svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.season-end.is-on { background: var(--title); color: var(--bg-deep); }
 .season-dates {
   grid-column: 1 / -1;
   display: flex;
