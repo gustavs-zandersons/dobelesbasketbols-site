@@ -1,5 +1,23 @@
 # Changelog
 
+## Results slider — released 20 Oct 2026 (PR #9)
+
+- **Previous round as score cards** on both cups' home pages: stage tag, both
+  teams with scores, two-leg total where it applies, time and "Statistika ›".
+- **One row for the whole round.** All cards side by side when they fit (computers);
+  otherwise a looping slider (phones, tablets) that drifts slowly, can be
+  swiped / dragged / scrolled sideways, pauses on touch, hover and keyboard
+  focus and drifts again 3 s later. No drift when the device asks for reduced motion.
+- **Qualification group rounds:** no section headings; group games and the
+  Hope Cup game share the row, by time. Card tags "Kvalifikācijas grupa" and
+  "Cerību kauss · 1. pusfināls" (the full name stays everywhere else).
+- Short team names on the cards.
+
+## Own domain — released 20 Oct 2026 (PR #8)
+
+- The site is at https://dobelesbasketbols.lv/ (registered at SigmaNet, DNS with
+  DNSSEC there; HTTPS from GitHub Pages). The old github.io address forwards.
+
 ## Season sheet sync, step 1 — released 19 Oct 2026 (PR #7)
 
 - **Real 2026/27 teams and sponsors from the organisers' sheet:** Lietus,

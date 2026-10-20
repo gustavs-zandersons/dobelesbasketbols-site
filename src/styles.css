@@ -416,8 +416,32 @@ img.badge {
 .results > .group-head:not(:first-child),
 .fx-list > .group-head:not(:first-child) { margin-top: 22px; }
 
-/* ---------- Previous round: solid scoreboard rows ---------- */
+/* ---------- Previous round: score cards in a row ----------
+   All cards side by side when they fit; otherwise a looping slider (app.js
+   makeSlider): fixed card width, faded edges, drag / swipe, slow drift. */
 .results { display: grid; gap: 10px; }
+.res-slider {
+  --gap: 12px;
+  --card: 300px;        /* card width while sliding */
+  --card-min: 240px;    /* narrowest card in the plain row */
+  position: relative;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+.res-track { display: flex; gap: var(--gap); }
+.res-track > .res { flex: 1 1 0; min-width: 0; max-width: 400px; }
+.res-slider.is-sliding {
+  cursor: grab;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
+}
+.res-slider.is-sliding .res-track { width: max-content; will-change: transform; }
+.res-slider.is-sliding .res-track > .res { flex: 0 0 var(--card); max-width: none; }
+.res-slider.is-dragging { cursor: grabbing; }
+.res-slider img { -webkit-user-drag: none; }
+@media (max-width: 559px) { .res-slider { --card: min(80vw, 320px); } }
 .res {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -425,32 +449,35 @@ img.badge {
     "meta meta"
     "home hs"
     "away as"
-    "note note";
+    "note note"
+    "foot foot";
+  grid-template-rows: auto auto auto auto 1fr;
   column-gap: 12px;
-  row-gap: 6px;
+  row-gap: 8px;
   align-items: center;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 12px;
-  padding: 12px 16px;
+  padding: 12px 16px 14px;
   color: inherit;
   text-decoration: none;
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 a.res:hover { background: var(--surface-hi); border-color: var(--line-strong); }
-.res-meta {
-  grid-area: meta;
-  display: flex;
-  gap: 10px;
+.res-meta, .res-foot {
   font-family: var(--font-cond);
   font-weight: 700;
   font-size: 0.82rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--fg-muted);
+  min-width: 0;
 }
+.res-meta { grid-area: meta; }
 .res-meta .tag { color: var(--accent); }
-.res-go { margin-left: auto; color: var(--fg-muted); white-space: nowrap; }
+/* Time and the link at the bottom; it stays at the bottom when cards are stretched to the same height. */
+.res-foot { grid-area: foot; align-self: end; display: flex; gap: 10px; padding-top: 2px; }
+.res-go { margin-left: auto; white-space: nowrap; }
 a.res:hover .res-go { color: var(--fg); }
 .res-team {
   display: flex;
@@ -462,11 +489,14 @@ a.res:hover .res-go { color: var(--fg); }
   color: var(--fg-muted);
 }
 .res-team .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Cards are narrow: always the short team name. */
+.res .nm-full { display: none; }
+.res .nm-short { display: inline; }
 .res-home { grid-area: home; }
 .res-away { grid-area: away; }
 .res-sc {
   font-family: var(--font-display);
-  font-size: 1.8rem;
+  font-size: 1.9rem;
   line-height: 1;
   color: var(--fg-dim);
   font-variant-numeric: tabular-nums;
@@ -474,7 +504,6 @@ a.res:hover .res-go { color: var(--fg); }
 }
 .res-sc.h { grid-area: hs; }
 .res-sc.a { grid-area: as; }
-.res-sep { display: none; }
 .res .is-win { color: var(--fg); }
 .res-note {
   grid-area: note;
@@ -485,24 +514,6 @@ a.res:hover .res-go { color: var(--fg); }
 }
 .res-note:empty { display: none; }
 .res-note b { color: var(--fg); font-weight: 600; }
-@media (min-width: 760px) {
-  .res {
-    grid-template-columns: 124px minmax(0, 1fr) 3.2ch 14px 3.2ch minmax(0, 1fr) minmax(0, 170px);
-    grid-template-areas: "meta home hs sep as away note";
-    column-gap: 16px;
-    padding: 14px 20px;
-    min-height: 76px;
-  }
-  .res-meta { flex-direction: column; gap: 2px; }
-  .res-go { margin-left: 0; }
-  .res-home { flex-direction: row-reverse; text-align: right; }
-  .res-sc { font-size: 2.3rem; }
-  .res-sc.h { text-align: right; }
-  .res-sc.a { text-align: left; }
-  .res-sep { display: block; grid-area: sep; text-align: center; font-family: var(--font-display); font-size: 1.6rem; color: var(--fg-dim); }
-  .res-note { border-top: 0; padding-top: 0; text-align: right; }
-  .res-note:empty { display: block; }
-}
 
 /* ---------- Round MVP (presented by a sponsor) ---------- */
 .mvp-wrap { display: grid; }
