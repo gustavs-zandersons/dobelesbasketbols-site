@@ -1056,10 +1056,9 @@
     var days = byDate(list);
     var bounds = seasonMonths();
     var nextDate = nextGameDate(list);
-    if (!c.month) {
-      var lastDate = list.map(function (g) { return g.date; }).sort().pop();
-      c.month = ym(nextDate || lastDate || DATA.games[0].date);
-    }
+    // Opening the calendar shows the current month (within the season);
+    // after that the month only changes with the arrows, not with the filters.
+    if (!c.month) c.month = ym(ctx.today);
     if (c.month < bounds.first) c.month = bounds.first;
     if (c.month > bounds.last) c.month = bounds.last;
 
@@ -1838,6 +1837,7 @@
     if (m && RAW[m[1]]) {
       state.view = 'game'; state.gameId = m[1]; state.cup = RAW[m[1]].comp;
     } else if (h === 'kalendars') {
+      if (state.view !== 'calendar') state.cal.month = null;   // fresh visit: current month
       state.view = 'calendar'; state.gameId = null;
     } else if ((m = /^(dobele|jelgava)-komandas$/.exec(h))) {
       state.view = 'teams'; state.gameId = null; state.teamId = null;
@@ -1939,7 +1939,7 @@
     var nav = e.target.closest('[data-cal-nav]');
     if (nav) { state.cal.month = addMonth(state.cal.month, +nav.getAttribute('data-cal-nav')); renderCalendar(); return; }
     var cf = e.target.closest('[data-cupf]');
-    if (cf) { state.cal.cup = cf.getAttribute('data-cupf'); state.cal.month = null; renderCalendar(); return; }
+    if (cf) { state.cal.cup = cf.getAttribute('data-cupf'); renderCalendar(); return; }
     var day = e.target.closest('[data-day]');
     if (day) { openSheet(day.getAttribute('data-day'), day); return; }
     if (e.target.closest('[data-sheet-close]') || e.target.id === 'sheet-scrim') { closeSheet(); return; }
@@ -2021,7 +2021,7 @@
       return;
     }
     if (e.target.id === 'team-filter') {
-      state.cal.team = e.target.value; state.cal.month = null;
+      state.cal.team = e.target.value;
       save('team', state.cal.team);
       // Touch / mouse: let go of the list so the phone's picker closes
       // (Safari on iPhone kept it open when the new list got focus).
