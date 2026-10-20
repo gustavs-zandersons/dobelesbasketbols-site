@@ -228,9 +228,12 @@
     var tagPx = story ? 25 : 23, secGap = story ? 40 : 26, tagGap = story ? 24 : 20;
     var tagged = list.filter(function (gm) { return gm.tag; }).length;
     var tagFixed = secGap + tagPx * 0.75 + tagGap + 10;
-    // The stage + round line is a label right above the games, spaced like
-    // the Hope Cup label above its game.
-    var stageFixed = stage ? tagPx * 0.75 + tagGap + 6 : 0;
+    // The stage + round line is a label right above the games, as big as the
+    // date + hall line (smaller only if it doesn't fit), with a little more
+    // air under it than the Hope Cup label has.
+    var stagePx = stage ? fit(g, stage, sPx, W - 2 * F.side, 14) : 0;
+    var stageGap = tagGap + (story ? 12 : 10);
+    var stageFixed = stage ? capHeight(g, stagePx) + stageGap + 6 : 0;
     // Rows use their preferred height when there is room and shrink (never
     // overflow into the sponsor band) when the panel is full.
     var rowH = Math.min(F.row[1], (zoneBottom - zoneTop - headH - gapHead - stageFixed - tagged * tagFixed) / (n - tagged * 0.2));
@@ -282,9 +285,8 @@
       var lines = Math.max(home.lines.length, away.lines.length);
       var half = Math.max(bh, (lines - 1) * namePx * 0.98 + capHeight(g, namePx)) / 2;
       if (i === 0 && stage && !gm.tag) {
-        var sPxTag = fit(g, stage, tagPx, W - 2 * F.side, 14);
-        text(g, stage, W / 2, top + capHeight(g, sPxTag) / 2, sPxTag, T.tag);
-        var cy0 = top + capHeight(g, sPxTag) + tagGap + half;
+        text(g, stage, W / 2, top + capHeight(g, stagePx) / 2, stagePx, T.tag);
+        var cy0 = top + capHeight(g, stagePx) + stageGap + half;
         drawGame(gm, cy0, home, away);
         top = cy0 + rowH / 2;
         return;
