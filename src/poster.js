@@ -313,7 +313,7 @@
   // ---------- results poster ----------
   // Last season's results poster: the whole photo under a see-through cup
   // tint (gold for Dobele, red for Jelgava). Header: cup logo in the top-right
-  // corner, title + date of the games (+ optional rule line) on the left.
+  // corner, title + date of the games (+ optional rule line) centred.
   // Then one row per game: home logo · score · away logo (no names), white
   // sponsor band and notice. The compact header leaves room for big logos.
   //
@@ -349,7 +349,7 @@
   }
   // Darken, then multiply with the cup colour: the photo stays visible.
   function tint(g, cup, W, H) {
-    g.fillStyle = 'rgba(0, 0, 0, 0.56)';
+    g.fillStyle = 'rgba(0, 0, 0, 0.66)';
     g.fillRect(0, 0, W, H);
     g.save();
     g.globalCompositeOperation = 'multiply';
@@ -413,27 +413,31 @@
     var notice = up(spec.notice);
     if (notice) text(g, notice, W / 2, H - F.bar / 2, fit(g, notice, F.notice, W - 40, 14), '#FFFFFF');
 
-    // Header: cup logo in the top-right corner; title, date (and rule line)
-    // on the left, centred on the logo's height.
+    // Header: cup logo in the top-right corner, a little see-through; title,
+    // date (and rule line) centred across the poster, level with the logo.
     var logoTop = R.logo[0], logoSize = R.logo[1];
-    if (spec.logo) drawContain(g, spec.logo, W - F.side - logoSize / 2, logoTop + logoSize / 2, logoSize, true);
-    var x0 = F.side, maxW = W - 2 * F.side - (spec.logo ? logoSize + 32 : 0);
+    if (spec.logo) {
+      g.save(); g.globalAlpha = 0.6;
+      drawContain(g, spec.logo, W - F.side - logoSize / 2, logoTop + logoSize / 2, logoSize, true);
+      g.restore();
+    }
+    var x0 = W / 2, maxW = W - 2 * (F.side + (spec.logo ? logoSize + 32 : 0));
     var title = up(spec.title), tPx = fit(g, title, R.title, maxW, 36);
     var sub = up(spec.sub), sPx = sub ? fit(g, sub, R.sub, maxW, 18) : 0;
     var rule = spec.rule ? '( ' + up(spec.rule) + ' )' : '', rPx = rule ? fit(g, rule, R.rule, maxW, 16) : 0;
     var gap1 = Math.round(tPx * 0.32);                   // room for Ļ, Ņ, Ģ under the title
     var blockH = capHeight(g, tPx) + (sub ? gap1 + capHeight(g, sPx) : 0) + (rule ? 14 + capHeight(g, rPx) : 0);
     var y = Math.max(story ? logoTop : 40, logoTop + (logoSize - blockH) / 2);
-    text(g, title, x0, y + capHeight(g, tPx) / 2, tPx, '#FFFFFF', 'left');
+    text(g, title, x0, y + capHeight(g, tPx) / 2, tPx, '#FFFFFF');
     y += capHeight(g, tPx);
     if (sub) {
       y += gap1;
-      text(g, sub, x0, y + capHeight(g, sPx) / 2, sPx, 'rgba(255, 255, 255, 0.9)', 'left');
+      text(g, sub, x0, y + capHeight(g, sPx) / 2, sPx, 'rgba(255, 255, 255, 0.9)');
       y += capHeight(g, sPx);
     }
     if (rule) {
       y += 14;
-      text(g, rule, x0, y + capHeight(g, rPx) / 2, rPx, 'rgba(255, 255, 255, 0.72)', 'left');
+      text(g, rule, x0, y + capHeight(g, rPx) / 2, rPx, 'rgba(255, 255, 255, 0.72)');
       y += capHeight(g, rPx);
     }
     y = Math.max(y, spec.logo ? logoTop + logoSize : y);
