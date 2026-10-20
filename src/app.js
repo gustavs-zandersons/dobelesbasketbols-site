@@ -2023,10 +2023,19 @@
     if (e.target.id === 'team-filter') {
       state.cal.team = e.target.value; state.cal.month = null;
       save('team', state.cal.team);
+      // Touch / mouse: let go of the list so the phone's picker closes
+      // (Safari on iPhone kept it open when the new list got focus).
+      // Keyboard: keep focus on the list so arrow keys keep working.
+      if (!usingKeyboard) e.target.blur();
       renderCalendar();
-      var sel = $('team-filter'); if (sel) sel.focus();
+      var sel = $('team-filter'); if (sel && usingKeyboard) sel.focus();
     }
   });
+  // Last input type: keyboard or pointer (touch, mouse, pen).
+  var usingKeyboard = false;
+  document.addEventListener('keydown', function () { usingKeyboard = true; }, true);
+  document.addEventListener('pointerdown', function () { usingKeyboard = false; }, true);
+  document.addEventListener('touchstart', function () { usingKeyboard = false; }, { capture: true, passive: true });
 
   if (!SHOW_DEMO) {
     document.querySelector('.demo').hidden = true;
