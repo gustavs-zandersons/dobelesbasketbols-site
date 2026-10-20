@@ -322,12 +322,13 @@
   //          photo, sponsors, notice }   crest = { img } or { initials, color }
   var TINTS = { dbck: 'rgb(233, 183, 22)', jssc: 'rgb(222, 70, 92)' };
   var RES = {
-    // logo: [top, size] — top-right corner (the story keeps it below
-    // Instagram's name bar and inside the safe column).
+    // logo: [top, size, right margin] — the cup logo in the top-right corner.
+    // headMid: vertical centre of the title + date (the story keeps them below
+    // Instagram's name bar).
     // sideX: where the team logos sit (share of the width); 'near' = right
     // next to the score instead (feed).
-    feed: { logo: [52, 150], title: 84, sub: 44, rule: 30, rowMax: 250, crest: 230, score: 124, info: 32, sideX: 'near', tag: 28 },
-    story: { logo: [176, 170], title: 88, sub: 48, rule: 34, rowMax: 260, crest: 240, score: 130, info: 34, sideX: 0.25, tag: 31 }
+    feed: { logo: [52, 150, 64], headMid: 167, title: 84, sub: 44, rule: 30, rowMax: 250, crest: 230, score: 124, info: 32, sideX: 'near', tag: 28 },
+    story: { logo: [64, 170, 64], headMid: 261, title: 88, sub: 48, rule: 34, rowMax: 260, crest: 240, score: 130, info: 34, sideX: 0.25, tag: 31 }
   };
 
   var PILL = { dbck: ['#E9B716', '#111111'], jssc: ['#FFFFFF', '#9C213D'] };
@@ -415,19 +416,19 @@
 
     // Header: cup logo in the top-right corner, a little see-through; title,
     // date (and rule line) centred across the poster, level with the logo.
-    var logoTop = R.logo[0], logoSize = R.logo[1];
+    var logoTop = R.logo[0], logoSize = R.logo[1], logoRight = R.logo[2];
     if (spec.logo) {
       g.save(); g.globalAlpha = 0.6;
-      drawContain(g, spec.logo, W - F.side - logoSize / 2, logoTop + logoSize / 2, logoSize, true);
+      drawContain(g, spec.logo, W - logoRight - logoSize / 2, logoTop + logoSize / 2, logoSize, true);
       g.restore();
     }
-    var x0 = W / 2, maxW = W - 2 * (F.side + (spec.logo ? logoSize + 32 : 0));
+    var x0 = W / 2, maxW = W - 2 * (logoRight + (spec.logo ? logoSize + 32 : 0));
     var title = up(spec.title), tPx = fit(g, title, R.title, maxW, 36);
     var sub = up(spec.sub), sPx = sub ? fit(g, sub, R.sub, maxW, 18) : 0;
     var rule = spec.rule ? '( ' + up(spec.rule) + ' )' : '', rPx = rule ? fit(g, rule, R.rule, maxW, 16) : 0;
     var gap1 = Math.round(tPx * 0.32);                   // room for Ļ, Ņ, Ģ under the title
     var blockH = capHeight(g, tPx) + (sub ? gap1 + capHeight(g, sPx) : 0) + (rule ? 14 + capHeight(g, rPx) : 0);
-    var y = Math.max(story ? logoTop : 40, logoTop + (logoSize - blockH) / 2);
+    var y = R.headMid - blockH / 2;
     text(g, title, x0, y + capHeight(g, tPx) / 2, tPx, '#FFFFFF');
     y += capHeight(g, tPx);
     if (sub) {
