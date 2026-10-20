@@ -201,34 +201,177 @@
     return bits.join(' · ');
   }
 
-  function resRow(g) {
+  // One score card. The stage tag is left out when the group heading above
+  // already says it (e.g. "Playoff kvalifikācijas grupa · 2. kārta").
+  function resRow(g, heading) {
     var h = ctx.resolve(g.comp, g.home).team, a = ctx.resolve(g.comp, g.away).team;
-    var hw = g.hs > g.as;
+    var hw = g.hs > g.as, tag = gameTag(g);
+    var showTag = !(heading && heading.indexOf(tag) === 0);
     return '<a class="res" href="' + gameHref(g.id) + '" aria-label="' + esc(team(h).short + ' ' + g.hs + ':' + g.as + ' ' + team(a).short + ' — spēles statistika') + '">' +
-      '<div class="res-meta"><span class="tag">' + esc(gameTag(g)) + '</span><span>' + esc(g.time) + '</span><span class="res-go">Statistika ›</span></div>' +
+      (showTag ? '<div class="res-meta"><span class="tag">' + esc(tag) + '</span></div>' : '') +
       '<div class="res-team res-home' + (hw ? ' is-win' : '') + '">' + badge(h, 'md') + nameHtml(h) + '</div>' +
-      '<span class="res-sc h' + (hw ? ' is-win' : '') + '">' + g.hs + '</span><span class="res-sep" aria-hidden="true">:</span>' +
+      '<span class="res-sc h' + (hw ? ' is-win' : '') + '">' + g.hs + '</span>' +
       '<span class="res-sc a' + (hw ? '' : ' is-win') + '">' + g.as + '</span>' +
       '<div class="res-team res-away' + (hw ? '' : ' is-win') + '">' + badge(a, 'md') + nameHtml(a) + '</div>' +
-      '<div class="res-note">' + resNote(g) + '</div></a>';
+      '<div class="res-note">' + resNote(g) + '</div>' +
+      '<div class="res-foot"><span>' + esc(g.time) + '</span><span class="res-go">Statistika ›</span></div></a>';
   }
 
   function renderLast(lr) {
     var el = $('block-last');
     // No results yet: the block is not shown at all.
-    if (!lr) { el.hidden = true; el.innerHTML = ''; return; }
+    if (!lr) { stopSliders(); el.hidden = true; el.innerHTML = ''; return; }
     el.hidden = false;
     var multi = lr.rounds.length > 1;
     var body = lr.rounds.map(function (r) {
       var list = sortGames(lr.games.filter(function (g) { return g.round === r.id; }));
-      return (multi ? '<h3 class="group-head">' + esc(groupTitle(r)) + ' <small>' + games(list.length) + '</small></h3>' : '') +
-        list.map(resRow).join('');
+      var heading = multi ? groupTitle(r) : '';
+      return (multi ? '<h3 class="group-head">' + esc(heading) + ' <small>' + games(list.length) + '</small></h3>' : '') +
+        '<div class="res-slider" data-slider><div class="res-track">' +
+        list.map(function (g) { return resRow(g, heading); }).join('') + '</div></div>';
     }).join('');
     var shareBtn = '<button type="button" class="share-btn" data-share-results>' + SHARE_ICON + 'Dalīties</button>';
     // Desktop: share next to the title. Phones: share under the last result, on the right.
     el.innerHTML = head('last-title', 'Iepriekšējās kārtas rezultāti', '', '<div class="head-actions">' + shareBtn + '</div>') +
       '<div class="results">' + body + '</div>' +
       '<div class="foot-m foot-m--end">' + shareBtn + '</div>';
+    stopSliders();
+    Array.prototype.forEach.call(el.querySelectorAll('[data-slider]'), function (box) { sliders.push(makeSlider(box)); });
+  }
+
+  // ---------- Previous round: score cards, a looping slider when they don't fit ----------
+  // The cards sit side by side. When they don't all fit, the row becomes a
+  // looping slider: it drifts slowly on its own, can be dragged, swiped or
+  // scrolled sideways with a trackpad, and pauses while someone touches,
+  // hovers or tabs into it. A few seconds after the last interaction it
+  // drifts again. Clones of the cards (hidden from screen readers) make the
+  // loop seamless. People who ask their device for less motion get no drift.
+  var SLIDE_SPEED = 26;     // px per second while drifting
+  var SLIDE_IDLE = 3000;    // ms without interaction before it drifts again
+  var REDUCED_MOTION = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var sliders = [];
+  function stopSliders() { sliders.forEach(function (sl) { sl.destroy(); }); sliders = []; }
+
+  function makeSlider(box) {
+    var track = box.firstElementChild;
+    var cards = Array.prototype.slice.call(track.children);
+    var x = 0, setW = 0, on = false, width = -1, raf = 0, last = 0;
+    var idleUntil = 0, hover = false, focused = false, visible = true;
+    var drag = null, vel = 0, suppressClick = false, resizeT = 0;
+    function now() { return window.performance ? performance.now() : Date.now(); }
+    function cssPx(name, fallback) {
+      var v = parseFloat(getComputedStyle(box).getPropertyValue(name));
+      return isNaN(v) ? fallback : v;
+    }
+    function paint() { track.style.transform = on ? 'translate3d(' + (-x).toFixed(2) + 'px,0,0)' : ''; }
+    function wrap() { if (setW > 0) x = ((x % setW) + setW) % setW; }
+    function layout() {
+      width = box.clientWidth;
+      Array.prototype.forEach.call(track.querySelectorAll('[data-clone]'), function (c) { c.parentNode.removeChild(c); });
+      box.classList.remove('is-sliding');
+      on = false; paint();
+      if (!width || cards.length < 2) return;
+      var gap = cssPx('--gap', 12), min = cssPx('--card-min', 240);
+      if (cards.length * min + (cards.length - 1) * gap <= width + 1) return;   // all fit: a plain row
+      box.classList.add('is-sliding');
+      cards.forEach(function (c) {
+        var k = c.cloneNode(true);
+        k.setAttribute('data-clone', '');
+        k.setAttribute('aria-hidden', 'true');
+        k.setAttribute('tabindex', '-1');
+        track.appendChild(k);
+      });
+      setW = track.children[cards.length].offsetLeft - track.children[0].offsetLeft;
+      on = setW > 0;
+      wrap(); paint();
+    }
+    function pause(ms) { idleUntil = now() + (ms == null ? SLIDE_IDLE : ms); }
+    function tick(t) {
+      raf = requestAnimationFrame(tick);
+      var dt = last ? Math.min(0.05, (t - last) / 1000) : 0;
+      last = t;
+      if (!on || !visible || drag) return;
+      if (Math.abs(vel) > 8) {                      // glide after a flick
+        x += vel * dt; vel *= Math.pow(0.03, dt);
+        wrap(); paint(); return;
+      }
+      vel = 0;
+      if (REDUCED_MOTION || hover || focused || now() < idleUntil) return;
+      x += SLIDE_SPEED * dt; wrap(); paint();
+    }
+    box.addEventListener('pointerdown', function (e) {
+      if (!on || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      drag = { id: e.pointerId, x0: e.clientX, y0: e.clientY, sx: x, lx: e.clientX, lt: now(), v: 0, moved: false };
+      vel = 0;
+    });
+    box.addEventListener('pointermove', function (e) {
+      if (!drag || e.pointerId !== drag.id) return;
+      var dx = e.clientX - drag.x0;
+      if (!drag.moved) {
+        if (Math.abs(dx) < 6 || Math.abs(dx) < Math.abs(e.clientY - drag.y0)) return;
+        drag.moved = true;
+        box.classList.add('is-dragging');
+        try { box.setPointerCapture(e.pointerId); } catch (err) { /* older browsers */ }
+      }
+      x = drag.sx - dx; wrap(); paint();
+      var t = now(), ddt = (t - drag.lt) / 1000;
+      if (ddt > 0) drag.v = 0.7 * (-(e.clientX - drag.lx) / ddt) + 0.3 * drag.v;
+      drag.lx = e.clientX; drag.lt = t;
+    });
+    function endDrag(e) {
+      if (!drag || (e && e.pointerId !== drag.id)) return;
+      if (drag.moved) {
+        suppressClick = true;
+        setTimeout(function () { suppressClick = false; }, 0);
+        vel = Math.max(-2400, Math.min(2400, drag.v));
+      }
+      drag = null;
+      box.classList.remove('is-dragging');
+      pause();
+    }
+    box.addEventListener('pointerup', endDrag);
+    box.addEventListener('pointercancel', endDrag);
+    box.addEventListener('click', function (e) {
+      if (suppressClick) { e.preventDefault(); e.stopPropagation(); suppressClick = false; }
+    }, true);
+    box.addEventListener('dragstart', function (e) { e.preventDefault(); });
+    box.addEventListener('wheel', function (e) {
+      if (!on || Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      vel = 0; x += e.deltaX; wrap(); paint(); pause();
+    }, { passive: false });
+    box.addEventListener('mouseenter', function () { hover = true; });
+    box.addEventListener('mouseleave', function () { hover = false; pause(1200); });
+    box.addEventListener('focusin', function (e) {
+      focused = true;
+      var card = e.target.closest ? e.target.closest('.res') : null;
+      if (on && card && !card.hasAttribute('data-clone')) {
+        x = card.offsetLeft - track.children[0].offsetLeft - cssPx('--gap', 12);
+        vel = 0; wrap(); paint();
+      }
+    });
+    box.addEventListener('focusout', function () { focused = false; pause(); });
+    var io = window.IntersectionObserver ? new IntersectionObserver(function (entries) {
+      visible = entries[0].isIntersecting;
+      if (visible && box.clientWidth !== width) layout();
+    }) : null;
+    if (io) io.observe(box);
+    function onResize() {
+      clearTimeout(resizeT);
+      resizeT = setTimeout(function () { if (box.clientWidth !== width) layout(); }, 150);
+    }
+    window.addEventListener('resize', onResize);
+    layout();
+    pause(1500);                                    // a short look at the first cards before it moves
+    raf = requestAnimationFrame(tick);
+    return {
+      destroy: function () {
+        cancelAnimationFrame(raf);
+        if (io) io.disconnect();
+        window.removeEventListener('resize', onResize);
+        clearTimeout(resizeT);
+      }
+    };
   }
 
   // ---------- Block 2: round MVP ----------
