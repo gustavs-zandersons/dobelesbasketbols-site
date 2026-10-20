@@ -26,14 +26,15 @@
   var SET = DATA.settings || {};
   var SEASON_LABEL = SET.season || DATA.season;
   var CUPS = {
-    dbck: { hash: 'dobele', short: 'Dobeles čempionu kauss', name: 'Dobeles Basketbola čempionu kauss', logo: 'assets/dbck-logo.webp', mvpSponsor: null },
-    jssc: { hash: 'jelgava', short: 'Izaicinājuma kauss', name: 'Jelgavas Sporta servisa centra Izaicinājuma kauss', logo: 'assets/jssc-logo.webp', mvpSponsor: null }
+    dbck: { hash: 'dobele', short: 'Dobeles čempionu kauss', name: 'Dobeles Basketbola čempionu kauss', logo: 'assets/dbck-logo.webp', mvpSponsor: null, monthMvpSponsor: null },
+    jssc: { hash: 'jelgava', short: 'Izaicinājuma kauss', name: 'Jelgavas Sporta servisa centra Izaicinājuma kauss', logo: 'assets/jssc-logo.webp', mvpSponsor: null, monthMvpSponsor: null }
   };
   Object.keys(CUPS).forEach(function (c) {
     var s = (SET.cups || {})[c];
     if (!s) return;
     if (s.name) CUPS[c].name = s.name;
     CUPS[c].mvpSponsor = s.mvpSponsor || null;
+    CUPS[c].monthMvpSponsor = s.monthMvpSponsor || null;
   });
 
   var state = {
@@ -402,15 +403,26 @@
     };
   }
 
-  // ---------- Block 2: round MVP ----------
+  // ---------- Block 2: round MVP and monthly MVP ----------
+  // Part of the previous-round section: no heading of its own. When both are
+  // shown they sit side by side (stacked on phones), each in the phone layout;
+  // the monthly card has inverted colours.
   function renderMvp(lr) {
     var el = $('block-mvp');
-    if (!lr || !lr.mvp) { el.hidden = true; el.innerHTML = ''; return; }
-    var m = lr.mvp, sp = CUPS[state.cup].mvpSponsor;
+    var wk = lr && lr.mvp ? lr.mvp : null, mo = monthMvp(state.cup, lr);
+    if (!wk && !mo) { el.hidden = true; el.innerHTML = ''; return; }
+    var both = !!(wk && mo);
     el.hidden = false;
-    // Part of the previous-round section: no heading of its own.
-    el.innerHTML = '<div class="mvp-wrap">' +
-      (sp ? '<div class="mvp-sponsor"><p>Kārtas MVP balvu pasniedz</p>' + (sp.logo ? '<img src="' + esc(sp.logo) + '" alt="' + esc(sp.name) + '">' : '<p class="mvp-sponsor-name">' + esc(sp.name) + '</p>') + '</div>' : '') +
+    el.setAttribute('aria-label', both ? 'Kārtas un mēneša MVP' : wk ? 'Kārtas MVP' : 'Mēneša MVP');
+    var html = (wk ? roundMvpHtml(wk, both) : '') + (mo ? monthMvpHtml(mo, both) : '');
+    el.innerHTML = both ? '<div class="mvp-duo">' + html + '</div>' : html;
+  }
+  function mvpSponsorStrip(sp, label) {
+    if (!sp) return '';
+    return '<div class="mvp-sponsor"><p>' + label + '</p>' + (sp.logo ? '<img src="' + esc(sp.logo) + '" alt="' + esc(sp.name) + '">' : '<p class="mvp-sponsor-name">' + esc(sp.name) + '</p>') + '</div>';
+  }
+  function roundMvpHtml(m, stack) {
+    return '<div class="mvp-wrap' + (stack ? ' mvp-wrap--stack' : '') + '">' + mvpSponsorStrip(CUPS[state.cup].mvpSponsor, 'Kārtas MVP balvu pasniedz') +
       '<article class="mvp" aria-label="Kārtas vērtīgākais spēlētājs">' +
       '<p class="card-band">Vērtīgākais spēlētājs</p>' +
       '<p class="mvp-name">' + esc(m.player) + '</p>' +
@@ -421,6 +433,52 @@
       '<div><dd>' + m.ast + '</dd><dt>Rez. piesp.</dt></div>' +
       '</dl>' +
       (m.game ? '<a class="mvp-link" href="' + gameHref(m.game) + '">Skatīt spēles statistiku ›</a>' : '') +
+      '</article></div>';
+  }
+  // Monthly MVP (sheet: "Mēneša MVP"). Shown for one round: with the first
+  // round of the next month. After the cup's last round of the season: the
+  // last month's MVP (or, if not entered yet, the previous month's).
+  function monthMvp(cup, lr) {
+    if (!lr) return null;
+    var dates = [];
+    DATA.games.forEach(function (g) { if (g.comp === cup && dates.indexOf(g.date) < 0) dates.push(g.date); });
+    dates.sort();
+    var find = function (month) { return (DATA.monthMvps || []).filter(function (m) { return m.comp === cup && m.month === month; })[0] || null; };
+    var i = dates.indexOf(lr.date);
+    if (i < 0) return null;
+    var prev = i > 0 && ym(dates[i - 1]) !== ym(lr.date) ? find(ym(dates[i - 1])) : null;
+    if (i === dates.length - 1) return find(ym(lr.date)) || prev;
+    return prev;
+  }
+  // The player's averages in that cup that month, from the box scores.
+  function monthStats(cup, month, teamId, idx) {
+    var s = { gp: 0, pts: 0, reb: 0, ast: 0 };
+    ctx.games().filter(function (g) { return g.comp === cup && g.final && ym(g.date) === month; }).forEach(function (g) {
+      var raw = RAW[g.id];
+      if (!raw.box) return;
+      [['h', g.home], ['a', g.away]].forEach(function (x) {
+        if (ctx.resolve(cup, x[1]).team !== teamId) return;
+        played(raw.box[x[0]]).forEach(function (r) {
+          if (r[0] === idx) { s.gp++; s.pts += r[3]; s.reb += r[10] + r[11]; s.ast += r[12]; }
+        });
+      });
+    });
+    return s;
+  }
+  function monthMvpHtml(m, stack) {
+    var mi = +m.month.slice(5, 7) - 1, s = monthStats(state.cup, m.month, m.team, m.idx);
+    var avg = function (v) { return s.gp ? fmt1(v / s.gp) : '–'; };
+    return '<div class="mvp-wrap' + (stack ? ' mvp-wrap--stack' : '') + '">' + mvpSponsorStrip(CUPS[state.cup].monthMvpSponsor, 'Mēneša MVP balvu pasniedz') +
+      '<article class="mvp mvp--month" aria-label="Mēneša vērtīgākais spēlētājs, ' + MONTH_NOM[mi] + '">' +
+      '<p class="card-band"><span>Mēneša vērtīgākais spēlētājs</span><small>' + cap(MONTH_NOM[mi]) + '</small></p>' +
+      '<p class="mvp-name">' + esc(m.player) + '</p>' +
+      '<p class="mvp-team">' + badge(m.team, 'lg') + esc(team(m.team).name) + '</p>' +
+      '<dl class="mvp-stats">' +
+      '<div><dd>' + avg(s.pts) + '</dd><dt>Punkti</dt></div>' +
+      '<div><dd>' + avg(s.reb) + '</dd><dt>Atl. bumbas</dt></div>' +
+      '<div><dd>' + avg(s.ast) + '</dd><dt>Rez. piesp.</dt></div>' +
+      '</dl>' +
+      (s.gp ? '<p class="mvp-note">Vidēji spēlē · ' + games(s.gp) + ' ' + MONTH_LOC[mi] + '</p>' : '') +
       '</article></div>';
   }
 

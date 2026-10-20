@@ -22,6 +22,7 @@
   --accent: #E1B942;
   --accent-fill: #E1B942;
   --band-bg: #0D0D0F;          /* category band on MVP / leader cards: black + yellow */
+  --inv-muted: rgba(225, 185, 66, 0.72);   /* muted text on the inverted (monthly MVP) card */
   --on-accent: #14284D;
   --on-accent-muted: #4A5A78;
   --zone-2: rgba(255, 255, 255, 0.4);
@@ -55,6 +56,7 @@
   --accent: #B7CAFF;
   --accent-fill: #1E47B5;
   --band-bg: #FFFFFF;          /* category band: white + blue */
+  --inv-muted: rgba(30, 71, 181, 0.72);
   --on-accent: #FFFFFF;
   --on-accent-muted: #C9D6FF;
   --ink: #2B0F17;
@@ -641,9 +643,15 @@ a.res:hover .res-go { color: var(--fg); }
   border-bottom: 2px solid currentColor;
   padding-block: 6px 2px;
 }
+.mvp-note {
+  position: relative; z-index: 1;
+  font-family: var(--font-cond); font-weight: 700; font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--on-accent-muted);
+}
+/* Desktop, one MVP: sponsor panel left, card right. */
 @media (min-width: 760px) {
-  .mvp-wrap { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 16px; }
-  .mvp-sponsor {
+  .mvp-wrap:not(.mvp-wrap--stack) { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 16px; }
+  .mvp-wrap:not(.mvp-wrap--stack) > .mvp-sponsor {
     border-bottom: 1px solid var(--line);
     border-radius: 14px;
     flex-direction: column;
@@ -652,10 +660,25 @@ a.res:hover .res-go { color: var(--fg); }
     padding: 24px;
     gap: 18px;
   }
-  .mvp-sponsor img { height: auto; width: min(240px, 80%); max-width: none; }
-  .mvp { --pad-x: 28px; border-radius: 14px; padding: 0 var(--pad-x) 24px; }
-  .mvp .card-band { margin-bottom: 12px; }
+  .mvp-wrap:not(.mvp-wrap--stack) > .mvp-sponsor img { height: auto; width: min(240px, 80%); max-width: none; }
+  .mvp-wrap:not(.mvp-wrap--stack) > .mvp { --pad-x: 28px; border-radius: 14px; padding: 0 var(--pad-x) 24px; }
+  .mvp-wrap:not(.mvp-wrap--stack) > .mvp .card-band { margin-bottom: 12px; }
 }
+/* Round MVP and monthly MVP at the same time: each block in the phone layout
+   (sponsor strip on top), side by side from 760px, equal heights. */
+.mvp-duo { display: grid; gap: 16px; }
+@media (min-width: 760px) { .mvp-duo { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.mvp-wrap--stack { display: flex; flex-direction: column; }
+.mvp-wrap--stack > .mvp { flex: 1; }
+@media (min-width: 760px) { .mvp-wrap--stack > .mvp { --pad-x: 22px; padding-bottom: 20px; } }
+/* Monthly MVP card: inverted colours — band in the card colour, body in the band colour. */
+.mvp--month {
+  --on-accent: var(--accent-fill);
+  --on-accent-muted: var(--inv-muted);
+  background: var(--band-bg);
+  color: var(--accent-fill);
+}
+.mvp--month .card-band { background: var(--accent-fill); color: var(--band-bg); }
 
 /* ---------- Next round: outlined "ticket" with a big date stub ---------- */
 .ticket {

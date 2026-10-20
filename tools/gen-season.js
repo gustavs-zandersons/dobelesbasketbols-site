@@ -321,6 +321,29 @@ games.filter(g => g.box).forEach(g => {
 });
 Object.values(best).forEach(({ score, ...m }) => mvps.push(m));
 
+// ---- Monthly MVP per cup per month: best efficiency per game among players
+// with at least half the games of the busiest player that month. In the real
+// sheet the organisers pick it ("Mēneša MVP" tab); stats come from box scores.
+const monthMvps = [];
+const monthPool = {};
+games.filter(g => g.box).forEach(g => {
+  const h = final.resolve(g.comp, g.home).team, a = final.resolve(g.comp, g.away).team;
+  const mk = g.comp + '|' + g.date.slice(0, 7);
+  const P = monthPool[mk] || (monthPool[mk] = {});
+  [['h', h], ['a', a]].forEach(([side, team]) => g.box[side].forEach(r => {
+    if (r[2] == null) return;
+    const p = P[team + ':' + r[0]] || (P[team + ':' + r[0]] = { team, idx: r[0], gp: 0, eff: 0 });
+    p.gp++; p.eff += r[17];
+  }));
+});
+Object.keys(monthPool).sort().forEach(mk => {
+  const list = Object.values(monthPool[mk]);
+  const need = Math.ceil(Math.max(...list.map(p => p.gp)) / 2);
+  const top = list.filter(p => p.gp >= need).sort((x, y) => y.eff / y.gp - x.eff / x.gp || y.gp - x.gp)[0];
+  const [comp, month] = mk.split('|');
+  monthMvps.push({ comp, month, team: top.team, idx: top.idx, player: rosters[top.team][top.idx].name });
+});
+
 // Sanity checks for the scheduling rules.
 const perRound = {};
 games.forEach(g => { const k = g.comp + g.date; (perRound[k] = perRound[k] || []).push(g); });
@@ -335,6 +358,7 @@ const out = {
   teams: teams.map(({ str, ...t }) => Object.assign(t, { players: rosters[t.id].map(p => ({ no: p.no, name: p.name })) })),
   venues, rounds,
   games: games.map(g => { const o = Object.assign({}, g); if (!o.ot) delete o.ot; if (!o.forfeit) delete o.forfeit; return o; }),
-  mvps
+  mvps,
+  monthMvps
 };
 process.stdout.write(JSON.stringify(out, null, 1));
