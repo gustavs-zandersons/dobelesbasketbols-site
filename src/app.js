@@ -201,14 +201,19 @@
     return bits.join(' · ');
   }
 
-  // One score card. The stage tag is left out when the group heading above
-  // already says it (e.g. "Playoff kvalifikācijas grupa · 2. kārta").
-  function resRow(g, heading) {
+  // Stage tag on a result card: short forms so it fits on one line
+  // ("Kvalifikācijas grupa", "Cerību kauss · 1. pusfināls"); otherwise the usual tag.
+  function cardTag(g) {
+    if (g.comp === 'dbck' && g.stage === 'k') return 'Kvalifikācijas grupa';
+    if (g.comp === 'dbck' && g.stage === 'hope') return 'Cerību kauss · ' + STRUCT.dbck.ties[g.tie].label;
+    return gameTag(g);
+  }
+  // One score card.
+  function resRow(g) {
     var h = ctx.resolve(g.comp, g.home).team, a = ctx.resolve(g.comp, g.away).team;
-    var hw = g.hs > g.as, tag = gameTag(g);
-    var showTag = !(heading && heading.indexOf(tag) === 0);
+    var hw = g.hs > g.as;
     return '<a class="res" href="' + gameHref(g.id) + '" aria-label="' + esc(team(h).short + ' ' + g.hs + ':' + g.as + ' ' + team(a).short + ' — spēles statistika') + '">' +
-      (showTag ? '<div class="res-meta"><span class="tag">' + esc(tag) + '</span></div>' : '') +
+      '<div class="res-meta"><span class="tag">' + esc(cardTag(g)) + '</span></div>' +
       '<div class="res-team res-home' + (hw ? ' is-win' : '') + '">' + badge(h, 'md') + nameHtml(h) + '</div>' +
       '<span class="res-sc h' + (hw ? ' is-win' : '') + '">' + g.hs + '</span>' +
       '<span class="res-sc a' + (hw ? '' : ' is-win') + '">' + g.as + '</span>' +
@@ -222,14 +227,12 @@
     // No results yet: the block is not shown at all.
     if (!lr) { stopSliders(); el.hidden = true; el.innerHTML = ''; return; }
     el.hidden = false;
-    var multi = lr.rounds.length > 1;
-    var body = lr.rounds.map(function (r) {
-      var list = sortGames(lr.games.filter(function (g) { return g.round === r.id; }));
-      var heading = multi ? groupTitle(r) : '';
-      return (multi ? '<h3 class="group-head">' + esc(heading) + ' <small>' + games(list.length) + '</small></h3>' : '') +
-        '<div class="res-slider" data-slider><div class="res-track">' +
-        list.map(function (g) { return resRow(g, heading); }).join('') + '</div></div>';
-    }).join('');
+    // All games of the round(s) in one row, by time; each card carries its own stage tag.
+    var list = lr.games.slice().sort(function (x, y) {
+      var kx = x.date + ' ' + x.time, ky = y.date + ' ' + y.time;
+      return kx < ky ? -1 : kx > ky ? 1 : 0;
+    });
+    var body = '<div class="res-slider" data-slider><div class="res-track">' + list.map(resRow).join('') + '</div></div>';
     var shareBtn = '<button type="button" class="share-btn" data-share-results>' + SHARE_ICON + 'Dalīties</button>';
     // Desktop: share next to the title. Phones: share under the last result, on the right.
     el.innerHTML = head('last-title', 'Iepriekšējās kārtas rezultāti', '', '<div class="head-actions">' + shareBtn + '</div>') +
