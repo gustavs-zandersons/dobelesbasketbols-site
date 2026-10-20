@@ -211,6 +211,7 @@ h1, h2, h3, p { margin: 0; }
   color: var(--title);
   text-wrap: balance;
 }
+.hero-title .ht-line { display: block; }
 /* Season progress under the title: thin track, fill = time passed,
    ticks where stages start, trophy at the final. */
 .season {

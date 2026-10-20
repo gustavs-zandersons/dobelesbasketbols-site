@@ -83,6 +83,14 @@
     return '<span class="nm"><span class="nm-full">' + esc(t.name) + '</span><span class="nm-short">' + esc(t.short) + '</span></span>';
   }
   function gameHref(id) { return '#spele-' + id; }
+  // Cup title on the home page: the last two words ("Čempionu kauss",
+  // "Izaicinājuma kauss") always start the second line, so both cups break
+  // the same way whatever the screen width.
+  function heroTitle(name) {
+    var w = String(name).trim().split(/\s+/);
+    if (w.length < 3) return esc(name);
+    return '<span class="ht-line">' + esc(w.slice(0, -2).join(' ')) + '</span> <span class="ht-line">' + esc(w.slice(-2).join(' ')) + '</span>';
+  }
 
   // ---------- names for slots that are not decided yet ----------
   var TIE_GEN = {
@@ -696,9 +704,38 @@
   function renderHero() {
     var cup = CUPS[state.cup];
     $('hero-logo').src = cup.logo;
-    $('hero-title').textContent = cup.name;
+    $('hero-title').innerHTML = heroTitle(cup.name);
+    fitHeroTitle();
     $('season-bar').innerHTML = seasonBar(state.cup);
   }
+
+  // Both cup titles use one size: big enough to fill the space, small enough
+  // that the longer first line ("Jelgavas Sporta servisa centra") stays on one
+  // line. On phones that would make the letters too small, so there the first
+  // line may wrap instead (both cups then take three lines).
+  var HERO_MIN_PX = 26;
+  function fitHeroTitle() {
+    var h = $('hero-title');
+    h.style.fontSize = '';
+    if (!h.querySelector('.ht-line') || !h.clientWidth) return;
+    var base = parseFloat(getComputedStyle(h).fontSize);
+    var probe = document.createElement('span');
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;left:0;top:0';
+    h.appendChild(probe);
+    var widest = 0;
+    Object.keys(CUPS).forEach(function (c) {
+      var w = String(CUPS[c].name).trim().split(/\s+/);
+      probe.textContent = w.length >= 3 ? w.slice(0, -2).join(' ') : CUPS[c].name;
+      widest = Math.max(widest, probe.getBoundingClientRect().width);
+    });
+    h.removeChild(probe);
+    if (!widest || widest <= h.clientWidth) return;
+    var size = Math.floor(base * h.clientWidth / widest * 0.98);
+    if (size >= HERO_MIN_PX) h.style.fontSize = size + 'px';
+  }
+  var heroFitT = 0;
+  window.addEventListener('resize', function () { clearTimeout(heroFitT); heroFitT = setTimeout(fitHeroTitle, 120); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHeroTitle);
 
   // Season progress (home page only): first game → final, filled by date,
   // with a small tick where each stage starts.
