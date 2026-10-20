@@ -86,10 +86,27 @@
   // Cup title on the home page: the last two words ("Čempionu kauss",
   // "Izaicinājuma kauss") always start the second line, so both cups break
   // the same way whatever the screen width.
-  function heroTitle(name) {
+  // On phones the first part is split once more, so both cups take exactly
+  // three lines there.
+  function titleParts(name) {
     var w = String(name).trim().split(/\s+/);
-    if (w.length < 3) return esc(name);
-    return '<span class="ht-line">' + esc(w.slice(0, -2).join(' ')) + '</span> <span class="ht-line">' + esc(w.slice(-2).join(' ')) + '</span>';
+    if (w.length < 3) return { pre: [String(name)], type: '' };
+    var pre = w.slice(0, -2), best = [pre.join(' ')];
+    if (pre.length > 1) {
+      var bestD = Infinity;
+      for (var i = 1; i < pre.length; i++) {
+        var a = pre.slice(0, i).join(' '), b = pre.slice(i).join(' ');
+        var d = Math.max(a.length, b.length);
+        if (d < bestD) { bestD = d; best = [a, b]; }
+      }
+    }
+    return { pre: best, type: w.slice(-2).join(' ') };
+  }
+  function heroTitle(name) {
+    var t = titleParts(name);
+    if (!t.type) return esc(name);
+    return '<span class="ht-line">' + t.pre.map(function (x) { return '<span class="ht-part">' + esc(x) + '</span>'; }).join(' ') +
+      '</span> <span class="ht-line">' + esc(t.type) + '</span>';
   }
 
   // ---------- names for slots that are not decided yet ----------
@@ -705,41 +722,97 @@
     var cup = CUPS[state.cup];
     $('hero-logo').src = cup.logo;
     $('hero-title').innerHTML = heroTitle(cup.name);
-    fitHeroTitle();
     $('season-bar').innerHTML = seasonBar(state.cup);
+    layoutHero();
   }
 
-  // Both cup titles use one size: big enough to fill the space, small enough
-  // that the longer first line ("Jelgavas Sporta servisa centra") stays on one
-  // line. On phones that would make the letters too small, so there the first
-  // line may wrap instead (both cups then take three lines).
-  var HERO_MIN_PX = 26;
-  function fitHeroTitle() {
+  // The cup logo is exactly as tall as the text next to it: its top level with
+  // the top of the "Sezona 2026/27" letters, its bottom level with the foot of
+  // the title's last line. Both cup titles share one size:
+  //  - wider screens: two lines; the largest size at which the longer first
+  //    line ("Jelgavas Sporta servisa centra") fits next to the logo;
+  //  - phones: three lines; the largest size at which every line of both
+  //    cups fits next to the logo.
+  // The logo size follows the title size, and the room for the title follows
+  // the logo size, so the two are settled together.
+  var HERO_MIN_PX = 18;
+  var metricsCtx = null;
+  function capHeightOf(el) {
+    var cs = getComputedStyle(el);
+    metricsCtx = metricsCtx || document.createElement('canvas').getContext('2d');
+    metricsCtx.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+    return metricsCtx.measureText('H').actualBoundingBoxAscent || parseFloat(cs.fontSize) * 0.7;
+  }
+  // Baseline of the last line of el, read from an empty marker placed on it.
+  function baselineOf(el) {
+    var mark = document.createElement('span');
+    mark.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
+    el.appendChild(mark);
+    var y = mark.getBoundingClientRect().bottom;
+    el.removeChild(mark);
+    return y;
+  }
+  function placeHeroLogo() {
+    var logo = $('hero-logo'), eb = $('hero-season'), h = $('hero-title');
+    var lines = h.querySelectorAll('.ht-line'), last = lines.length ? lines[lines.length - 1] : h;
+    var rc = h.parentNode.getBoundingClientRect();
+    var top = baselineOf(eb) - capHeightOf(eb);     // top of the "Sezona" capitals
+    var bottom = baselineOf(last);                  // foot of the title's last line
+    var size = Math.max(48, Math.round(bottom - top));
+    logo.style.width = logo.style.height = size + 'px';
+    logo.style.marginTop = Math.round(top - rc.top) + 'px';
+    logo.parentNode.style.setProperty('--hero-logo', size + 'px');   // the logo column, exactly
+  }
+  // Widest of the chosen lines of both cups' titles, at the title's current size.
+  function widestTitleLine(pick) {
     var h = $('hero-title');
-    h.style.fontSize = '';
-    if (!h.querySelector('.ht-line') || !h.clientWidth) return;
-    var base = parseFloat(getComputedStyle(h).fontSize);
     var probe = document.createElement('span');
     probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;left:0;top:0';
     h.appendChild(probe);
     var widest = 0;
     Object.keys(CUPS).forEach(function (c) {
-      var w = String(CUPS[c].name).trim().split(/\s+/);
-      probe.textContent = w.length >= 3 ? w.slice(0, -2).join(' ') : CUPS[c].name;
-      widest = Math.max(widest, probe.getBoundingClientRect().width);
+      pick(titleParts(CUPS[c].name)).forEach(function (line) {
+        probe.textContent = line;
+        widest = Math.max(widest, probe.getBoundingClientRect().width);
+      });
     });
     h.removeChild(probe);
-    if (!widest || widest <= h.clientWidth) return;
-    var size = Math.floor(base * h.clientWidth / widest * 0.98);
-    if (size >= HERO_MIN_PX) h.style.fontSize = size + 'px';
+    return widest;
+  }
+  function layoutHero() {
+    var h = $('hero-title');
+    if (!h.clientWidth || !h.querySelector('.ht-line')) return;
+    h.style.fontSize = '';
+    var size = parseFloat(getComputedStyle(h).fontSize);
+    var phone = !!(window.matchMedia && window.matchMedia('(max-width: 559px)').matches);
+    var pick = phone
+      ? function (t) { return t.pre.concat(t.type ? [t.type] : []); }
+      : function (t) { return [t.pre.join(' ')].concat(t.type ? [t.type] : []); };
+    // Shrink until the widest line fits beside the logo (the logo shrinks
+    // with the text, so a few passes settle it).
+    for (var k = 0; k < 8; k++) {
+      h.style.fontSize = size + 'px';
+      placeHeroLogo();
+      var widest = widestTitleLine(pick), room = h.clientWidth;
+      if (widest <= room || size <= HERO_MIN_PX) break;
+      size = Math.max(HERO_MIN_PX, Math.floor(size * room / widest * 0.98 * 2) / 2);
+    }
   }
   var heroFitT = 0;
-  window.addEventListener('resize', function () { clearTimeout(heroFitT); heroFitT = setTimeout(fitHeroTitle, 120); });
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHeroTitle);
+  window.addEventListener('resize', function () { clearTimeout(heroFitT); heroFitT = setTimeout(layoutHero, 120); });
+  // The title font arrives after the first paint: lay the header out again
+  // once it (or any later font) has loaded.
+  if (document.fonts) {
+    if (document.fonts.load) document.fonts.load('400 40px Anton', 'ĀČĒ').then(function () { layoutHero(); }, function () {});
+    if (document.fonts.ready) document.fonts.ready.then(function () { layoutHero(); });
+    if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', function () { layoutHero(); });
+  }
+  window.addEventListener('load', function () { layoutHero(); });
 
   // Season progress (home page only): first game → final, filled by date,
   // with a small tick where each stage starts.
   var TROPHY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5v1.5A3.5 3.5 0 0 0 8.5 11M16 6h3v1.5a3.5 3.5 0 0 1-3.5 3.5"/><path d="M12 13v4M8.5 20h7M10 17h4"/></svg>';
+  var ROCKET = '<svg viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(12 12) rotate(45) scale(1.1) translate(-12 -12.2)"><path d="M12 2.5c2.5 2 3.7 5 3.7 8.8V16H8.3v-4.7c0-3.8 1.2-6.8 3.7-8.8z"/><circle cx="12" cy="8.8" r="1.5"/><path d="M8.3 11.8 5.8 14.6v2.8l2.5-1.6M15.7 11.8l2.5 2.8v2.8l-2.5-1.6"/><path d="M10.4 16v.6c0 1.3.6 2.6 1.6 3.9 1-1.3 1.6-2.6 1.6-3.9V16"/></g></svg>';
   function seasonStages(cup) {
     var first = function (f) { return DATA.games.filter(f).map(function (g) { return g.date; }).sort()[0]; };
     if (cup === 'dbck') {
@@ -775,9 +848,11 @@
     }).join('');
     var said = 'Sezonas gaita: ' + dateShort(dates[0]) + '–' + dateShort(dates[dates.length - 1]) + '. ' +
       (done ? 'Sezona noslēgusies.' : now < start ? 'Sezona vēl nav sākusies.' : 'Aizvadīti ' + Math.round(p * 100) + '%' + (current ? ', pašlaik — ' + current.name : '') + '.');
-    return '<div class="season-track" aria-hidden="true"><span class="season-fill" style="width:' + pc(p) + '"></span>' + ticks +
+    // Rocket at the start, trophy at the end; each lights up once reached.
+    return '<span class="season-end season-go' + (now >= start ? ' is-on' : '') + '" aria-hidden="true">' + ROCKET + '</span>' +
+      '<div class="season-track" aria-hidden="true"><span class="season-fill" style="width:' + pc(p) + '"></span>' + ticks +
       (done ? '' : '<span class="season-dot" style="left:' + pc(p) + '"></span>') + '</div>' +
-      '<span class="season-cup' + (done ? ' is-done' : '') + '" aria-hidden="true">' + TROPHY + '</span>' +
+      '<span class="season-end season-cup' + (done ? ' is-on' : '') + '" aria-hidden="true">' + TROPHY + '</span>' +
       '<div class="season-dates" aria-hidden="true"><span>' + dateShort(dates[0]) + '</span><span>' + dateShort(dates[dates.length - 1]) + '</span></div>' +
       '<span class="sr-only">' + esc(said) + '</span>';
   }
