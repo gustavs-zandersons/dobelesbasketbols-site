@@ -30,7 +30,8 @@
     story: {
       w: 1080, h: 1920, side: 104, photo: 500, ridge: 50, sponsorTop: 1446, bar: 62,
       title: 62, titleMin: 50, date: 39, stage: 30, team: 58, timeBox: [144, 64], row: [130, 140], headTop: 84,
-      logoRows: [4, 5, 4], logoArea: 8600, logoMax: [180, 100], logoGap: 34, notice: 26
+      logoRows: [4, 5, 4], logoArea: 8600, logoMax: [180, 100], logoGap: 34, notice: 26,
+      logoSide: 190   // sponsor logos stay well inside the edges (Reels previews crop the sides)
     }
   };
 
@@ -135,7 +136,7 @@
     var rows = [], i = 0;
     F.logoRows.forEach(function (n) { if (i < list.length) { rows.push(list.slice(i, i + n)); i += n; } });
     if (i < list.length) rows[rows.length - 1] = rows[rows.length - 1].concat(list.slice(i));
-    var avail = F.w - 2 * F.side + 40, k = 1, gapY = F.logoGap * 0.9;
+    var avail = F.w - 2 * (F.logoSide || F.side) + (F.logoSide ? 0 : 40), k = 1, gapY = F.logoGap * 0.9;
     // Shrink everything until each row fits the width and all rows fit the height.
     for (var tries = 0; tries < 30; tries++) {
       var tooWide = rows.some(function (row) {
@@ -225,11 +226,14 @@
     // A labelled game (the Hope Cup game in a K group round) is its own section
     // at the bottom: extra space above it, no line, the label tight on top.
     var tagPx = story ? 25 : 23, secGap = story ? 40 : 26, tagGap = story ? 24 : 20;
+    // Stage labels — the stage + round line above the games and the Hope Cup
+    // label above its game — are as big as the date + hall line (smaller only
+    // if one doesn't fit), with the same air under each.
+    var stagePx = stage ? fit(g, stage, sPx, W - 2 * F.side, 14) : 0;
+    var stageGap = tagGap + (story ? 12 : 10);
+    var stageFixed = stage ? capHeight(g, stagePx) + stageGap + 6 : 0;
     var tagged = list.filter(function (gm) { return gm.tag; }).length;
-    var tagFixed = secGap + tagPx * 0.75 + tagGap + 10;
-    // The stage + round line is a label right above the games, spaced like
-    // the Hope Cup label above its game.
-    var stageFixed = stage ? tagPx * 0.75 + tagGap + 6 : 0;
+    var tagFixed = secGap + capHeight(g, sPx) + stageGap + 10;
     // Rows use their preferred height when there is room and shrink (never
     // overflow into the sponsor band) when the panel is full.
     var rowH = Math.min(F.row[1], (zoneBottom - zoneTop - headH - gapHead - stageFixed - tagged * tagFixed) / (n - tagged * 0.2));
@@ -281,18 +285,17 @@
       var lines = Math.max(home.lines.length, away.lines.length);
       var half = Math.max(bh, (lines - 1) * namePx * 0.98 + capHeight(g, namePx)) / 2;
       if (i === 0 && stage && !gm.tag) {
-        var sPxTag = fit(g, stage, tagPx, W - 2 * F.side, 14);
-        text(g, stage, W / 2, top + capHeight(g, sPxTag) / 2, sPxTag, T.tag);
-        var cy0 = top + capHeight(g, sPxTag) + tagGap + half;
+        text(g, stage, W / 2, top + capHeight(g, stagePx) / 2, stagePx, T.tag);
+        var cy0 = top + capHeight(g, stagePx) + stageGap + half;
         drawGame(gm, cy0, home, away);
         top = cy0 + rowH / 2;
         return;
       }
       if (gm.tag) {
-        var tag = up(gm.tag), tPxTag = fit(g, tag, tagPx, W - 2 * F.side, 14);
+        var tag = up(gm.tag), tPxTag = fit(g, tag, sPx, W - 2 * F.side, 14);
         top += secGap;
         text(g, tag, W / 2, top + capHeight(g, tPxTag) / 2, tPxTag, T.tag);
-        var cyTag = top + capHeight(g, tPxTag) + tagGap + half;
+        var cyTag = top + capHeight(g, tPxTag) + stageGap + half;
         drawGame(gm, cyTag, home, away);
         top = cyTag + half + 10;
         return;
@@ -312,19 +315,23 @@
 
   // ---------- results poster ----------
   // Last season's results poster: the whole photo under a see-through cup
-  // tint (gold for Dobele, red for Jelgava), cup logo centred on top, title +
-  // date of the games (+ optional rule line), then one row per game:
-  // home logo · score · away logo (no names), white sponsor band and notice.
+  // tint (gold for Dobele, red for Jelgava). Header: cup logo in the top-right
+  // corner, title + date of the games (+ optional rule line) centred.
+  // Then one row per game: home logo · score · away logo (no names), white
+  // sponsor band and notice. The compact header leaves room for big logos.
   //
   // spec = { cup, format, seed, logo: img, title, sub, rule,
   //          games: [{ home: crest, away: crest, hs, as, info, tag }],
   //          photo, sponsors, notice }   crest = { img } or { initials, color }
   var TINTS = { dbck: 'rgb(233, 183, 22)', jssc: 'rgb(222, 70, 92)' };
   var RES = {
-    // logo: [top, size] — centred, about 10% of the height from the top on both
-    // formats (the story keeps it below Instagram's name bar).
-    feed: { logo: [134, 132], title: 66, sub: 38, rule: 30, rowMax: 230, crest: 200, score: 104, info: 30, sideX: 0.24, tag: 28 },
-    story: { logo: [190, 176], title: 70, sub: 42, rule: 32, rowMax: 240, crest: 210, score: 112, info: 32, sideX: 0.25, tag: 31 }
+    // logo: [top, size, right margin] — the cup logo in the top-right corner.
+    // headMid: vertical centre of the title + date (the story keeps them below
+    // Instagram's name bar).
+    // sideX: where the team logos sit (share of the width); 'near' = right
+    // next to the score instead (feed).
+    feed: { logo: [52, 150, 64], headMid: 167, title: 84, sub: 44, rule: 30, rowMax: 250, crest: 230, score: 124, info: 32, sideX: 'near', tag: 28 },
+    story: { logo: [64, 170, 64], headMid: 261, title: 88, sub: 48, rule: 34, rowMax: 260, crest: 240, score: 130, info: 34, sideX: 0.25, tag: 31 }
   };
 
   var PILL = { dbck: ['#E9B716', '#111111'], jssc: ['#FFFFFF', '#9C213D'] };
@@ -346,7 +353,7 @@
   }
   // Darken, then multiply with the cup colour: the photo stays visible.
   function tint(g, cup, W, H) {
-    g.fillStyle = 'rgba(0, 0, 0, 0.56)';
+    g.fillStyle = 'rgba(0, 0, 0, 0.66)';
     g.fillRect(0, 0, W, H);
     g.save();
     g.globalCompositeOperation = 'multiply';
@@ -410,25 +417,34 @@
     var notice = up(spec.notice);
     if (notice) text(g, notice, W / 2, H - F.bar / 2, fit(g, notice, F.notice, W - 40, 14), '#FFFFFF');
 
-    // Header, centred: cup logo, title, date of the games.
-    if (spec.logo) drawContain(g, spec.logo, W / 2, R.logo[0] + R.logo[1] / 2, R.logo[1], true);
-    var maxW = W - 2 * F.side;
-    var y = R.logo[0] + R.logo[1] + (story ? 34 : 26);
+    // Header: cup logo in the top-right corner, a little see-through; title,
+    // date (and rule line) centred across the poster, level with the logo.
+    var logoTop = R.logo[0], logoSize = R.logo[1], logoRight = R.logo[2];
+    if (spec.logo) {
+      g.save(); g.globalAlpha = 0.6;
+      drawContain(g, spec.logo, W - logoRight - logoSize / 2, logoTop + logoSize / 2, logoSize, true);
+      g.restore();
+    }
+    var x0 = W / 2, maxW = W - 2 * (logoRight + (spec.logo ? logoSize + 32 : 0));
     var title = up(spec.title), tPx = fit(g, title, R.title, maxW, 36);
-    text(g, title, W / 2, y + capHeight(g, tPx) / 2, tPx, '#FFFFFF');
-    y += capHeight(g, tPx) + Math.round(tPx * 0.32);   // room for Ļ, Ņ, Ģ under the line
-    var sub = up(spec.sub);
+    var sub = up(spec.sub), sPx = sub ? fit(g, sub, R.sub, maxW, 18) : 0;
+    var rule = spec.rule ? '( ' + up(spec.rule) + ' )' : '', rPx = rule ? fit(g, rule, R.rule, maxW, 16) : 0;
+    var gap1 = Math.round(tPx * 0.32);                   // room for Ļ, Ņ, Ģ under the title
+    var blockH = capHeight(g, tPx) + (sub ? gap1 + capHeight(g, sPx) : 0) + (rule ? 14 + capHeight(g, rPx) : 0);
+    var y = R.headMid - blockH / 2;
+    text(g, title, x0, y + capHeight(g, tPx) / 2, tPx, '#FFFFFF');
+    y += capHeight(g, tPx);
     if (sub) {
-      var sPx = fit(g, sub, R.sub, maxW, 18);
-      text(g, sub, W / 2, y + capHeight(g, sPx) / 2, sPx, 'rgba(255, 255, 255, 0.9)');
-      y += capHeight(g, sPx) + 14;
+      y += gap1;
+      text(g, sub, x0, y + capHeight(g, sPx) / 2, sPx, 'rgba(255, 255, 255, 0.9)');
+      y += capHeight(g, sPx);
     }
-    var rule = spec.rule ? '( ' + up(spec.rule) + ' )' : '';
     if (rule) {
-      var rPx = fit(g, rule, R.rule, maxW, 16);
-      text(g, rule, W / 2, y + capHeight(g, rPx) / 2, rPx, 'rgba(255, 255, 255, 0.72)');
-      y += capHeight(g, rPx) + 14;
+      y += 14;
+      text(g, rule, x0, y + capHeight(g, rPx) / 2, rPx, 'rgba(255, 255, 255, 0.72)');
+      y += capHeight(g, rPx);
     }
+    y = Math.max(y, spec.logo ? logoTop + logoSize : y);
 
     // Games, centred in the space between the header and the sponsor band.
     var list = spec.games || [];
@@ -439,7 +455,12 @@
     var n = Math.max(1, list.length);
     var rowH = Math.min(R.rowMax, (zoneBottom - zoneTop - tagged * tagH) / n);
     var crest = Math.min(R.crest, rowH * 0.84);
-    var scorePx = Math.min(R.score, Math.round(rowH * 0.46));
+    var scorePx = Math.min(R.score, Math.round(rowH * 0.5));
+    // Team logos: either at fixed points across the width, or ('near') right
+    // next to the widest usual score, so logos and score read as one unit.
+    var sideD = R.sideX === 'near'
+      ? Math.min(W / 2 - F.side - crest / 2, width(g, '88:88', scorePx) / 2 + crest * 0.34 + crest / 2)
+      : W * (0.5 - R.sideX);
     var infoPx = Math.min(R.info, Math.round(rowH * 0.17));
     var top = zoneTop + Math.max(0, (zoneBottom - zoneTop - rowH * list.length - tagged * tagH) / 2);
     list.forEach(function (gm) {
@@ -453,12 +474,12 @@
         top += tagH;
       }
       var cy = top + rowH / 2;
-      drawCrest(g, gm.home, W * R.sideX, cy, crest);
-      drawCrest(g, gm.away, W * (1 - R.sideX), cy, crest);
+      drawCrest(g, gm.home, W / 2 - sideD, cy, crest);
+      drawCrest(g, gm.away, W / 2 + sideD, cy, crest);
       var info = up(gm.info);
       var sCy = info ? cy - infoPx * 0.75 : cy;
       drawScore(g, gm.hs, gm.as, W / 2, sCy, scorePx);
-      if (info) text(g, info, W / 2, sCy + capHeight(g, scorePx) / 2 + infoPx * 1.05, fit(g, info, infoPx, W * (1 - 2 * R.sideX) - crest * 0.6, 14), 'rgba(255, 255, 255, 0.78)');
+      if (info) text(g, info, W / 2, sCy + capHeight(g, scorePx) / 2 + infoPx * 1.05, fit(g, info, infoPx, 2 * sideD - crest * 0.9, 14), 'rgba(255, 255, 255, 0.78)');
       top += rowH;
     });
 

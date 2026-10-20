@@ -83,6 +83,14 @@
     return '<span class="nm"><span class="nm-full">' + esc(t.name) + '</span><span class="nm-short">' + esc(t.short) + '</span></span>';
   }
   function gameHref(id) { return '#spele-' + id; }
+  // Cup title on the home page: the last two words ("Čempionu kauss",
+  // "Izaicinājuma kauss") always start the second line, so both cups break
+  // the same way whatever the screen width.
+  function heroTitle(name) {
+    var w = String(name).trim().split(/\s+/);
+    if (w.length < 3) return esc(name);
+    return '<span class="ht-line">' + esc(w.slice(0, -2).join(' ')) + '</span> <span class="ht-line">' + esc(w.slice(-2).join(' ')) + '</span>';
+  }
 
   // ---------- names for slots that are not decided yet ----------
   var TIE_GEN = {
@@ -696,9 +704,38 @@
   function renderHero() {
     var cup = CUPS[state.cup];
     $('hero-logo').src = cup.logo;
-    $('hero-title').textContent = cup.name;
+    $('hero-title').innerHTML = heroTitle(cup.name);
+    fitHeroTitle();
     $('season-bar').innerHTML = seasonBar(state.cup);
   }
+
+  // Both cup titles use one size: big enough to fill the space, small enough
+  // that the longer first line ("Jelgavas Sporta servisa centra") stays on one
+  // line. On phones that would make the letters too small, so there the first
+  // line may wrap instead (both cups then take three lines).
+  var HERO_MIN_PX = 26;
+  function fitHeroTitle() {
+    var h = $('hero-title');
+    h.style.fontSize = '';
+    if (!h.querySelector('.ht-line') || !h.clientWidth) return;
+    var base = parseFloat(getComputedStyle(h).fontSize);
+    var probe = document.createElement('span');
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;left:0;top:0';
+    h.appendChild(probe);
+    var widest = 0;
+    Object.keys(CUPS).forEach(function (c) {
+      var w = String(CUPS[c].name).trim().split(/\s+/);
+      probe.textContent = w.length >= 3 ? w.slice(0, -2).join(' ') : CUPS[c].name;
+      widest = Math.max(widest, probe.getBoundingClientRect().width);
+    });
+    h.removeChild(probe);
+    if (!widest || widest <= h.clientWidth) return;
+    var size = Math.floor(base * h.clientWidth / widest * 0.98);
+    if (size >= HERO_MIN_PX) h.style.fontSize = size + 'px';
+  }
+  var heroFitT = 0;
+  window.addEventListener('resize', function () { clearTimeout(heroFitT); heroFitT = setTimeout(fitHeroTitle, 120); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitHeroTitle);
 
   // Season progress (home page only): first game → final, filled by date,
   // with a small tick where each stage starts.
@@ -1019,10 +1056,9 @@
     var days = byDate(list);
     var bounds = seasonMonths();
     var nextDate = nextGameDate(list);
-    if (!c.month) {
-      var lastDate = list.map(function (g) { return g.date; }).sort().pop();
-      c.month = ym(nextDate || lastDate || DATA.games[0].date);
-    }
+    // Opening the calendar shows the current month (within the season);
+    // after that the month only changes with the arrows, not with the filters.
+    if (!c.month) c.month = ym(ctx.today);
     if (c.month < bounds.first) c.month = bounds.first;
     if (c.month > bounds.last) c.month = bounds.last;
 
@@ -1030,7 +1066,7 @@
     var opts = '<option value="">Visas komandas</option>' + teamsSorted.map(function (t) {
       return '<option value="' + esc(t.id) + '"' + (c.team === t.id ? ' selected' : '') + '>' + esc(t.name) + '</option>';
     }).join('');
-    var CUPF = [{ k: 'all', l: 'Visi kausi', s: 'Visi' }, { k: 'dbck', l: 'Čempionu kauss', s: 'Dobele' }, { k: 'jssc', l: 'Izaicinājuma kauss', s: 'Jelgava' }];
+    var CUPF = [{ k: 'all', l: 'Visi kausi', s: 'Visi' }, { k: 'dbck', l: 'Čempionu kauss', s: 'Čempionu kauss' }, { k: 'jssc', l: 'Izaicinājuma kauss', s: 'Izaicinājuma kauss' }];
 
     var html = '<div class="page-head"><p class="eyebrow">Sezona ' + esc(SEASON_LABEL) + '</p><h1 class="page-title">Kalendārs</h1>' +
       '<p class="page-sub">Visas Dobeles čempionu kausa un Jelgavas Izaicinājuma kausa spēles. Izvēlies dienu, lai redzētu spēles.</p></div>';
@@ -1099,15 +1135,27 @@
           var dg = days[ds], x = parse(ds);
           var cups = []; dg.forEach(function (g) { if (cups.indexOf(g.comp) < 0) cups.push(g.comp); });
           var played = dg.every(function (g) { return g.final; });
-          var right;
+          var dateHtml = '<span class="cal-date"><b>' + x.getDate() + '</b><span>' + MONTH_NOM[x.getMonth()].slice(0, 3) + ' · ' + DOW[(x.getDay() + 6) % 7] + '</span></span>';
+          var cls = 'cal-row' + (played ? ' past' : '') + (ds === nextDate ? ' next' : '');
           if (c.team && dg.length === 1) {
-            var tv = teamView(dg[0], c.team);
-            right = (tv.opp ? badge(tv.opp, 'sm') + '<span>' + esc(team(tv.opp).short) + '</span>' : '<span>Pretinieks vēl nav zināms</span>') + (tv.res ? '<b class="cal-wl">' + wl(tv.won) + esc(tv.res) + '</b>' : '<b>' + esc(dg[0].time) + '</b>');
-          } else {
-            right = '<span>' + games(dg.length) + '</span><b>' + (played ? 'Rezultāti' : esc(dg.map(function (g) { return g.time; }).sort()[0])) + '</b>';
+            // Team selected: date · my team · time or score · opponent · cup logo.
+            var g0 = dg[0], tv = teamView(g0, c.team);
+            var mine = g0.ht === c.team ? g0.hs : g0.as, theirs = g0.ht === c.team ? g0.as : g0.hs;
+            var side = function (id, label) {
+              return '<span class="cal-side">' + badge(id, 'lg') + '<span class="cal-tn">' + esc(id ? team(id).short : label) + '</span></span>';
+            };
+            var oppLabel = tv.opp ? '' : 'Vēl nav zināms';
+            var mid = g0.final
+              ? '<span class="cal-mid is-res"><b' + (mine > theirs ? ' class="is-win"' : '') + '>' + mine + '</b><i>:</i><b' + (theirs > mine ? ' class="is-win"' : '') + '>' + theirs + '</b></span>'
+              : '<span class="cal-mid">' + esc(g0.time) + '</span>';
+            var aria = x.getDate() + '. ' + MONTH_IN[x.getMonth()] + ', ' + team(c.team).short + ' pret ' + (tv.opp ? team(tv.opp).short : 'vēl nezināmu pretinieku') +
+              (g0.final ? ', rezultāts ' + mine + ':' + theirs : ', sākums ' + g0.time) + ', ' + CUPS[g0.comp].short;
+            return '<button type="button" class="' + cls + ' cal-row--tv" data-day="' + ds + '" aria-label="' + esc(aria) + '">' + dateHtml +
+              '<span class="cal-match">' + side(c.team) + mid + side(tv.opp, oppLabel) + '</span>' +
+              '<img class="cal-cup cal-rcup" src="' + MARK[g0.comp] + '" alt="' + esc(CUPS[g0.comp].short) + '"></button>';
           }
-          return '<button type="button" class="cal-row' + (played ? ' past' : '') + (ds === nextDate ? ' next' : '') + '" data-day="' + ds + '">' +
-            '<span class="cal-date"><b>' + x.getDate() + '</b><span>' + MONTH_NOM[x.getMonth()].slice(0, 3) + ' · ' + DOW[(x.getDay() + 6) % 7] + '</span></span>' +
+          var right = '<span>' + games(dg.length) + '</span><b>' + (played ? 'Rezultāti' : esc(dg.map(function (g) { return g.time; }).sort()[0])) + '</b>';
+          return '<button type="button" class="' + cls + '" data-day="' + ds + '">' + dateHtml +
             '<span class="cal-rmid">' + cups.map(function (k) { return '<img class="cal-cup" src="' + MARK[k] + '" alt="">'; }).join('') + '<span>' + esc(dayLabel(dg)) + '</span></span>' +
             '<span class="cal-rright">' + right + '</span></button>';
         }).join('') + '</div></section>';
@@ -1789,6 +1837,7 @@
     if (m && RAW[m[1]]) {
       state.view = 'game'; state.gameId = m[1]; state.cup = RAW[m[1]].comp;
     } else if (h === 'kalendars') {
+      if (state.view !== 'calendar') state.cal.month = null;   // fresh visit: current month
       state.view = 'calendar'; state.gameId = null;
     } else if ((m = /^(dobele|jelgava)-komandas$/.exec(h))) {
       state.view = 'teams'; state.gameId = null; state.teamId = null;
@@ -1890,7 +1939,7 @@
     var nav = e.target.closest('[data-cal-nav]');
     if (nav) { state.cal.month = addMonth(state.cal.month, +nav.getAttribute('data-cal-nav')); renderCalendar(); return; }
     var cf = e.target.closest('[data-cupf]');
-    if (cf) { state.cal.cup = cf.getAttribute('data-cupf'); state.cal.month = null; renderCalendar(); return; }
+    if (cf) { state.cal.cup = cf.getAttribute('data-cupf'); renderCalendar(); return; }
     var day = e.target.closest('[data-day]');
     if (day) { openSheet(day.getAttribute('data-day'), day); return; }
     if (e.target.closest('[data-sheet-close]') || e.target.id === 'sheet-scrim') { closeSheet(); return; }
@@ -1972,12 +2021,21 @@
       return;
     }
     if (e.target.id === 'team-filter') {
-      state.cal.team = e.target.value; state.cal.month = null;
+      state.cal.team = e.target.value;
       save('team', state.cal.team);
+      // Touch / mouse: let go of the list so the phone's picker closes
+      // (Safari on iPhone kept it open when the new list got focus).
+      // Keyboard: keep focus on the list so arrow keys keep working.
+      if (!usingKeyboard) e.target.blur();
       renderCalendar();
-      var sel = $('team-filter'); if (sel) sel.focus();
+      var sel = $('team-filter'); if (sel && usingKeyboard) sel.focus();
     }
   });
+  // Last input type: keyboard or pointer (touch, mouse, pen).
+  var usingKeyboard = false;
+  document.addEventListener('keydown', function () { usingKeyboard = true; }, true);
+  document.addEventListener('pointerdown', function () { usingKeyboard = false; }, true);
+  document.addEventListener('touchstart', function () { usingKeyboard = false; }, { capture: true, passive: true });
 
   if (!SHOW_DEMO) {
     document.querySelector('.demo').hidden = true;

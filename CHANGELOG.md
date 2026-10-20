@@ -1,5 +1,34 @@
 # Changelog
 
+## Round 6 — released 20 Oct 2026 (PR #10)
+
+- **Cup titles (home):** both cups break the same way, with the cup type on
+  the second line ("Čempionu kauss" / "Izaicinājuma kauss"). They share one size
+  that keeps the longer first line on one line (phones: the first line may
+  wrap). There is more space between the lines for Č, Ē, Ā.
+- **Previous round on phones:** cards about 83% wide, so about a fifth of the
+  next card shows; thinner edge fade.
+- **Calendar:**
+  - opens on the current month (within the season);
+  - team and cup filters keep the chosen month;
+  - phones: the month grid shows logos only (no win/loss tag or score);
+  - with a team selected, the month list shows date · own logo · time or score
+    · opponent logo (short names below) · cup logo, without stage, round or
+    win/loss tags;
+  - the cup switch reads Visi · Čempionu kauss · Izaicinājuma kauss in three
+    equal boxes (names wrap on phones);
+  - Safari on iPhone: the team list closes after picking.
+- **Results poster:**
+  - cup logo in the top-right corner, 40% see-through;
+  - title and date centred (lower on the 4:5);
+  - darker photo;
+  - team logos and scores about 1.5× larger;
+  - 4:5: team logos next to the score.
+- **Next-round poster:** the stage + round line and the Hope Cup label are as
+  big as the date + hall line, with a little more room below.
+- **Story posters (both):** sponsor logos kept 190 px from the sides, because
+  Reels previews crop the edges.
+
 ## Results slider — released 20 Oct 2026 (PR #9)
 
 - **Previous round as score cards** on both cups' home pages: stage tag, both
