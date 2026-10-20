@@ -412,7 +412,7 @@
     el.innerHTML = '<div class="mvp-wrap">' +
       (sp ? '<div class="mvp-sponsor"><p>Kārtas MVP balvu pasniedz</p>' + (sp.logo ? '<img src="' + esc(sp.logo) + '" alt="' + esc(sp.name) + '">' : '<p class="mvp-sponsor-name">' + esc(sp.name) + '</p>') + '</div>' : '') +
       '<article class="mvp" aria-label="Kārtas vērtīgākais spēlētājs">' +
-      '<p class="mvp-k">Vērtīgākais spēlētājs</p>' +
+      '<p class="card-band">Vērtīgākais spēlētājs</p>' +
       '<p class="mvp-name">' + esc(m.player) + '</p>' +
       '<p class="mvp-team">' + badge(m.team, 'lg') + esc(team(m.team).name) + '</p>' +
       '<dl class="mvp-stats">' +
@@ -1811,7 +1811,7 @@
           if (!top.length) return '';
           var nm = function (p) { return t.players[p.idx].name; };
           var val = function (p) { return fmt1(psum(p, l.i) / p.gp); };
-          return '<article class="tm-ldr"><p class="mvp-k">' + esc(l.k) + '</p>' +
+          return '<article class="tm-ldr"><p class="card-band">' + esc(l.k) + '</p>' +
             '<div class="tm-ldr-1"><p class="tm-ldr-name">' + esc(nm(top[0])) + '</p><p class="tm-ldr-v">' + val(top[0]) + '</p></div>' +
             (top.length > 1 ? '<ol class="tm-ldr-rest" start="2">' + top.slice(1).map(function (p, i) {
               return '<li><span class="n">' + (i + 2) + '.</span><span class="nm">' + esc(nm(p)) + '</span><b>' + val(p) + '</b></li>';
@@ -1893,7 +1893,7 @@
   function ldrCard(pool, c) {
     var top = ldrTop(pool, c);
     var cap = c.cap || (c.min ? attemptsText(c.min) : '');
-    var html = '<article class="ld-card"><p class="ld-head"><span class="mvp-k">' + esc(c.k) + '</span>' + (cap ? '<span class="ld-cap">' + esc(cap) + '</span>' : '') + '</p>';
+    var html = '<article class="ld-card"><p class="card-band"><span>' + esc(c.k) + '</span>' + (cap ? '<small>' + esc(cap) + '</small>' : '') + '</p>';
     if (!top.length) return html + '<p class="ld-none">Vēl nav spēlētāju, kas atbilst nosacījumiem.</p></article>';
     var tm = function (p) { return team(p.team).short; };
     var one = top[0];
