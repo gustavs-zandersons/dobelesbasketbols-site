@@ -1868,8 +1868,9 @@
       { k: 'Pārķertās bumbas', i: [13] },
       { k: 'Bloķētie metieni', i: [14] }
     ] },
-    { id: 'ld-spec', title: 'Īpašā kategorija', cats: [
-      { k: 'Dzelzs vīrs', cap: 'visvairāk aizvadīto spēļu', iron: true }
+    { id: 'ld-iron', title: 'Dzelzs vīri', cats: [
+      { k: 'Aizvadītās spēles', cap: 'kopā nospēlētās minūtes', iron: true },
+      { k: 'Minūtes spēlē', cap: 'vidēji spēlē', mpg: true }
     ] }
   ];
   function attemptsText(n) { return 'vismaz ' + n + ' metieni spēlē'; }
@@ -1880,6 +1881,10 @@
       return list.slice(0, 5).map(function (p) { return { p: p, v: String(p.gp), sub: Math.round(p.sum[2] / 60) + ' min' }; });
     }
     var q = pool.filter(function (p) { return p.gp >= p.minGp && (!c.min || psum(p, c.a) >= c.min * p.gp); });
+    if (c.mpg) {   // minutes per game (box scores keep seconds)
+      list = q.slice().sort(function (x, y) { return y.sum[2] / y.gp - x.sum[2] / x.gp || y.sum[2] - x.sum[2] || x.name.localeCompare(y.name, 'lv'); });
+      return list.slice(0, 5).map(function (p) { return { p: p, v: fmt1(p.sum[2] / 60 / p.gp), sub: games(p.gp) }; });
+    }
     if (c.m) {
       list = q.map(function (p) { return { p: p, m: psum(p, c.m), a: psum(p, c.a) }; })
         .sort(function (x, y) { return y.m / y.a - x.m / x.a || y.m - x.m || x.p.name.localeCompare(y.p.name, 'lv'); });
@@ -1928,7 +1933,7 @@
       html += LDR.map(function (sec) {
         return '<section class="ld-sec" aria-labelledby="' + sec.id + '"><h2 class="g-title" id="' + sec.id + '">' + esc(sec.title) + (sec.sub ? ' <small>' + esc(sec.sub) + '</small>' : '') + '</h2>' +
           '<div class="ld-grid ld-grid--' + sec.cats.length + '">' + sec.cats.map(function (c) { return ldrCard(pool, c); }).join('') + '</div>' +
-          (sec.id === 'ld-spec' ? '<p class="note">Ja spēļu skaits vienāds, augstāk ir spēlētājs ar vairāk nospēlētām minūtēm.</p>' : '') + '</section>';
+          (sec.id === 'ld-iron' ? '<p class="note">Aizvadītās spēles: ja spēļu skaits vienāds, augstāk ir spēlētājs ar vairāk nospēlētām minūtēm.</p>' : '') + '</section>';
       }).join('') +
         (forfeits ? '<p class="note">Spēles ar tehnisko rezultātu statistikā netiek ieskaitītas.</p>' : '');
     }

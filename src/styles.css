@@ -2418,8 +2418,9 @@ p.sp-ph { padding: 12px 14px; border-radius: 10px; font-style: italic; }
 .ld-sec .note { margin-top: 8px; }
 .ld-grid { display: grid; gap: 12px; }
 @media (min-width: 640px) { .ld-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-/* Three cards in a row; the four shooting cards stay two by two so names fit. */
-@media (min-width: 1000px) { .ld-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .ld-grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* Three cards in a row; the four shooting cards stay two by two so names fit,
+   and the two Dzelzs vīri cards share the row. */
+@media (min-width: 1000px) { .ld-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .ld-grid--4, .ld-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .ld-sec .g-title small { white-space: nowrap; }
 @media (max-width: 559px) { .ld-sec .g-title small { display: block; margin: 4px 0 0; } }
 .ld-card {
