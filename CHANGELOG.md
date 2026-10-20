@@ -1,5 +1,32 @@
 # Changelog
 
+## Round 8 — released 20 Oct 2026 (PR #12)
+
+- **New page "Līderi"** (menu, after Komandas; `#dobele-lideri` / `#jelgava-lideri`):
+  top five players of the whole cup, cards like the team-page leaders with team
+  logo and short name. The header logos switch the cup; the cup's name is above
+  the title.
+  - Uzbrukums un efektivitāte: points, assists, efficiency per game.
+  - Precizitāte: field goal, 2-point, 3-point and free throw percentages with
+    made/attempted; at least 5 / 3 / 2 / 2 attempts per game.
+  - Aizsardzība: rebounds, steals, blocks per game.
+  - Dzelzs vīri: games played (with total minutes; ties by minutes) and minutes
+    per game.
+  - Averages and percentages count players with at least half of their team's games.
+- **Category band on cards:** round MVP, team-page leaders and Līderi cards show
+  the category in a band across the top — black with yellow text (Dobele), white
+  with blue text (Jelgava), larger text, more room above the name.
+- **Monthly MVP** (presented by Jaunpils Pienotava, each cup its own):
+  - shown with the first round of a new month (after the cup's last round: the
+    last month's), next to the round MVP;
+  - with both MVPs, two blocks side by side on desktop (stacked on phones), each
+    in the phone layout;
+  - inverted colours: band in the card colour, body black + yellow (Dobele) or
+    white + blue (Jelgava);
+  - month averages (points, rebounds, assists) and games, from the box scores.
+  - Sheet: settings "DBČK/JSSC mēneša MVP sponsors" and a "Mēneša MVP" tab (read
+    from sync step 2). Demo season has a monthly MVP per cup per month.
+
 ## Round 7 — released 20 Oct 2026 (PR #11)
 
 - **Home header:**
