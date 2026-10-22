@@ -1704,6 +1704,8 @@
       }
     }
     html += active.join('');
+    // All round and monthly MVPs so far: below the current stage, above the earlier stages.
+    html += mvpHistory(cup);
     if (history.length) {
       html += '<div class="st-divider"><span>Iepriekšējie posmi</span></div>' + history.join('');
     }
@@ -2036,7 +2038,7 @@
       });
     return ldrCardHtml({ k: c.k, cap: c.cap || 'vienā spēlē' }, top);
   }
-  // All MVPs of the season so far, newest first: round MVPs once the round is
+  // Kopvērtējums: all MVPs of the season so far, newest first: round MVPs once the round is
   // played, monthly MVPs once they appear on the home page (with the first
   // round of the next month; the last month after the cup's last round).
   // A list with nothing in it is not shown.
@@ -2112,7 +2114,7 @@
         return '<section class="ld-sec" aria-labelledby="ld-rec"><h2 class="g-title" id="ld-rec">Sezonas rekordi <small>labākais rezultāts vienā spēlē</small></h2>' +
           '<div class="ld-grid ld-grid--6">' + RECORDS.map(function (c) { return recordCard(perfs, c); }).join('') + '</div>' +
           '<p class="note">Labākie sniegumi vienā spēlē šajā kausā. Viens spēlētājs var būt sarakstā vairākas reizes; ja rezultāts vienāds, augstāk ir tas, kurš to sasniedza pirmais. Datums ved uz spēli.</p></section>';
-      })() + mvpHistory(cup) +
+      })() +
         (forfeits ? '<p class="note">Spēles ar tehnisko rezultātu statistikā netiek ieskaitītas.</p>' : '');
     }
     $('leaders-view').innerHTML = html;
