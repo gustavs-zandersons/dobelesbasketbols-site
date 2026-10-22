@@ -2046,6 +2046,10 @@
     dates.sort();
     return dates.filter(function (d) { return ym(d) > month; })[0] || dates[dates.length - 1];
   }
+  // The award's sponsor: a panel left of the list (desktop) or a strip above it (phones).
+  function mvphOpen(sp, label) {
+    return '<div class="mvph-wrap' + (sp ? ' has-sp' : '') + '">' + (sp ? mvpSponsorStrip(sp, label).replace('class="mvp-sponsor"', 'class="mvp-sponsor mvph-sp"') : '');
+  }
   function mvpStatsHtml(items) {
     return '<dl class="mvph-stats">' + items.map(function (x) { return '<div><dd>' + x[0] + '</dd><dt>' + x[1] + '</dt></div>'; }).join('') + '</dl>';
   }
@@ -2054,7 +2058,8 @@
     var rounds = (DATA.mvps || []).filter(function (m) { return m.comp === cup && m.date <= ctx.today; })
       .sort(function (x, y) { return x.date < y.date ? 1 : x.date > y.date ? -1 : 0; });
     if (rounds.length) {
-      html += '<section class="ld-sec" aria-labelledby="ld-mvp-r"><h2 class="g-title" id="ld-mvp-r">Kārtas MVP <small>' + rounds.length + ' šajā sezonā</small></h2><ul class="tm-list mvph">' +
+      html += '<section class="ld-sec" aria-labelledby="ld-mvp-r"><h2 class="g-title" id="ld-mvp-r">Kārtas MVP <small>' + rounds.length + ' šajā sezonā</small></h2>' +
+        mvphOpen(CUPS[cup].mvpSponsor, 'Kārtas MVP balvu pasniedz') + '<ul class="tm-list mvph">' +
         rounds.map(function (m) {
           var d = parse(m.date), g = m.game ? RAW[m.game] : null, opp = null;
           if (g) { var h = ctx.resolve(cup, g.home).team, aw = ctx.resolve(cup, g.away).team; opp = h === m.team ? aw : h; }
@@ -2063,12 +2068,13 @@
             '<span class="mvph-team">' + badge(m.team, 'sm') + '<span>' + esc(team(m.team).short) + '</span>' +
             (opp ? '<a class="mvph-game" href="' + gameHref(m.game) + '">pret ' + esc(team(opp).short) + ' ›</a>' : '') + '</span></span>' +
             mvpStatsHtml([[m.pts, 'Pkt'], [m.reb, 'AB'], [m.ast, 'RP']]) + '</li>';
-        }).join('') + '</ul></section>';
+        }).join('') + '</ul></div></section>';
     }
     var months = (DATA.monthMvps || []).filter(function (m) { return m.comp === cup && monthRevealDate(cup, m.month) <= ctx.today; })
       .sort(function (x, y) { return x.month < y.month ? 1 : x.month > y.month ? -1 : 0; });
     if (months.length) {
-      html += '<section class="ld-sec" aria-labelledby="ld-mvp-m"><h2 class="g-title" id="ld-mvp-m">Mēneša MVP <small>' + months.length + ' šajā sezonā</small></h2><ul class="tm-list mvph">' +
+      html += '<section class="ld-sec" aria-labelledby="ld-mvp-m"><h2 class="g-title" id="ld-mvp-m">Mēneša MVP <small>' + months.length + ' šajā sezonā</small></h2>' +
+        mvphOpen(CUPS[cup].monthMvpSponsor, 'Mēneša MVP balvu pasniedz') + '<ul class="tm-list mvph">' +
         months.map(function (m) {
           var mi = +m.month.slice(5, 7) - 1, st = monthStats(cup, m.month, m.team, m.idx);
           var avg = function (v) { return st.gp ? fmt1(v / st.gp) : '–'; };
@@ -2077,7 +2083,7 @@
             '<span class="mvph-team">' + badge(m.team, 'sm') + '<span>' + esc(team(m.team).short) + '</span>' +
             (st.gp ? '<span class="mvph-gp">' + games(st.gp) + ' ' + MONTH_LOC[mi] + '</span>' : '') + '</span></span>' +
             mvpStatsHtml([[avg(st.pts), 'Pkt'], [avg(st.reb), 'AB'], [avg(st.ast), 'RP']]) + '</li>';
-        }).join('') + '</ul><p class="note">Mēneša MVP — spēlētāja vidējie rādītāji tajā mēnesī.</p></section>';
+        }).join('') + '</ul></div><p class="note">Mēneša MVP — spēlētāja vidējie rādītāji tajā mēnesī.</p></section>';
     }
     return html;
   }

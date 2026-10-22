@@ -2699,3 +2699,12 @@ a.plink:focus-visible, a.nm:focus-visible { outline: 2px solid currentColor; out
   .mvph-stats { justify-content: flex-start; gap: 18px; }
   .mvph-stats div { justify-items: start; min-width: 0; }
 }
+.mvph-wrap { display: grid; gap: 10px; min-width: 0; }
+.mvph-wrap > .tm-list { min-width: 0; }
+.mvph-sp { border-radius: 14px; border-bottom: 1px solid var(--line); }
+@media (min-width: 760px) {
+  .mvph-wrap.has-sp { grid-template-columns: 240px minmax(0, 1fr); gap: 14px; align-items: start; }
+  /* stays in view while the list scrolls past */
+  .mvph-sp { position: sticky; top: calc(var(--head-h) + 16px); flex-direction: column; justify-content: center; text-align: center; padding: 24px 18px; gap: 16px; }
+  .mvph-sp img { height: auto; width: min(170px, 80%); max-width: none; }
+}
