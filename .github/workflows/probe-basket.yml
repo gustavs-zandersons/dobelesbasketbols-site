@@ -16,15 +16,13 @@ jobs:
         with:
           python-version: '3.12'
       - name: Older season picked by name (report only)
-        run: python3 tools/basket_sync.py --link dbck=https://regionalie.basket.lv/dobeles-atklatais-cempionats/kalendars/ --season 2024/25 --check
-      - name: Last season, all games
-        run: python3 tools/basket_sync.py --link dbck=https://regionalie.basket.lv/dobeles-atklatais-cempionats/kalendars/ --season 2025/26 | tee probe3-report.md
+        run: python3 tools/basket_sync.py --link dbck=https://regionalie.basket.lv/dobeles-atklatais-cempionats/kalendars/ --season 2024/25 --check | tee probe3-older.md
       - name: Second run reads nothing new (saved games are not fetched again)
         run: python3 tools/basket_sync.py --link dbck=https://regionalie.basket.lv/dobeles-atklatais-cempionats/kalendars/ --season 2025/26 | tee probe3-report2.md
       - name: Save results to the branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/basket probe3-report.md probe3-report2.md
+          git add src/basket probe3-report.md probe3-report2.md probe3-older.md
           git commit -m "Reader test results" || exit 0
           git push origin HEAD:probe-basket
