@@ -40,7 +40,9 @@
   var state = {
     cup: 'dbck', view: 'home', gameId: null, teamId: null, demo: load('demo') || 'group', tabs: {},
     cal: { month: null, team: load('team') || '', cup: 'all', open: null, showAll: false },
-    std: { season: null }
+    std: { season: null },
+    sts: { team: '', q: '' },
+    pl: { team: null, idx: null, period: 'season', from: null, to: null, cat: 'pts' }
   };
   var ctx;
 
@@ -858,6 +860,29 @@
   }
   var heroFitT = 0;
   window.addEventListener('resize', function () { clearTimeout(heroFitT); heroFitT = setTimeout(layoutHero, 120); });
+  // Player chart: drawn in real pixels, so redraw when its width changes.
+  var chartT = null;
+  window.addEventListener('resize', function () {
+    clearTimeout(chartT);
+    chartT = setTimeout(function () {
+      var box = $('pl-chart');
+      if (state.view === 'player' && box && box._log && box.clientWidth !== box._w) drawPlayerChart(box._log, box._cat);
+    }, 150);
+  });
+  document.addEventListener('input', function (e) {
+    if (e.target.id === 'sts-q') { state.sts.q = e.target.value; applyStatsFilter(); }
+  });
+  // Chart tooltips: hover, tap or keyboard focus on a game's column.
+  document.addEventListener('pointerover', function (e) {
+    var hit = e.target.closest && e.target.closest('#pl-chart .hit');
+    if (hit) showChartTip(hit);
+  });
+  document.addEventListener('pointerout', function (e) {
+    if (!e.target.closest || !e.target.closest('#pl-chart')) return;
+    if (!(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('#pl-chart'))) hideChartTip();
+  });
+  document.addEventListener('focusin', function (e) { if (e.target.closest && e.target.closest('#pl-chart .hit')) showChartTip(e.target); });
+  document.addEventListener('focusout', function (e) { if (e.target.closest && e.target.closest('#pl-chart .hit')) hideChartTip(); });
   // The title font arrives after the first paint: lay the header out again
   // once it (or any later font) has loaded.
   if (document.fonts) {
@@ -1996,6 +2021,340 @@
     $('leaders-view').innerHTML = html;
   }
 
+  // ---------- Statistika: every player of the cup, and a page per player ----------
+  // Numbers come from the box scores of the selected cup (the header logos
+  // switch the cup and stay on the page). Players are found by team + name.
+  function slug(s) {
+    return String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+  function playerHref(teamId, idx, comp) {
+    var t = DATA.teams.filter(function (x) { return x.id === teamId; })[0];
+    return '#' + CUPS[comp || state.cup].hash + '-speletajs-' + teamId + '-' + slug(t.players[idx].name);
+  }
+  // "<team id>-<name slug>" -> { team, idx } (team ids may contain hyphens).
+  function findPlayer(rest) {
+    for (var i = 0; i < DATA.teams.length; i++) {
+      var t = DATA.teams[i];
+      if (rest.indexOf(t.id + '-') !== 0) continue;
+      var s = rest.slice(t.id.length + 1);
+      for (var j = 0; j < t.players.length; j++) if (slug(t.players[j].name) === s) return { team: t.id, idx: j };
+    }
+    return null;
+  }
+  function addDays(d, n) { var x = parse(d); x.setDate(x.getDate() + n); return ymd(x); }
+  function signed(x, unit) { return (x > 0 ? '+' : x < 0 ? '−' : '±') + fmt1(Math.abs(x)) + (unit || ''); }
+
+  // Table columns: per-game averages; m/a = made/attempted (percentages).
+  var STS_COLS = [
+    { h: 'S', t: 'Aizvadītās spēles', gp: true },
+    { h: 'Min', t: 'Minūtes spēlē', min: true },
+    { h: 'Pkt', t: 'Punkti spēlē', i: [3], cls: 'pts' },
+    { h: 'AB', t: 'Atlēkušās bumbas spēlē', i: [10, 11] },
+    { h: 'RP', t: 'Rezultatīvas piespēles spēlē', i: [12] },
+    { h: 'PK', t: 'Pārķertās bumbas spēlē', i: [13] },
+    { h: 'BL', t: 'Bloķētie metieni spēlē', i: [14] },
+    { h: 'KĻ', t: 'Kļūdas spēlē', i: [15] },
+    { h: 'Met%', t: 'Metieni no spēles (divpunktu un trīspunktu kopā)', m: [4, 6], a: [5, 7] },
+    { h: '2P%', t: 'Divpunktu metieni', m: [4], a: [5] },
+    { h: '3P%', t: 'Trīspunktu metieni', m: [6], a: [7] },
+    { h: 'SM%', t: 'Soda metieni', m: [8], a: [9] },
+    { h: 'EF', t: 'Efektivitāte spēlē', i: [17] }
+  ];
+  function stsCell(c, p) {
+    if (c.gp) return String(p.gp);
+    if (c.min) return fmt1(p.sum[2] / 60 / p.gp);
+    if (c.m) return pct1(psum(p, c.m), psum(p, c.a));
+    return fmt1(psum(p, c.i) / p.gp);
+  }
+  function renderStats() {
+    var cup = state.cup, S = cupStats(cup), list = [];
+    Object.keys(S).forEach(function (tid) {
+      Object.keys(S[tid].players).forEach(function (k) {
+        var p = S[tid].players[k];
+        list.push({ team: tid, idx: p.idx, gp: p.gp, sum: p.sum, name: team(tid).players[p.idx].name });
+      });
+    });
+    // Default order: points per game, high → low (the table can be re-sorted by any column).
+    list.sort(function (x, y) { return y.sum[3] / y.gp - x.sum[3] / x.gp || y.sum[3] - x.sum[3] || x.name.localeCompare(y.name, 'lv'); });
+    var html = '<div class="page-head"><p class="eyebrow">' + esc(CUPS[cup].name) + ' · sezona ' + esc(SEASON_LABEL) + '</p><h1 class="page-title">Statistika</h1>' +
+      '<p class="page-sub">Visi kausa spēlētāji, vidēji spēlē. Kārto pēc jebkuras kolonnas; izvēlies spēlētāju, lai redzētu viņa statistiku pa spēlēm.</p></div>';
+    if (!list.length) {
+      $('stats-view').innerHTML = html + '<div class="empty"><strong>' + (cup === 'jssc' ? 'Izaicinājuma kausā' : 'Čempionu kausā') + ' vēl nav aizvadīta neviena spēle.</strong>Statistika parādīsies pēc pirmās spēles.</div>';
+      return;
+    }
+    var f = state.sts;
+    var teamsIn = Object.keys(S).filter(function (tid) { return Object.keys(S[tid].players).length; })
+      .map(team).sort(function (a, b) { return a.short.localeCompare(b.short, 'lv'); });
+    if (f.team && !teamsIn.some(function (t) { return t.id === f.team; })) f.team = '';
+    html += '<div class="sts-filters">' +
+      '<label class="team-pick" for="sts-team">' + (f.team ? badge(f.team, 'sm') : '<svg class="team-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.4"/><path d="M15.5 14.2c2.6-.3 4.8 1.2 5.5 4.3"/></svg>') +
+      '<span class="sr-only">Komanda</span><select id="sts-team"><option value="">Visas komandas</option>' + teamsIn.map(function (t) {
+        return '<option value="' + esc(t.id) + '"' + (f.team === t.id ? ' selected' : '') + '>' + esc(t.name) + '</option>';
+      }).join('') + '</select></label>' +
+      '<label class="sts-search" for="sts-q"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><span class="sr-only">Meklēt spēlētāju</span>' +
+      '<input id="sts-q" type="search" placeholder="Meklēt spēlētāju" autocomplete="off" value="' + esc(f.q) + '"></label>' +
+      '<p class="sts-count" id="sts-count" aria-live="polite"></p></div>';
+    html += '<div class="bx-card"><div class="bx-scroll"><table class="bx bx--stats"><thead><tr><th class="pl" scope="col">Spēlētājs</th>' +
+      STS_COLS.map(function (c) { return '<th scope="col" title="' + esc(c.t) + '">' + esc(c.h) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      list.map(function (p) {
+        var href = playerHref(p.team, p.idx);
+        return '<tr data-href="' + esc(href) + '" data-team="' + esc(p.team) + '" data-name="' + esc(slug(p.name)) + '">' +
+          '<td class="pl"><span class="row">' + badge(p.team, 'sm') + '<span class="who"><a class="nm" href="' + esc(href) + '">' + esc(p.name) + '</a><small>' + esc(team(p.team).short) + '</small></span></span></td>' +
+          STS_COLS.map(function (c) { return '<td' + (c.cls ? ' class="' + c.cls + '"' : '') + '>' + stsCell(c, p) + '</td>'; }).join('') + '</tr>';
+      }).join('') + '</tbody></table></div></div>' +
+      '<p class="note">Vidēji spēlē. S — aizvadītās spēles, Min — minūtes, Pkt — punkti, AB — atlēkušās bumbas, RP — rezultatīvas piespēles, PK — pārķertās bumbas, BL — bloķētie metieni, KĻ — kļūdas, Met% — metieni no spēles (divpunktu un trīspunktu kopā), 2P% / 3P% — divpunktu / trīspunktu metieni, SM% — soda metieni, EF — efektivitāte. Spēles ar tehnisko rezultātu netiek ieskaitītas.</p>';
+    $('stats-view').innerHTML = html;
+    makeSortable($('stats-view'), 3);   // starts sorted by points per game
+    applyStatsFilter();
+  }
+  // Team and name filters hide rows, so the chosen sort order stays.
+  function applyStatsFilter() {
+    var f = state.sts, q = slug(f.q || ''), shown = 0, rows = document.querySelectorAll('#stats-view tbody tr');
+    Array.prototype.forEach.call(rows, function (tr) {
+      var ok = (!f.team || tr.getAttribute('data-team') === f.team) && (!q || tr.getAttribute('data-name').indexOf(q) >= 0);
+      tr.hidden = !ok;
+      if (ok) shown++;
+    });
+    var c = $('sts-count');
+    if (c) c.textContent = shown === rows.length ? rows.length + ' spēlētāji' : 'Rāda ' + shown + ' no ' + rows.length;
+  }
+
+  // ----- Player page -----
+  var PL_CATS = [
+    { k: 'pts', l: 'Punkti', s: 'Punkti', v: function (r) { return r[3]; } },
+    { k: 'reb', l: 'Atlēkušās bumbas', s: 'Atl. bumbas', v: function (r) { return r[10] + r[11]; } },
+    { k: 'ast', l: 'Rezultatīvas piespēles', s: 'Rez. piespēles', v: function (r) { return r[12]; } },
+    { k: 'eff', l: 'Efektivitāte', s: 'Efektivitāte', v: function (r) { return r[17]; } },
+    { k: 'fg', l: 'Metieni no spēles', s: 'Metieni no spēles', m: [4, 6], a: [5, 7] },
+    { k: 'ft', l: 'Soda metieni', s: 'Soda metieni', m: [8], a: [9] }
+  ];
+  var PERIODS = [{ k: 'season', l: 'Visa sezona' }, { k: 'week', l: 'Pēdējā nedēļa' }, { k: 'month', l: 'Pēdējais mēnesis' }];
+  function rsum(r, idx) { return idx.reduce(function (s, i) { return s + r[i]; }, 0); }
+  // Every game the player played in this cup, oldest first.
+  function playerLog(cup, teamId, idx) {
+    var out = [];
+    ctx.games().filter(function (g) { return g.comp === cup && g.final; }).sort(byWhen).forEach(function (g) {
+      var raw = RAW[g.id];
+      if (!raw.box) return;
+      var h = ctx.resolve(cup, g.home).team, a = ctx.resolve(cup, g.away).team;
+      var side = h === teamId ? 'h' : a === teamId ? 'a' : null;
+      if (!side) return;
+      var r = raw.box[side].filter(function (x) { return x[0] === idx && x[2] != null; })[0];
+      if (!r) return;
+      var my = side === 'h' ? g.hs : g.as, their = side === 'h' ? g.as : g.hs;
+      out.push({ g: g, r: r, opp: side === 'h' ? a : h, my: my, their: their, won: my > their });
+    });
+    return out;
+  }
+  function cupDates(cup) {
+    var ds = DATA.games.filter(function (g) { return g.comp === cup; }).map(function (g) { return g.date; }).sort();
+    return { first: ds[0], last: ds[ds.length - 1] };
+  }
+  function periodRange() {
+    var p = state.pl, b = cupDates(state.cup), today = ctx.today;
+    if (p.period === 'week') return { from: addDays(today, -6), to: today };
+    if (p.period === 'month') return { from: addDays(today, -29), to: today };
+    if (p.period === 'custom') return { from: p.from || b.first, to: p.to || b.last };
+    return { from: b.first, to: b.last };
+  }
+  // Per-game value of a category (null: no attempts that game, for percentages).
+  function catValue(c, r) {
+    if (c.m) { var a = rsum(r, c.a); return a ? 100 * rsum(r, c.m) / a : null; }
+    return c.v(r);
+  }
+  // Linear trend over the games of the period: change of the fitted line from
+  // the first to the last game. Needs at least 3 games (with attempts).
+  function trendOf(vals, isPct) {
+    var pts = [];
+    vals.forEach(function (v, i) { if (v != null) pts.push([i, v]); });
+    if (pts.length < 3) return null;
+    var n = pts.length, sx = 0, sy = 0, sxx = 0, sxy = 0;
+    pts.forEach(function (q) { sx += q[0]; sy += q[1]; sxx += q[0] * q[0]; sxy += q[0] * q[1]; });
+    var den = n * sxx - sx * sx;
+    if (!den) return null;
+    var b = (n * sxy - sx * sy) / den, a = (sy - b * sx) / n;
+    var change = b * (pts[n - 1][0] - pts[0][0]), mean = sy / n;
+    var thr = isPct ? 3 : Math.max(0.5, Math.abs(mean) * 0.1);
+    return { a: a, b: b, i0: pts[0][0], i1: pts[n - 1][0], change: change, dir: change >= thr ? 1 : change <= -thr ? -1 : 0 };
+  }
+  var ARROW = {
+    1: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 13V3M3.5 7.5L8 3l4.5 4.5"/></svg>',
+    '-1': '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3.5 8.5L8 13l4.5-4.5"/></svg>',
+    0: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>'
+  };
+  function trendHtml(t, isPct) {
+    if (!t) return '<span class="trend is-none" title="Tendencei vajag vismaz 3 spēles">Tendence — vismaz 3 spēles</span>';
+    var word = t.dir > 0 ? 'Pieaugums' : t.dir < 0 ? 'Kritums' : 'Stabili';
+    var cls = t.dir > 0 ? 'is-up' : t.dir < 0 ? 'is-down' : 'is-flat';
+    var val = signed(t.change, isPct ? ' pp' : '');
+    return '<span class="trend ' + cls + '" aria-label="Tendence: ' + word.toLowerCase() + ' ' + val + '"><i>' + ARROW[t.dir] + '</i>' +
+      '<span>' + word + (t.dir ? ' <b>' + val + '</b>' : '') + '</span></span>';
+  }
+  function sparkline(vals) {
+    var pts = [];
+    vals.forEach(function (v, i) { if (v != null) pts.push([i, v]); });
+    if (pts.length < 2) return '';
+    var W = 120, H = 30, lo = Math.min.apply(null, pts.map(function (q) { return q[1]; })), hi = Math.max.apply(null, pts.map(function (q) { return q[1]; }));
+    var n = vals.length - 1 || 1, span = hi - lo || 1;
+    var xy = pts.map(function (q) { return [3 + (W - 6) * q[0] / n, 4 + (H - 8) * (1 - (q[1] - lo) / span)]; });
+    var last = xy[xy.length - 1];
+    return '<svg class="spark" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true"><polyline points="' +
+      xy.map(function (q) { return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' ') + '"/><path class="dot" d="M' + last[0].toFixed(1) + ' ' + last[1].toFixed(1) + 'h0.01"/></svg>';
+  }
+  function renderPlayer() {
+    var pl = state.pl, t = team(pl.team), p = t.players[pl.idx], cup = state.cup;
+    var all = playerLog(cup, pl.team, pl.idx);
+    var html = '<div class="tm-bar"><a class="back" href="#' + CUPS[cup].hash + '-statistika"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>Statistika</a></div>';
+    var tot = function (i) { return all.reduce(function (s, x) { return s + x.r[i]; }, 0); };
+    html += '<section class="tm-hl pl-hl" aria-label="' + esc(p.name) + '" data-mark="' + esc(t.short) + '">' +
+      '<span class="tm-hl-logo">' + badge(pl.team, 'xl') + '</span>' +
+      '<div class="tm-hl-id"><p class="mvp-k">' + esc(CUPS[cup].short) + ' · sezona ' + esc(SEASON_LABEL) + '</p><h1 class="tm-hl-name">' + esc(p.name) + '</h1>' +
+      '<p class="tm-hl-pos"><a href="' + teamHref(pl.team) + '">' + esc(t.name) + ' ›</a></p></div>' +
+      (all.length ? '<div class="tm-hl-rec"><dl class="mvp-stats"><div><dd>' + all.length + '</dd><dt>Spēles</dt></div><div><dd>' + fmt1(tot(3) / all.length) + '</dd><dt>Punkti spēlē</dt></div>' +
+        '<div><dd>' + fmt1(tot(17) / all.length) + '</dd><dt>Efektivitāte</dt></div></dl></div>' : '') + '</section>';
+    if (!all.length) {
+      $('stats-view').innerHTML = html + '<div class="empty"><strong>' + (cup === 'jssc' ? 'Izaicinājuma kausā' : 'Čempionu kausā') + ' spēlētājs vēl nav spēlējis.</strong>Otra kausa statistiku vari redzēt, izvēloties kausu augšā.</div>';
+      return;
+    }
+    var b = cupDates(cup), rg = periodRange();
+    html += '<div class="pl-filters" role="group" aria-label="Periods">' +
+      '<div class="seg">' + PERIODS.map(function (q) {
+        return '<button type="button" data-pl-period="' + q.k + '" aria-pressed="' + (pl.period === q.k) + '">' + esc(q.l) + '</button>';
+      }).join('') + '</div>' +
+      '<div class="pl-dates"><label><span>No</span><input type="date" id="pl-from" min="' + b.first + '" max="' + b.last + '" value="' + rg.from + '"></label>' +
+      '<label><span>Līdz</span><input type="date" id="pl-to" min="' + b.first + '" max="' + b.last + '" value="' + rg.to + '"></label></div></div>' +
+      '<div id="pl-panel" class="pl-panel"></div>';
+    $('stats-view').innerHTML = html;
+    renderPlayerPanel();
+  }
+  function renderPlayerPanel() {
+    var el = $('pl-panel');
+    if (!el) return;
+    var pl = state.pl, cup = state.cup, rg = periodRange();
+    var log = playerLog(cup, pl.team, pl.idx).filter(function (x) { return x.g.date >= rg.from && x.g.date <= rg.to; });
+    var range = dateShort(rg.from) + '–' + dateShort(rg.to);
+    if (!log.length) {
+      el.innerHTML = '<p class="pl-range">' + esc(range) + '</p><div class="empty"><strong>Šajā periodā spēlētājs nav spēlējis.</strong>Izvēlies citu periodu vai visu sezonu.</div>';
+      return;
+    }
+    var n = log.length;
+    var cat = PL_CATS.filter(function (c) { return c.k === pl.cat; })[0] || PL_CATS[0];
+    var tiles = PL_CATS.map(function (c) {
+      var vals = log.map(function (x) { return catValue(c, x.r); }), t = trendOf(vals, !!c.m), value, sub;
+      if (c.m) {
+        var m = log.reduce(function (s, x) { return s + rsum(x.r, c.m); }, 0), a = log.reduce(function (s, x) { return s + rsum(x.r, c.a); }, 0);
+        value = pct1(m, a).replace('%', '<span class="pc">%</span>'); sub = m + '/' + a + ' metieni';
+      } else {
+        var sum = log.reduce(function (s, x) { return s + c.v(x.r); }, 0);
+        value = fmt1(sum / n); sub = 'vidēji · kopā ' + sum;
+      }
+      return '<button type="button" class="pl-tile" data-pl-cat="' + c.k + '" aria-pressed="' + (c === cat) + '">' +
+        '<span class="pl-tile-k" title="' + esc(c.l) + '">' + esc(c.s) + '</span><span class="pl-tile-v">' + value + '</span><span class="pl-tile-s">' + esc(sub) + '</span>' +
+        trendHtml(t, !!c.m) + sparkline(vals) + '</button>';
+    }).join('');
+    el.innerHTML = '<p class="pl-range"><b>' + games(n) + '</b> · ' + esc(range) + '</p>' +
+      '<div class="pl-tiles">' + tiles + '</div>' +
+      '<p class="note">Tendence — kā rādītājs mainījies izvēlētajā periodā: taisne cauri visām perioda spēlēm, starpība starp pirmo un pēdējo spēli (pp — procentpunkti). Vajag vismaz 3 spēles. Izvēlies rādītāju, lai redzētu to pa spēlēm.</p>' +
+      '<section class="pl-chart-card" aria-labelledby="pl-chart-t"><div class="pl-chart-head"><h2 class="g-title" id="pl-chart-t">' + esc(cat.l) + ' <small>pa spēlēm</small></h2></div>' +
+      '<div class="pl-chart" id="pl-chart"></div></section>' +
+      '<section class="tm-sec" aria-labelledby="pl-log-t"><h2 class="g-title" id="pl-log-t">Spēles <small>' + esc(range) + '</small></h2>' + logTable(log) + '</section>';
+    drawPlayerChart(log, cat);
+  }
+  function logTable(log) {
+    var n = log.length, T = new Array(19).fill(0);
+    log.forEach(function (x) { for (var i = 2; i < 19; i++) T[i] += x.r[i]; });
+    var ma = function (r, m, a) { return r[m] + '/' + r[a]; };
+    var rows = log.slice().reverse().map(function (x) {
+      var r = x.r;
+      return '<tr data-href="' + gameHref(x.g.id) + '"><td class="pl"><span class="row"><span class="dt">' + dateShort(x.g.date) + '</span>' + badge(x.opp, 'sm') +
+        '<a class="nm" href="' + gameHref(x.g.id) + '">' + esc(team(x.opp).short) + '</a></span></td>' +
+        '<td class="lg-res">' + wl(x.won) + x.my + ':' + x.their + '</td><td>' + mins(r[2]) + '</td><td class="pts">' + r[3] + '</td><td>' + (r[10] + r[11]) + '</td><td>' + r[12] + '</td>' +
+        '<td>' + r[13] + '</td><td>' + r[14] + '</td><td>' + r[15] + '</td><td>' + (r[4] + r[6]) + '/' + (r[5] + r[7]) + '</td><td>' + ma(r, 6, 7) + '</td><td>' + ma(r, 8, 9) + '</td><td>' + r[17] + '</td></tr>';
+    }).join('');
+    var avg = function (i) { return fmt1(T[i] / n); };
+    return '<div class="bx-card"><div class="bx-scroll"><table class="bx bx--log"><thead><tr><th class="pl" scope="col">Spēle</th><th scope="col">Rez.</th><th scope="col" title="Minūtes">Min</th>' +
+      '<th scope="col" title="Punkti">Pkt</th><th scope="col" title="Atlēkušās bumbas">AB</th><th scope="col" title="Rezultatīvas piespēles">RP</th><th scope="col" title="Pārķertās bumbas">PK</th>' +
+      '<th scope="col" title="Bloķētie metieni">BL</th><th scope="col" title="Kļūdas">KĻ</th><th scope="col" title="Metieni no spēles: trāpīti/mesti">Met</th><th scope="col" title="Trīspunktu metieni">3P</th>' +
+      '<th scope="col" title="Soda metieni">SM</th><th scope="col" title="Efektivitāte">EF</th></tr></thead><tbody>' + rows +
+      '<tr class="tot"><td class="pl">Vidēji</td><td></td><td>' + mins(Math.round(T[2] / n)) + '</td><td>' + avg(3) + '</td><td>' + fmt1((T[10] + T[11]) / n) + '</td><td>' + avg(12) + '</td><td>' + avg(13) + '</td>' +
+      '<td>' + avg(14) + '</td><td>' + avg(15) + '</td><td>' + pct1(T[4] + T[6], T[5] + T[7]) + '</td><td>' + pct1(T[6], T[7]) + '</td><td>' + pct1(T[8], T[9]) + '</td><td>' + avg(17) + '</td></tr>' +
+      '</tbody></table></div></div>';
+  }
+  // Per-game columns for one category, the period's trend line on top.
+  // Sized to the container in CSS pixels (redrawn on resize), so text stays readable.
+  function niceStep(span, target) {
+    var raw = span / target, p = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), f = raw / p;
+    return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p;
+  }
+  function drawPlayerChart(log, cat) {
+    var box = $('pl-chart');
+    if (!box) return;
+    var W = Math.max(280, box.clientWidth), H = W < 520 ? 210 : 250;
+    var isPct = !!cat.m, vals = log.map(function (x) { return catValue(cat, x.r); }), t = trendOf(vals, isPct), n = log.length;
+    var L = 34, R = t ? 76 : 12, T = 24, B = 30, pw = W - L - R, ph = H - T - B;
+    var nums = vals.filter(function (v) { return v != null; });
+    if (t) { nums.push(t.a + t.b * t.i0, t.a + t.b * t.i1); }
+    var lo = Math.min(0, Math.min.apply(null, nums)), hi = Math.max.apply(null, nums.concat([isPct ? 100 : 1]));
+    var step = isPct ? 25 : niceStep(hi - lo || 1, 4), top = isPct ? 100 : Math.ceil(hi / step) * step, bot = Math.floor(lo / step) * step;
+    var y = function (v) { return T + ph * (1 - (v - bot) / (top - bot)); };
+    var band = pw / n, bw = Math.max(4, Math.min(24, band * 0.62)), cx = function (i) { return L + band * (i + 0.5); };
+    var s = '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(cat.l) + ' pa spēlēm">';
+    for (var v = bot; v <= top + 1e-9; v += step) {
+      s += '<line class="grid" x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v).toFixed(1) + '" y2="' + y(v).toFixed(1) + '"/>' +
+        '<text class="ax" x="' + (L - 6) + '" y="' + (y(v) + 4).toFixed(1) + '" text-anchor="end">' + (Math.round(v * 10) / 10).toString().replace('.', ',') + '</text>';
+    }
+    var maxI = -1;
+    vals.forEach(function (v, i) { if (v != null && (maxI < 0 || v > vals[maxI])) maxI = i; });
+    var every = Math.ceil(n / Math.max(1, Math.floor(pw / 46))), labels = '';   // value labels go on top of the trend line
+    vals.forEach(function (v, i) {
+      if (v != null) {
+        var y0 = y(Math.max(0, bot)), y1 = y(v), h = Math.abs(y0 - y1), x0 = cx(i) - bw / 2, rr = Math.min(4, h, bw / 2);
+        if (v >= 0) s += '<path class="bar" d="M' + x0.toFixed(1) + ' ' + y0.toFixed(1) + 'V' + (y1 + rr).toFixed(1) + 'Q' + x0.toFixed(1) + ' ' + y1.toFixed(1) + ' ' + (x0 + rr).toFixed(1) + ' ' + y1.toFixed(1) +
+          'H' + (x0 + bw - rr).toFixed(1) + 'Q' + (x0 + bw).toFixed(1) + ' ' + y1.toFixed(1) + ' ' + (x0 + bw).toFixed(1) + ' ' + (y1 + rr).toFixed(1) + 'V' + y0.toFixed(1) + 'Z"/>';
+        else s += '<rect class="bar" x="' + x0.toFixed(1) + '" y="' + y0.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '"/>';
+        if (i === maxI || i === n - 1) labels += '<text class="val" x="' + cx(i).toFixed(1) + '" y="' + (Math.min(y0, y1) - 6).toFixed(1) + '" text-anchor="middle">' + (isPct ? Math.round(v) + '%' : (Math.round(v * 10) / 10).toString().replace('.', ',')) + '</text>';
+      }
+      if ((n - 1 - i) % every === 0) s += '<text class="ax" x="' + cx(i).toFixed(1) + '" y="' + (H - 10) + '" text-anchor="middle">' + dateShort(log[i].g.date) + '</text>';
+    });
+    s += '<line class="base" x1="' + L + '" x2="' + (W - R) + '" y1="' + y(Math.max(0, bot)).toFixed(1) + '" y2="' + y(Math.max(0, bot)).toFixed(1) + '"/>';
+    if (t) {
+      var ty0 = y(t.a + t.b * t.i0), ty1 = y(t.a + t.b * t.i1);
+      var seg = 'x1="' + cx(t.i0).toFixed(1) + '" y1="' + ty0.toFixed(1) + '" x2="' + cx(t.i1).toFixed(1) + '" y2="' + ty1.toFixed(1) + '"';
+      s += '<line class="trend-halo" ' + seg + '/><line class="trend-line" ' + seg + '/>' +
+        '<text class="trend-lab" x="' + (cx(t.i1) + bw / 2 + 8).toFixed(1) + '" y="' + (ty1 + 4).toFixed(1) + '">tendence</text>';
+    }
+    s += labels;
+    // Hit areas: the whole column band, larger than the bar.
+    vals.forEach(function (v, i) {
+      s += '<rect class="hit" data-i="' + i + '" x="' + (L + band * i).toFixed(1) + '" y="' + T + '" width="' + band.toFixed(1) + '" height="' + ph + '" tabindex="0" aria-label="' +
+        esc(dateShort(log[i].g.date) + ' pret ' + team(log[i].opp).short + ': ' + (v == null ? 'nav metienu' : isPct ? Math.round(v) + '%' : v)) + '"/>';
+    });
+    s += '</svg>';
+    box.innerHTML = s + '<div class="pl-tip" id="pl-tip" hidden></div>';
+    box._log = log; box._cat = cat; box._w = box.clientWidth;
+  }
+  function showChartTip(hit) {
+    var box = $('pl-chart'), tip = $('pl-tip');
+    if (!box || !tip || !box._log) return;
+    var i = +hit.getAttribute('data-i'), x = box._log[i], c = box._cat, v = catValue(c, x.r);
+    tip.textContent = '';
+    var add = function (cls, text) { var e = document.createElement('span'); e.className = cls; e.textContent = text; tip.appendChild(e); };
+    add('tv', v == null ? 'Nav metienu' : c.m ? fmt1(v) + '% · ' + rsum(x.r, c.m) + '/' + rsum(x.r, c.a) : String(v));
+    add('tk', c.l);
+    add('tg', dateShort(x.g.date) + ' pret ' + team(x.opp).short + ' · ' + (x.won ? 'U ' : 'Z ') + x.my + ':' + x.their);
+    tip.hidden = false;
+    Array.prototype.forEach.call(box.querySelectorAll('.hit.is-on'), function (h) { h.classList.remove('is-on'); });
+    hit.classList.add('is-on');
+    var r = hit.getBoundingClientRect(), br = box.getBoundingClientRect();
+    var left = r.left - br.left + r.width / 2 - tip.offsetWidth / 2;
+    tip.style.left = Math.max(0, Math.min(br.width - tip.offsetWidth, left)) + 'px';
+  }
+  function hideChartTip() {
+    var tip = $('pl-tip'), box = $('pl-chart');
+    if (tip) tip.hidden = true;
+    if (box) Array.prototype.forEach.call(box.querySelectorAll('.hit.is-on'), function (h) { h.classList.remove('is-on'); });
+  }
+
   // ---------- Sponsori page (same on both cups) ----------
   // Data comes from the season sheet's "Sponsori" tab: level, order,
   // description and links; an empty link means no button.
@@ -2061,7 +2420,7 @@
   // #dobele / #jelgava = cup home; #spele-g12 = a single game.
   function route() {
     var h = (window.location.hash || '').replace('#', '');
-    var m = /^spele-(g\d+)$/.exec(h);
+    var m = /^spele-(g\d+)$/.exec(h), fp;
     if (m && RAW[m[1]]) {
       state.view = 'game'; state.gameId = m[1]; state.cup = RAW[m[1]].comp;
     } else if (h === 'kalendars') {
@@ -2075,6 +2434,14 @@
       state.cup = m[1] === 'jelgava' ? 'jssc' : 'dbck';
     } else if ((m = /^(dobele|jelgava)-lideri$/.exec(h))) {
       state.view = 'leaders'; state.gameId = null;
+      state.cup = m[1] === 'jelgava' ? 'jssc' : 'dbck';
+    } else if ((m = /^(dobele|jelgava)-statistika$/.exec(h))) {
+      state.view = 'stats'; state.gameId = null;
+      state.cup = m[1] === 'jelgava' ? 'jssc' : 'dbck';
+    } else if ((m = /^(dobele|jelgava)-speletajs-([a-z0-9-]+)$/.exec(h)) && (fp = findPlayer(m[2]))) {
+      // Another player: start from the whole season again.
+      if (state.pl.team !== fp.team || state.pl.idx !== fp.idx) state.pl = { team: fp.team, idx: fp.idx, period: 'season', from: null, to: null, cat: 'pts' };
+      state.view = 'player'; state.gameId = null;
       state.cup = m[1] === 'jelgava' ? 'jssc' : 'dbck';
     } else if ((m = /^(dobele|jelgava)-sponsori$/.exec(h))) {
       state.view = 'sponsors'; state.gameId = null;
@@ -2102,7 +2469,7 @@
       b.setAttribute('aria-pressed', String(b.getAttribute('data-demo') === state.demo));
     });
     var hero = document.querySelector('.hero');
-    var NAVV = { home: ['home'], cal: ['calendar'], std: ['standings'], sp: ['sponsors'], tm: ['teams', 'team'], ld: ['leaders'] };
+    var NAVV = { home: ['home'], cal: ['calendar'], std: ['standings'], sp: ['sponsors'], tm: ['teams', 'team'], ld: ['leaders'], sts: ['stats', 'player'] };
     document.querySelectorAll('[data-nav]').forEach(function (n) {
       if ((NAVV[n.getAttribute('data-nav')] || []).indexOf(state.view) >= 0) n.setAttribute('aria-current', 'page'); else n.removeAttribute('aria-current');
     });
@@ -2110,17 +2477,22 @@
     var spLink = $('nav-sp'); if (spLink) spLink.setAttribute('href', '#' + CUPS[state.cup].hash + '-sponsori');
     var tmLink = $('nav-tm'); if (tmLink) tmLink.setAttribute('href', '#' + CUPS[state.cup].hash + '-komandas');
     var ldLink = $('nav-ld'); if (ldLink) ldLink.setAttribute('href', '#' + CUPS[state.cup].hash + '-lideri');
-    var team = state.view === 'teams' || state.view === 'team', ldr = state.view === 'leaders';
+    var stsLink = $('nav-sts'); if (stsLink) stsLink.setAttribute('href', '#' + CUPS[state.cup].hash + '-statistika');
+    var team = state.view === 'teams' || state.view === 'team', ldr = state.view === 'leaders', sts = state.view === 'stats' || state.view === 'player';
     $('sponsors-view').hidden = state.view !== 'sponsors';
     $('teams-view').hidden = !team;
     if (!team) $('teams-view').innerHTML = '';
     $('leaders-view').hidden = !ldr;
     if (!ldr) $('leaders-view').innerHTML = '';
-    if (state.view === 'sponsors' || team || ldr) {
+    $('stats-view').hidden = !sts;
+    if (!sts) $('stats-view').innerHTML = '';
+    if (state.view === 'sponsors' || team || ldr || sts) {
       hero.hidden = true; $('main').hidden = true; $('game-view').hidden = true;
       $('calendar-view').hidden = true; $('standings-view').hidden = true; $('standings-view').innerHTML = '';
       if (state.view === 'sponsors') renderSponsors();
       else if (ldr) renderLeaders();
+      else if (state.view === 'stats') renderStats();
+      else if (state.view === 'player') renderPlayer();
       else if (state.view === 'teams') renderTeams();
       else renderTeam(state.teamId);
       return;
@@ -2209,12 +2581,31 @@
       window.location.hash = CUPS[tc.getAttribute('data-team-cup')].hash + (tid ? '-komanda-' + tid : '-komandas');
       return;
     }
+    var pp = e.target.closest('[data-pl-period]');
+    if (pp) {
+      state.pl.period = pp.getAttribute('data-pl-period'); state.pl.from = state.pl.to = null;
+      document.querySelectorAll('[data-pl-period]').forEach(function (b) { b.setAttribute('aria-pressed', String(b === pp)); });
+      var rg = periodRange(); $('pl-from').value = rg.from; $('pl-to').value = rg.to;
+      renderPlayerPanel();
+      return;
+    }
+    var pc = e.target.closest('[data-pl-cat]');
+    if (pc) {
+      state.pl.cat = pc.getAttribute('data-pl-cat');
+      renderPlayerPanel();
+      var again = document.querySelector('[data-pl-cat="' + state.pl.cat + '"]'); if (again && usingKeyboard) again.focus();
+      return;
+    }
+    // Table rows open the player / game; the link inside stays the keyboard way.
+    var row = e.target.closest('tr[data-href]');
+    if (row && !e.target.closest('a, button')) { window.location.hash = row.getAttribute('data-href').slice(1); return; }
     var spt = e.target.closest('[data-sponsor]');
     if (spt) { openSponsor(spt.getAttribute('data-sponsor'), spt); return; }
-    if (e.target.closest('[data-nav="cal"]') || e.target.closest('[data-nav="std"]') || e.target.closest('[data-nav="sp"]') || e.target.closest('[data-nav="tm"]') || e.target.closest('[data-nav="ld"]')) closeDrawer();
+    if (e.target.closest('[data-nav="cal"]') || e.target.closest('[data-nav="std"]') || e.target.closest('[data-nav="sp"]') || e.target.closest('[data-nav="tm"]') || e.target.closest('[data-nav="ld"]') || e.target.closest('[data-nav="sts"]')) closeDrawer();
     // On the standings, sponsors, team and leaders pages the header logos switch the cup but stay on the page.
     var cupLink = e.target.closest('.cup-switch a[data-cup]');
-    var STAY = { standings: '-kopvertejums', sponsors: '-sponsori', teams: '-komandas', team: '-komanda-' + state.teamId, leaders: '-lideri' };
+    var STAY = { standings: '-kopvertejums', sponsors: '-sponsori', teams: '-komandas', team: '-komanda-' + state.teamId, leaders: '-lideri', stats: '-statistika',
+      player: state.pl.team ? playerHref(state.pl.team, state.pl.idx).replace(/^#[a-z]+/, '') : '' };
     if (cupLink && STAY[state.view]) {
       e.preventDefault();
       window.location.hash = CUPS[cupLink.getAttribute('data-cup')].hash + STAY[state.view];
@@ -2253,6 +2644,22 @@
     if (e.target.id === 'season-pick') {
       var cur = SEASONS.filter(function (x) { return x.current; })[0];
       window.location.hash = CUPS[state.cup].hash + '-kopvertejums' + (e.target.value === cur.id ? '' : '-' + e.target.value);
+      return;
+    }
+    if (e.target.id === 'sts-team') {
+      state.sts.team = e.target.value;
+      var lab = e.target.closest('label'), ico = lab && lab.firstElementChild;
+      if (ico) ico.outerHTML = state.sts.team ? badge(state.sts.team, 'sm') : '<svg class="team-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.4"/><path d="M15.5 14.2c2.6-.3 4.8 1.2 5.5 4.3"/></svg>';
+      if (!usingKeyboard) e.target.blur();
+      applyStatsFilter();
+      return;
+    }
+    if (e.target.id === 'pl-from' || e.target.id === 'pl-to') {
+      var f0 = $('pl-from').value, t0 = $('pl-to').value;
+      if (f0 && t0 && f0 > t0) { var sw = f0; f0 = t0; t0 = sw; $('pl-from').value = f0; $('pl-to').value = t0; }
+      state.pl.period = 'custom'; state.pl.from = f0 || null; state.pl.to = t0 || null;
+      document.querySelectorAll('[data-pl-period]').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+      renderPlayerPanel();
       return;
     }
     if (e.target.id === 'team-filter') {
