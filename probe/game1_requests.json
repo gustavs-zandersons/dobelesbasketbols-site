@@ -1,0 +1,547 @@
+[
+ {
+  "url": "https://regionalie.basket.lv/aizkraukles-novada-cempionats/speletaji/",
+  "method": "GET",
+  "type": "document",
+  "status": 200,
+  "ctype": "text/html; charset=UTF-8",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/fonts/encodesans/encodesans-regular.woff2",
+  "method": "GET",
+  "type": "font",
+  "status": 404,
+  "ctype": "text/html; charset=UTF-8",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/wp/wp-includes/css/classic-themes.min.css?ver=6.2.2",
+  "method": "GET",
+  "type": "stylesheet",
+  "status": 200,
+  "ctype": "text/css",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/styles/base-h.css?ver=1.2.1",
+  "method": "GET",
+  "type": "stylesheet",
+  "status": 200,
+  "ctype": "text/css",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/styles/default.css?ver=1.2.1",
+  "method": "GET",
+  "type": "stylesheet",
+  "status": 200,
+  "ctype": "text/css",
+  "post": null
+ },
+ {
+  "url": "https://embed.web.prod.cloud.atriumsports.com/widget.js",
+  "method": "GET",
+  "type": "script",
+  "status": 301,
+  "ctype": "",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/fonts/encodesans/encodesans-bold.woff2",
+  "method": "GET",
+  "type": "font",
+  "status": 404,
+  "ctype": "text/html; charset=UTF-8",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/fonts/fontawesome-webfont.woff2",
+  "method": "GET",
+  "type": "font",
+  "status": 404,
+  "ctype": "text/html; charset=UTF-8",
+  "post": null
+ },
+ {
+  "url": "https://www.basket.lv/uploads/sites/26/2022/09/lbs-logo-red-3-1.svg",
+  "method": "GET",
+  "type": "image",
+  "status": 200,
+  "ctype": "image/svg+xml",
+  "post": null
+ },
+ {
+  "url": "https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;500;600;700&display=swap",
+  "method": "GET",
+  "type": "stylesheet",
+  "status": 200,
+  "ctype": "text/css; charset=utf-8",
+  "post": null
+ },
+ {
+  "url": "https://widget.eui.connect.sportradar.com/widget.js",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "text/javascript",
+  "post": null
+ },
+ {
+  "url": "https://www.basket.lv/uploads/sites/26/2024/04/regionalie-turniri-with-stripe-1.png",
+  "method": "GET",
+  "type": "image",
+  "status": 200,
+  "ctype": "image/png",
+  "post": null
+ },
+ {
+  "url": "https://widget.eui.connect.sportradar.com/fonts/BebasSemiExpanded/font.woff2",
+  "method": "GET",
+  "type": "font",
+  "status": 200,
+  "ctype": "binary/octet-stream",
+  "post": null
+ },
+ {
+  "url": "https://widget.eui.connect.sportradar.com/fonts/Roboto-Regular.ttf",
+  "method": "GET",
+  "type": "font",
+  "status": 200,
+  "ctype": "binary/octet-stream",
+  "post": null
+ },
+ {
+  "url": "https://widget.eui.connect.sportradar.com/fonts/RobotoCondensed-Regular.ttf",
+  "method": "GET",
+  "type": "font",
+  "status": 200,
+  "ctype": "binary/octet-stream",
+  "post": null
+ },
+ {
+  "url": "https://widget.eui.connect.sportradar.com/fonts/BebasSemiExpandedBold/font.woff2",
+  "method": "GET",
+  "type": "font",
+  "status": 200,
+  "ctype": "binary/octet-stream",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/img/loader.svg",
+  "method": "GET",
+  "type": "image",
+  "status": 200,
+  "ctype": "image/svg+xml",
+  "post": null
+ },
+ {
+  "url": "https://fonts.gstatic.com/s/oswald/v57/TK3iWkUHHAIjg752GT8G.woff2",
+  "method": "GET",
+  "type": "font",
+  "status": 200,
+  "ctype": "font/woff2",
+  "post": null
+ },
+ {
+  "url": "https://fonts.gstatic.com/s/oswald/v57/TK3iWkUHHAIjg752Fz8Ghe4.woff2",
+  "method": "GET",
+  "type": "font",
+  "status": 200,
+  "ctype": "font/woff2",
+  "post": null
+ },
+ {
+  "url": "https://widget.eui.connect.sportradar.com/app.js",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "text/javascript",
+  "post": null
+ },
+ {
+  "url": "https://widget.eui.connect.sportradar.com/index2.js",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "text/javascript",
+  "post": null
+ },
+ {
+  "url": "https://widget.eui.connect.sportradar.com/Spinner.js",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "text/javascript",
+  "post": null
+ },
+ {
+  "url": "https://widget.eui.connect.sportradar.com/assets/base.css",
+  "method": "GET",
+  "type": "stylesheet",
+  "status": 200,
+  "ctype": "text/css",
+  "post": null
+ },
+ {
+  "url": "https://widget.eui.connect.sportradar.com/PersonTag.js",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "text/javascript",
+  "post": null
+ },
+ {
+  "url": "https://widget.eui.connect.sportradar.com/PersonPhoto.js",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "text/javascript",
+  "post": null
+ },
+ {
+  "url": "https://widget.eui.connect.sportradar.com/sort.js",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "text/javascript",
+  "post": null
+ },
+ {
+  "url": "https://widget.eui.connect.sportradar.com/PersonFields.js",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "text/javascript",
+  "post": null
+ },
+ {
+  "url": "https://widget.eui.connect.sportradar.com/PersonsGrid.js",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "text/javascript",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "application/javascript",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/js/require.js?v=2.3.6",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "application/javascript",
+  "post": null
+ },
+ {
+  "url": "https://apis.google.com/js/platform.js",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "text/javascript",
+  "post": null
+ },
+ {
+  "url": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "text/javascript;charset=UTF-8",
+  "post": null
+ },
+ {
+  "url": "https://widget.eui.connect.sportradar.com/pages/persons.js",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "text/javascript",
+  "post": null
+ },
+ {
+  "url": "https://www.google-analytics.com/analytics.js",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "text/javascript",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/js/app.js",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "application/javascript",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/js/plugins/jquery.js?v=1.2.1",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "application/javascript",
+  "post": null
+ },
+ {
+  "url": "https://www.google-analytics.com/j/collect?v=1&_v=j102&a=410473000&t=pageview&_s=1&dl=https%3A%2F%2Fregionalie.basket.lv%2Faizkraukles-novada-cempionats%2Fspeletaji%2F&ul=lv-lv&dt=Sp%C4%93l%C4%93t%C4%81ji%20-%20regionalie&sr=1280x720&vp=1280x720&_u=AACAAEABAAAAACAAI~&jid=&gjid=&cid=1720218548.1792711568&tid=UA-21111394-1&_gid=1505667694.1792711568&_slc=1&z=1741616849",
+  "method": "POST",
+  "type": "xhr",
+  "status": 200,
+  "ctype": "text/plain",
+  "post": null,
+  "saved": "game1_data_01.txt",
+  "bytes": 15
+ },
+ {
+  "url": "https://regionalie.basket.lv/cdn-cgi/rum?",
+  "method": "POST",
+  "type": "xhr",
+  "status": 204,
+  "ctype": "text/plain",
+  "post": "{\"startTime\":1792711594623,\"pageloadId\":\"e0026ab1-9c05-430c-82dc-5aadee1c424d\",\"eventType\":1,\"nt\":\"navigate\",\"location\":\"https://regionalie.basket.lv/aizkraukles-novada-cempionats/speletaji/\",\"versions\":{\"fl\":\"2024.11.0\",\"js\":\"2026.10.1\",\"timings\":2},\"bi\":{\"be\":\"Blink\",\"bev\":\"124\",\"bv\":\"124\"},\"memory\":{\"totalJSHeapSize\":10000000,\"usedJSHeapSize\":10000000,\"jsHeapSizeLimit\":3760000000},\"firstPaint\":500,\"firstContentfulPaint\":500,\"timingsV2\":{\"nextHopProtocol\":\"h3\",\"domainLookupStart\":1,\"domainLookupEnd\":1,\"connectStart\":1,\"connectEnd\":1,\"secureConnectionStart\":1,\"requestStart\":2,\"responseStart\":430,\"responseEnd\":578,\"domInteractive\":594,\"domComplete\":619,\"loadEventStart\":619,\"loadEventEnd\":619,\"firstInterimResponseStart\":0,\"transferSize\":14811,\"decodedBodySize\":139314},\"siteToken\":\"f2ae9e26feaf4a179e0c023cbfabeffe\",\"st\":2}",
+  "saved": "game1_data_02.txt",
+  "bytes": 0
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/js/modules/cookie-bar.js?v=1.2.1",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "application/javascript",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/js/plugins/lazyload.js?v=1.2.1",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "application/javascript",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/js/modules/lightbox.js?v=1.2.1",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "application/javascript",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/js/modules/header.js?v=1.2.1",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "application/javascript",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/js/modules/animate.js?v=1.2.1",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "application/javascript",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/js/modules/page-nav.js?v=1.2.1",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "application/javascript",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/js/plugins/js.cookie.js?v=1.2.1",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "application/javascript",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/js/plugins/modernizr.js?v=1.2.1",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "application/javascript",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/js/modules/helpers.js?v=1.2.1",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "application/javascript",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/js/plugins/fitvids.js?v=1.2.1",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "application/javascript",
+  "post": null
+ },
+ {
+  "url": "https://www.googletagmanager.com/gtag/js?id=G-E63VN4WJ3L&cx=c&_slc=1",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "application/javascript; charset=UTF-8",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/js/modules/outdated-browser.js?v=1.2.1",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "application/javascript",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/themes/basket-leaguealt/app/js/modules/common.js?v=1.2.1",
+  "method": "GET",
+  "type": "script",
+  "status": 200,
+  "ctype": "application/javascript",
+  "post": null
+ },
+ {
+  "url": "https://regionalie.basket.lv/wp/wp-admin/admin-ajax.php",
+  "method": "POST",
+  "type": "xhr",
+  "status": 200,
+  "ctype": "application/json; charset=UTF-8",
+  "post": "action=cookie_bar",
+  "saved": "game1_data_03.txt",
+  "bytes": 2
+ },
+ {
+  "url": "https://embed-api.eui.connect.sportradar.com/v1/embed/207/persons?",
+  "method": "GET",
+  "type": "fetch",
+  "status": 200,
+  "ctype": "application/json",
+  "post": null,
+  "saved": "game1_data_04.txt",
+  "bytes": 67565
+ },
+ {
+  "url": "https://widget.eui.connect.sportradar.com/assets/player-no-image.svg",
+  "method": "GET",
+  "type": "image",
+  "status": 200,
+  "ctype": "image/svg+xml",
+  "post": null
+ },
+ {
+  "url": "https://widget.eui.connect.sportradar.com/assets/entity-no-image.png",
+  "method": "GET",
+  "type": "image",
+  "status": 200,
+  "ctype": "image/png",
+  "post": null
+ },
+ {
+  "url": "https://images.dc.connect.sportradar.com/b1usc/8f0f94a8784c40d7b564d45eece18f27?size=400",
+  "method": "GET",
+  "type": "image",
+  "status": 200,
+  "ctype": "image/png",
+  "post": null
+ },
+ {
+  "url": "https://images.dc.connect.sportradar.com/b1usc/e16ea6c03d4549f3a38a6d3e0fa9ed41?size=400",
+  "method": "GET",
+  "type": "image",
+  "status": 200,
+  "ctype": "image/png",
+  "post": null
+ },
+ {
+  "url": "https://images.dc.connect.sportradar.com/b1usc/4f11f4084c4a4fb7a239c5363409d047?size=400",
+  "method": "GET",
+  "type": "image",
+  "status": 200,
+  "ctype": "image/png",
+  "post": null
+ },
+ {
+  "url": "https://images.dc.connect.sportradar.com/b1usc/132807d4082d4446a69f9fa0d26d4c95?size=400",
+  "method": "GET",
+  "type": "image",
+  "status": 200,
+  "ctype": "image/png",
+  "post": null
+ },
+ {
+  "url": "https://images.dc.connect.sportradar.com/b1usc/6bfab9af427941e98e08663c34845e6f?size=400",
+  "method": "GET",
+  "type": "image",
+  "status": 200,
+  "ctype": "image/png",
+  "post": null
+ },
+ {
+  "url": "https://images.dc.connect.sportradar.com/b1usc/f6db290e65ed4dc885bfefe28e385d90?size=400",
+  "method": "GET",
+  "type": "image",
+  "status": 200,
+  "ctype": "image/png",
+  "post": null
+ },
+ {
+  "url": "https://images.dc.connect.sportradar.com/b1usc/930a478bf26148d784c84cfd821e9efa?size=400",
+  "method": "GET",
+  "type": "image",
+  "status": 200,
+  "ctype": "image/png",
+  "post": null
+ },
+ {
+  "url": "https://images.dc.connect.sportradar.com/b1usc/fd95c8a2417a49698ac59ba1968c83ba?size=400",
+  "method": "GET",
+  "type": "image",
+  "status": 200,
+  "ctype": "image/png",
+  "post": null
+ },
+ {
+  "url": "https://images.dc.connect.sportradar.com/b1usc/bf423af836d040b2a24d2bfa1ae88467?size=400",
+  "method": "GET",
+  "type": "image",
+  "status": 200,
+  "ctype": "image/png",
+  "post": null
+ },
+ {
+  "url": "https://images.dc.connect.sportradar.com/b1usc/276b8d6688cb47f9aea0ee35cf43f079?size=400",
+  "method": "GET",
+  "type": "image",
+  "status": 200,
+  "ctype": "image/png",
+  "post": null
+ },
+ {
+  "url": "https://images.dc.connect.sportradar.com/b1usc/043cd49d2c0b43b08145e499f9f4104a?size=400",
+  "method": "GET",
+  "type": "image",
+  "status": 200,
+  "ctype": "image/png",
+  "post": null
+ },
+ {
+  "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-E63VN4WJ3L&gtm=45je6al1v9107731331za20gxf1&_p=1792711595262&gcd=13l3l3l3l2l1&npa=0&dma=0&_eu=ABAIAAQ&are=1&cid=1720218548.1792711568&frm=0&ngs=1&pscdl=noapi&rcb=0&sr=1280x720&uaa=x64&uab=64&uafvl=Chromium%3B130.0.6723.31%7CHeadlessChrome%3B130.0.6723.31%7CNot%253FA_Brand%3B99.0.0.0&uam=&uamb=0&uap=Linux&uapv=&uaw=0&ul=lv-lv&_s=1&tag_exp=115938466~115938468~118897920~118897930~120213116~120385422~120469145~120469153~121246026~121246034&dl=https%3A%2F%2Fregionalie.basket.lv%2Faizkraukles-novada-cempionats%2Fspeletaji%2F&dt=Sp%C4%93l%C4%93t%C4%81ji%20-%20regionalie&sid=1792711567&sct=1&seg=1&en=page_view&_ee=1&tfd=5712",
+  "method": "POST",
+  "type": "fetch",
+  "status": 204,
+  "ctype": "text/plain",
+  "post": null,
+  "err": "ImplToApiMapping.wrapper_func: Protocol error (Network.getResponseBody): No data found for resource with given identifier"
+ }
+]
