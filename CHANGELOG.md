@@ -1,5 +1,33 @@
 # Changelog
 
+## Round 9 — released 22 Oct 2026 (PR #13)
+
+- **New page "Statistika"** (menu, after Līderi; `#dobele-statistika`,
+  `#dobele-statistika-komandas`, same for Jelgava):
+  - Spēlētāji / Komandas switch; "No" / "Līdz" dates filter both views;
+  - players: every player of the cup with per-game averages and shooting
+    percentages, sortable by any column (starts by points per game), team filter
+    and name search; the chosen sort stays when the dates change;
+  - teams: record, points scored / allowed and team averages, sortable;
+  - points, rebounds and assists in bold; rows open the player / team page.
+- **Player pages** (`#<cup>-speletajs-<team>-<name>`): header with games, points,
+  rebounds, assists and efficiency for the season; "No" / "Līdz" dates (opens on
+  the whole season); 11 tiles in three groups (attack and efficiency, precision,
+  defence) with a sparkline and a trend icon (zigzag up / down, green good / red
+  bad, turnovers the other way round; nothing when about the same or under 3
+  games); a per-game chart with the cup average for the period; the player's
+  games (bold rebounds and assists, rows open the game).
+- **Player names link** to the player page on Līderi, team pages (leaders,
+  roster), game pages (leaders, box scores) and Statistika; not in the MVP blocks.
+- **Līderi:** new "Sezonas rekordi" — best single-game points, rebounds, assists,
+  3-pointers made, steals and efficiency (top 5, date links to the game).
+- **Kopvērtējums:** lists of all round MVPs and monthly MVPs this season, with the
+  award's sponsor (Tērvete / Jaunpils), below the running stage and above
+  "Iepriekšējie posmi"; a list with no MVPs yet is not shown.
+- **Menu:** white background, black text on both cups.
+- **Sponsor logo:** `assets/sponsors/sporta-punkts.webp` (Sporta Punkts / PEAK,
+  400×122), ready for the sheet's Sponsori tab (ID `sporta-punkts`).
+
 ## Round 8 — released 20 Oct 2026 (PR #12)
 
 - **New page "Līderi"** (menu, after Komandas; `#dobele-lideri` / `#jelgava-lideri`):
