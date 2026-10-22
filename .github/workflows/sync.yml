@@ -1,7 +1,8 @@
 name: Atjaunot datus no tabulas
 
-# Reads the season sheet (Google Sheets) and updates the site: settings, teams,
-# halls, sponsors and logos. Until the real calendar syncs, the demo games are
+# Reads the season sheet (Google Sheets) and basket.lv and updates the site:
+# settings, teams, halls, sponsors and logos; games and box scores from basket.lv
+# (saved in src/basket, shown on the site once the calendar sync is switched on). Until the real calendar syncs, the demo games are
 # re-generated for the sheet's teams.
 #
 # Run it from the Actions tab: "Atjaunot datus no tabulas" -> Run workflow.
@@ -43,6 +44,11 @@ jobs:
         env:
           SHEET_URL: ${{ secrets.SHEET_URL }}
         run: python3 tools/sheet_sync.py --url "$SHEET_URL"
+      # Games, results and box scores from basket.lv (links in the sheet's
+      # Iestatījumi). Skipped for a cup without a link; if basket.lv can't be
+      # reached the saved data stays and the update carries on.
+      - name: Read basket.lv
+        run: python3 tools/basket_sync.py
       - name: Demo games for the sheet's teams
         run: node tools/gen-season.js > src/sample-data.json
       - name: Build and check the site
