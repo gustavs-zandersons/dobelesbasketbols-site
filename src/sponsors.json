@@ -40,6 +40,14 @@
   "scale": 1.0
  },
  {
+  "id": "sporta-punkts",
+  "name": "Sporta Punkts",
+  "src": "assets/sponsors/sporta-punkts.webp",
+  "w": 400,
+  "h": 122,
+  "scale": 1.0
+ },
+ {
   "id": "dobeles-dzirnavnieks",
   "name": "Dobeles dzirnavnieks",
   "src": "assets/sponsors/dobeles-dzirnavnieks.webp",
