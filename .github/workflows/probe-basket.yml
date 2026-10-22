@@ -1,10 +1,10 @@
 name: Probe basket.lv (one-off)
-# Runs only on the probe-basket branch: opens regionalie.basket.lv in a browser
-# and saves what the pages load, so the basket.lv reader can be built to match.
+# Runs only on the probe-basket branch: tests the basket.lv reader on last
+# season's games and saves what it read to the branch for checking.
 on:
   push:
     branches: [probe-basket]
-    paths: [tools/probe_basket.py, .github/workflows/probe-basket.yml]
+    paths: [tools/basket_sync.py, .github/workflows/probe-basket.yml]
 permissions:
   contents: write
 jobs:
@@ -15,16 +15,16 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Browser
-        run: |
-          pip install playwright==1.48.0
-          python -m playwright install --with-deps chromium
-      - name: Probe
-        run: python tools/probe_basket.py
+      - name: Older season picked by name (report only)
+        run: python3 tools/basket_sync.py --link dbck=https://regionalie.basket.lv/dobeles-atklatais-cempionats/kalendars/ --season 2024/25 --check
+      - name: Last season, all games
+        run: python3 tools/basket_sync.py --link dbck=https://regionalie.basket.lv/dobeles-atklatais-cempionats/kalendars/ --season 2025/26 | tee probe3-report.md
+      - name: Second run reads nothing new (saved games are not fetched again)
+        run: python3 tools/basket_sync.py --link dbck=https://regionalie.basket.lv/dobeles-atklatais-cempionats/kalendars/ --season 2025/26 | tee probe3-report2.md
       - name: Save results to the branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add probe probe2
-          git commit -m "Probe results" || exit 0
+          git add src/basket probe3-report.md probe3-report2.md
+          git commit -m "Reader test results" || exit 0
           git push origin HEAD:probe-basket
