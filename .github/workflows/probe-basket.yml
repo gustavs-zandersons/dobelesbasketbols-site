@@ -1,0 +1,30 @@
+name: Probe basket.lv (one-off)
+# Runs only on the probe-basket branch: opens regionalie.basket.lv in a browser
+# and saves what the pages load, so the basket.lv reader can be built to match.
+on:
+  push:
+    branches: [probe-basket]
+    paths: [tools/probe_basket.py, .github/workflows/probe-basket.yml]
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Browser
+        run: |
+          pip install playwright==1.48.0
+          python -m playwright install --with-deps chromium
+      - name: Probe
+        run: python tools/probe_basket.py
+      - name: Save results to the branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add probe
+          git commit -m "Probe results" || exit 0
+          git push origin HEAD:probe-basket
