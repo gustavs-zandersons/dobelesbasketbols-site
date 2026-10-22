@@ -2036,6 +2036,51 @@
       });
     return ldrCardHtml({ k: c.k, cap: c.cap || 'vienā spēlē' }, top);
   }
+  // All MVPs of the season so far, newest first: round MVPs once the round is
+  // played, monthly MVPs once they appear on the home page (with the first
+  // round of the next month; the last month after the cup's last round).
+  // A list with nothing in it is not shown.
+  function monthRevealDate(cup, month) {
+    var dates = [];
+    DATA.games.forEach(function (g) { if (g.comp === cup && dates.indexOf(g.date) < 0) dates.push(g.date); });
+    dates.sort();
+    return dates.filter(function (d) { return ym(d) > month; })[0] || dates[dates.length - 1];
+  }
+  function mvpStatsHtml(items) {
+    return '<dl class="mvph-stats">' + items.map(function (x) { return '<div><dd>' + x[0] + '</dd><dt>' + x[1] + '</dt></div>'; }).join('') + '</dl>';
+  }
+  function mvpHistory(cup) {
+    var html = '';
+    var rounds = (DATA.mvps || []).filter(function (m) { return m.comp === cup && m.date <= ctx.today; })
+      .sort(function (x, y) { return x.date < y.date ? 1 : x.date > y.date ? -1 : 0; });
+    if (rounds.length) {
+      html += '<section class="ld-sec" aria-labelledby="ld-mvp-r"><h2 class="g-title" id="ld-mvp-r">Kārtas MVP <small>' + rounds.length + ' šajā sezonā</small></h2><ul class="tm-list mvph">' +
+        rounds.map(function (m) {
+          var d = parse(m.date), g = m.game ? RAW[m.game] : null, opp = null;
+          if (g) { var h = ctx.resolve(cup, g.home).team, aw = ctx.resolve(cup, g.away).team; opp = h === m.team ? aw : h; }
+          return '<li class="tm-row mvph-row"><span class="tm-row-d"><b>' + d.getDate() + '</b><span>' + MONTH_NOM[d.getMonth()].slice(0, 3) + '</span></span>' +
+            '<span class="tm-row-m"><span class="mvph-name">' + playerLink(m.team, m.idx, cup, 'plink') + '</span>' +
+            '<span class="mvph-team">' + badge(m.team, 'sm') + '<span>' + esc(team(m.team).short) + '</span>' +
+            (opp ? '<a class="mvph-game" href="' + gameHref(m.game) + '">pret ' + esc(team(opp).short) + ' ›</a>' : '') + '</span></span>' +
+            mvpStatsHtml([[m.pts, 'Pkt'], [m.reb, 'AB'], [m.ast, 'RP']]) + '</li>';
+        }).join('') + '</ul></section>';
+    }
+    var months = (DATA.monthMvps || []).filter(function (m) { return m.comp === cup && monthRevealDate(cup, m.month) <= ctx.today; })
+      .sort(function (x, y) { return x.month < y.month ? 1 : x.month > y.month ? -1 : 0; });
+    if (months.length) {
+      html += '<section class="ld-sec" aria-labelledby="ld-mvp-m"><h2 class="g-title" id="ld-mvp-m">Mēneša MVP <small>' + months.length + ' šajā sezonā</small></h2><ul class="tm-list mvph">' +
+        months.map(function (m) {
+          var mi = +m.month.slice(5, 7) - 1, st = monthStats(cup, m.month, m.team, m.idx);
+          var avg = function (v) { return st.gp ? fmt1(v / st.gp) : '–'; };
+          return '<li class="tm-row mvph-row mvph-row--month"><span class="tm-row-d"><b>' + MONTH_NOM[mi].slice(0, 3) + '</b><span>' + m.month.slice(0, 4) + '</span></span>' +
+            '<span class="tm-row-m"><span class="mvph-name">' + playerLink(m.team, m.idx, cup, 'plink') + '</span>' +
+            '<span class="mvph-team">' + badge(m.team, 'sm') + '<span>' + esc(team(m.team).short) + '</span>' +
+            (st.gp ? '<span class="mvph-gp">' + games(st.gp) + ' ' + MONTH_LOC[mi] + '</span>' : '') + '</span></span>' +
+            mvpStatsHtml([[avg(st.pts), 'Pkt'], [avg(st.reb), 'AB'], [avg(st.ast), 'RP']]) + '</li>';
+        }).join('') + '</ul><p class="note">Mēneša MVP — spēlētāja vidējie rādītāji tajā mēnesī.</p></section>';
+    }
+    return html;
+  }
   function renderLeaders() {
     var cup = state.cup, S = cupStats(cup), pool = [], forfeits = 0;
     Object.keys(S).forEach(function (tid) {
@@ -2061,7 +2106,7 @@
         return '<section class="ld-sec" aria-labelledby="ld-rec"><h2 class="g-title" id="ld-rec">Sezonas rekordi <small>labākais rezultāts vienā spēlē</small></h2>' +
           '<div class="ld-grid ld-grid--6">' + RECORDS.map(function (c) { return recordCard(perfs, c); }).join('') + '</div>' +
           '<p class="note">Labākie sniegumi vienā spēlē šajā kausā. Viens spēlētājs var būt sarakstā vairākas reizes; ja rezultāts vienāds, augstāk ir tas, kurš to sasniedza pirmais. Datums ved uz spēli.</p></section>';
-      })() +
+      })() + mvpHistory(cup) +
         (forfeits ? '<p class="note">Spēles ar tehnisko rezultātu statistikā netiek ieskaitītas.</p>' : '');
     }
     $('leaders-view').innerHTML = html;

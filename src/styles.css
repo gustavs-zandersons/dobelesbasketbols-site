@@ -2677,3 +2677,25 @@ a.plink:focus-visible, a.nm:focus-visible { outline: 2px solid currentColor; out
 .ld-who a.nm { font-weight: 600; }
 .ld-1-v a.ld-game, .ld-v a.ld-game { color: inherit; text-decoration: none; }
 .ld-1-v a.ld-game:hover, .ld-v a.ld-game:hover { text-decoration: underline; }
+
+/* Līderi: every round / monthly MVP so far, newest first. */
+.mvph-row { grid-template-columns: 52px minmax(0, 1fr) auto; grid-template-areas: "d m s"; }
+.mvph-row .tm-row-d { grid-area: d; }
+.mvph-row .tm-row-m { grid-area: m; }
+.mvph-row--month .tm-row-d b { font-size: 1.25rem; text-transform: uppercase; }
+.mvph-name { font-family: var(--font-display); font-size: 1.3rem; line-height: 1.05; text-transform: uppercase; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mvph-team { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 0.86rem; color: var(--fg-muted); }
+.mvph-team > span { font-weight: 600; color: var(--fg); white-space: nowrap; }
+.mvph-game, .mvph-gp { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mvph-game { color: var(--fg-muted); text-decoration: none; }
+.mvph-game:hover { color: var(--fg); text-decoration: underline; }
+.mvph-team .badge--sm { width: 22px; height: 22px; }
+.mvph-stats { grid-area: s; display: flex; gap: 14px; margin: 0; }
+.mvph-stats div { display: grid; justify-items: center; min-width: 38px; }
+.mvph-stats dd { margin: 0; font-family: var(--font-display); font-size: 1.35rem; line-height: 1; font-variant-numeric: tabular-nums; color: var(--accent); }
+.mvph-stats dt { font-family: var(--font-cond); font-weight: 700; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-muted); margin-top: 3px; }
+@media (max-width: 480px) {
+  .mvph-row { grid-template-columns: 52px minmax(0, 1fr); grid-template-areas: "d m" "d s"; row-gap: 8px; }
+  .mvph-stats { justify-content: flex-start; gap: 18px; }
+  .mvph-stats div { justify-items: start; min-width: 0; }
+}
