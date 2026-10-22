@@ -2084,8 +2084,9 @@ body.no-scroll { overflow: hidden; }
   top: 0; bottom: 0; left: 0;
   z-index: 60;
   width: min(86vw, 340px);
-  background: var(--bg-head);
-  border-right: 1px solid var(--line);
+  background: #FFFFFF;
+  color: #111111;
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
   transform: translateX(-102%);
   transition: transform 0.28s cubic-bezier(.2, .8, .2, 1);
   display: flex;
@@ -2104,9 +2105,15 @@ body.no-scroll { overflow: hidden; }
   height: var(--head-h);
   border-bottom: 1px solid var(--line);
 }
-.drawer-head .eyebrow { color: var(--fg); }
+/* The menu is white with black text on both cups. */
+.drawer-head { border-bottom-color: rgba(0, 0, 0, 0.1); }
+.drawer-head .eyebrow { color: #111111; }
+.drawer .eyebrow { color: #5A5F6B; }
+.drawer .icon-btn svg { stroke: #111111; }
+.drawer .icon-btn:hover { background: #EEF0F4; }
+.drawer .nav-item { color: #111111; }
 .drawer-sec { padding: 14px 10px; display: grid; gap: 2px; }
-.drawer-sec + .drawer-sec { border-top: 1px solid var(--line); }
+.drawer-sec + .drawer-sec { border-top: 1px solid rgba(0, 0, 0, 0.1); }
 .drawer-sec .eyebrow { padding: 0 10px 6px; }
 .nav-item {
   display: flex;
@@ -2125,8 +2132,8 @@ body.no-scroll { overflow: hidden; }
   text-align: left;
   cursor: pointer;
 }
-.nav-item:hover { background: var(--surface); }
-.nav-item[aria-current="page"] { background: var(--surface); box-shadow: inset 3px 0 0 var(--accent); }
+.nav-item:hover { background: #EEF0F4; }
+.nav-item[aria-current="page"] { background: #EEF0F4; box-shadow: inset 4px 0 0 var(--accent-fill); font-weight: 700; }
 .nav-item[aria-disabled="true"] { color: var(--fg-dim); cursor: default; }
 .nav-item[aria-disabled="true"]:hover { background: transparent; }
 .soon {
@@ -2555,6 +2562,13 @@ a.tm-row:hover { background: var(--surface-hi); border-color: var(--line-strong)
 
 /* ---------- Player page: period filters, stat tiles with trend, chart, games ---------- */
 .pl-hl .tm-hl-pos a { color: inherit; text-decoration: none; border-bottom: 2px solid currentColor; }
+.pl-hl .mvp-stats { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; max-width: none; }
+@media (max-width: 759px) {
+  .pl-hl .tm-hl-rec .mvp-stats { flex: 1 1 100%; }
+  .pl-hl .mvp-stats dd { font-size: 1.55rem; }
+  .pl-hl .mvp-stats dt { font-size: 0.68rem; letter-spacing: 0.03em; }
+}
+@media (min-width: 760px) { .pl-hl .tm-hl-rec .mvp-stats { width: 470px; } }
 .pl-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
 .pl-dates { display: flex; flex-wrap: wrap; gap: 10px; }
 .pl-dates label {
@@ -2575,10 +2589,11 @@ a.tm-row:hover { background: var(--surface-hi); border-color: var(--line-strong)
 .pl-panel { display: grid; gap: 18px; min-width: 0; }
 .pl-range { font-family: var(--font-cond); font-weight: 700; font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-muted); }
 .pl-range b { color: var(--fg); }
-.pl-panel > .note { margin-top: -8px; }
+.pl-panel > .note { margin-top: -6px; }
+.pl-group { display: grid; gap: 8px; }
+.pl-grp { font-family: var(--font-cond); font-weight: 700; font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
 .pl-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-@media (min-width: 700px) { .pl-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (min-width: 1040px) { .pl-tiles { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+@media (min-width: 760px) { .pl-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .pl-tile {
   display: grid; gap: 4px; align-content: start; text-align: left; min-width: 0;
   padding: 12px 14px 10px; border-radius: 12px;
@@ -2592,14 +2607,14 @@ a.tm-row:hover { background: var(--surface-hi); border-color: var(--line-strong)
 .pl-tile-v { font-family: var(--font-display); font-size: 2.1rem; line-height: 1; margin-top: 2px; }
 .pl-tile-v .pc { font-size: 0.6em; margin-left: 1px; }
 .pl-tile-s { font-size: 0.78rem; color: var(--fg-dim); }
-/* Trend: arrow in a status colour + the word, never colour alone. */
-.trend { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 0.8rem; font-weight: 600; color: var(--fg); }
-.trend i { flex: none; display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--fg-dim); }
-.trend i svg { width: 13px; height: 13px; fill: none; stroke: #FFFFFF; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-.trend.is-up i { background: var(--win); }
-.trend.is-down i { background: var(--loss); }
-.trend b { font-weight: 700; white-space: nowrap; }
-.trend.is-none { color: var(--fg-dim); font-weight: 500; font-size: 0.74rem; }
+/* Trend: a zigzag icon going up or down (like the chart emoji) on a small
+   white tile — green stroke when the change is good, red when bad — plus the
+   signed change. Shape carries the direction, so it never relies on colour. */
+.trend { display: inline-flex; align-items: center; gap: 5px; margin-left: 10px; vertical-align: 0.35em; font: 700 0.8rem var(--font-body); color: var(--fg); white-space: nowrap; }
+.trend i { flex: none; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: #FFFFFF; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); }
+.trend i svg { width: 17px; height: 17px; fill: none; stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round; }
+.trend.is-good i svg { stroke: #138A4B; }
+.trend.is-bad i svg { stroke: #D2302E; }
 .spark { display: block; width: 100%; height: 30px; margin-top: 6px; overflow: visible; }
 .spark polyline { fill: none; stroke: var(--fg-dim); stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 .spark .dot { stroke: var(--accent); stroke-width: 7; stroke-linecap: round; vector-effect: non-scaling-stroke; }
@@ -2613,9 +2628,10 @@ a.tm-row:hover { background: var(--surface-hi); border-color: var(--line-strong)
 .pl-chart .ax { fill: var(--fg-dim); font: 600 11px var(--font-body); font-variant-numeric: tabular-nums; }
 .pl-chart .val { fill: var(--fg); font: 700 12px var(--font-body); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
 .pl-chart .bar { fill: var(--accent); }
-.pl-chart .trend-halo { stroke: var(--surface); stroke-width: 7; stroke-linecap: round; }
-.pl-chart .trend-line { stroke: var(--fg); stroke-width: 2; stroke-dasharray: 7 5; stroke-linecap: round; }
-.pl-chart .trend-lab { fill: var(--fg-muted); font: 700 11px var(--font-cond); letter-spacing: 0.06em; text-transform: uppercase; }
+.pl-chart .avg-halo { stroke: var(--surface); stroke-width: 7; stroke-linecap: round; }
+.pl-chart .avg-line { stroke: var(--fg); stroke-width: 2; stroke-dasharray: 7 5; stroke-linecap: round; }
+.pl-chart .avg-lab { fill: var(--fg-muted); font: 700 11px var(--font-cond); letter-spacing: 0.06em; text-transform: uppercase; }
+.pl-chart .avg-val { fill: var(--fg); font: 700 13px var(--font-body); font-variant-numeric: tabular-nums; }
 .pl-chart .hit { fill: transparent; outline: none; }
 .pl-chart .hit.is-on { fill: rgba(255, 255, 255, 0.07); }
 .pl-chart .hit:focus-visible { stroke: var(--accent); stroke-width: 2; }
@@ -2633,3 +2649,26 @@ a.tm-row:hover { background: var(--surface-hi); border-color: var(--line-strong)
 .bx--log a.nm { color: var(--fg); text-decoration: none; font-weight: 600; }
 .bx--log td.lg-res { color: var(--fg); }
 .bx--log td.lg-res .wl { margin-right: 6px; vertical-align: -1px; }
+
+/* Statistika: Spēlētāji / Komandas switch (links, so each view has its own address) */
+.sts-mode { justify-self: start; }
+.seg a {
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--fg-muted); text-decoration: none;
+  font-family: var(--font-cond); font-weight: 700; font-size: 0.85rem; letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 10px 18px; border-radius: 999px; min-height: 40px; white-space: nowrap;
+}
+.seg a:hover { color: var(--fg); }
+.seg a[aria-current="page"] { background: var(--accent-fill); color: var(--on-accent); }
+@media (max-width: 559px) { .sts-mode { justify-self: stretch; display: grid; grid-template-columns: 1fr 1fr; } }
+.bx--teams .pl { min-width: 210px; }
+
+/* Player names link to the player page (everywhere except the MVP blocks). */
+a.plink, a.nm { color: inherit; text-decoration: none; }
+a.plink:hover, a.nm:hover { text-decoration: underline; text-underline-offset: 3px; }
+a.plink:focus-visible, a.nm:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; border-radius: 3px; }
+.bx .pl a.nm { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ld-rest a.nm, .tm-ldr-rest a.nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.ld-who a.nm { font-weight: 600; }
+.ld-1-v a.ld-game, .ld-v a.ld-game { color: inherit; text-decoration: none; }
+.ld-1-v a.ld-game:hover, .ld-v a.ld-game:hover { text-decoration: underline; }
