@@ -20,9 +20,12 @@ Per cup and update:
   4. the box score of every final game (status CONFIRMED) that is not saved yet;
      games from the last few days are read again in case a result was corrected
 
-Writes src/basket/<cup>/fixtures.json (the list) and
-src/basket/<cup>/games/<fixture id>.json (one per final game). Only game data is
-kept: names and stat lines — no photos, no personal details.
+  5. the season's registered players per team (names only)
+
+Writes src/basket/<cup>/fixtures.json (the list), src/basket/<cup>/roster.json
+(teams and players) and src/basket/<cup>/games/<fixture id>.json (one per final
+game). Only game data is kept: names and stat lines — no photos, no personal
+details.
 
 If basket.lv cannot be reached, the saved data stays as it is and the report
 says so; the rest of the update carries on.
@@ -281,17 +284,48 @@ def read_cup(client, cup, link, years, rep, check_only, today):
         check_game(g, fx, rep, cup)
         games[fx['id']] = g
         fetched += 1
+    roster = read_roster(client, wid, season['seasonId'], rep, cup)
     final = sum(1 for f in fixtures if f['status'] == FINAL)
     rep.note(cup, f'sezona „{season.get("nameLocal")}”: {len(fixtures)} spēles, {final} ar galīgo rezultātu; '
-                  f'nolasītas {fetched} spēļu statistikas ({client.requests} pieprasījumi).')
+                  f'nolasītas {fetched} spēļu statistikas'
+                  + (f'; {len(roster["players"])} spēlētāji {len(roster["teams"])} komandās' if roster else '')
+                  + f' ({client.requests} pieprasījumi).')
     if not check_only:
         (OUT / cup).mkdir(parents=True, exist_ok=True)
         gdir.mkdir(exist_ok=True)
         meta = {'cup': cup, 'link': link, 'websiteId': wid, 'season': {'id': season['seasonId'], 'name': season.get('nameLocal')}}
         write_json(OUT / cup / 'fixtures.json', dict(meta, fixtures=fixtures))
+        if roster:
+            write_json(OUT / cup / 'roster.json', roster)
         for gid, g in games.items():
             write_json(gdir / f'{gid}.json', g)
     return fixtures
+
+
+def read_roster(client, wid, season_id, rep, cup):
+    """The season's registered players (the cup's "Spēlētāji" page): person id, name
+    and team only. basket.lv also lists birth dates, height, weight, nationality and
+    photos — none of that is kept."""
+    tok = token({'s': season_id, 'l': 'lv-LV'})
+    try:
+        ents = client.get(API.format(wid=wid, page='entities') + '?state=' + tok, 'Komandas')
+        ppl = client.get(API.format(wid=wid, page='persons') + '?state=' + tok, 'Spēlētāji')
+    except ValueError as e:
+        rep.warn(cup, f'{e}. Spēlētāju saraksts paliek iepriekšējais.')
+        return None
+    teams = [{'entity': t.get('entityId'), 'name': (t.get('name') or '').strip()}
+             for t in (ents.get('teams') or []) if t.get('entityId')]
+    rows = ((ppl.get('persons') or {}).get('rows')) or []
+    seen, players = set(), []
+    for r in rows:
+        pid, name = r.get('id'), (r.get('name') or '').strip()
+        if not pid or not name or pid in seen:
+            continue
+        seen.add(pid)
+        players.append({'pid': pid, 'name': name, 'entity': r.get('entityId'), 'team': (r.get('teamName') or '').strip()})
+    players.sort(key=lambda p: (p['team'], p['name']))
+    teams.sort(key=lambda t: t['name'])
+    return {'teams': teams, 'players': players}
 
 
 def write_json(path, obj):
