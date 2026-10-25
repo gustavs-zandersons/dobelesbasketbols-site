@@ -4,12 +4,14 @@ settings, teams, halls and sponsors for the site + the season plan.
     python3 tools/season_sheet.py <output.xlsx>
 
 Then recalculate the formulas (LibreOffice) before sending the file.
-"Iestatījumi", "Komandas", "Zāles" and "Sponsori" are prefilled from
-src/sheet.json (what the site has now), so importing the template with
-tools/sheet_sync.py gives back the same data.
+Every tab the site reads is prefilled from src/sheet.json (what the site has
+now): settings, teams, halls, sponsors, the calendar, MVPs, monthly MVPs and
+decisions. Importing the template with tools/sheet_sync.py gives back the same
+data. Without a calendar in src/sheet.json the default season plan is used.
 """
 import json
 import sys
+from datetime import date, time
 from pathlib import Path
 
 from openpyxl import Workbook
@@ -21,7 +23,7 @@ from openpyxl.utils import get_column_letter
 OUT = sys.argv[1] if len(sys.argv) > 1 else 'Dobeles_basketbols_2026-27.xlsx'
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / 'tools'))
-from sheet_sync import SETTINGS, dig, site_logo_link  # noqa: E402  (same names as the importer)
+from sheet_sync import SETTINGS, CUP_LABELS, MONTHS, dig, site_logo_link  # noqa: E402  (same names as the importer)
 
 SHEET = json.loads((ROOT / 'src' / 'sheet.json').read_text())
 KG = 'Playoff kvalifikācijas grupa'
@@ -315,15 +317,23 @@ for tie, a, b in (('SF1', 'W:QF1', 'W:QF2'), ('SF2', 'W:QF3', 'W:QF4')):
 games.append(('JSSC-F', 'JSSC', 'Fināls', '', 'F', 1, 'W:SF1', 'W:SF2', 'Plānota'))
 
 CAL_ROWS = 160   # prefilled games + room for extra rows
-for i, (gid, cup, stage, rnd, tie, n, home, away, status) in enumerate(games, start=2):
-    vals = [gid, cup, stage, rnd or None, tie or None, n or None, None, None, None, home or None, away or None, status]
+if SHEET.get('calendar'):
+    # The organisers' calendar as the site has it (src/sheet.json), so the template imports back unchanged.
+    cal_rows = [[g['id'], CUP_LABELS[g['cup']], g['stage'], f"{g['round']}. kārta" if g['round'] else None, g['tie'] or None,
+                 g['n'] or None, date.fromisoformat(g['date']) if g['date'] else None,
+                 time(*map(int, g['time'].split(':'))) if g['time'] else None, g['hall'] or None, g['home'] or None,
+                 g['away'] or None, g['status'] or None, g['basket'] or None, g['note'] or None] for g in SHEET['calendar']]
+else:
+    cal_rows = [[gid, cup, stage, rnd or None, tie or None, n or None, None, None, None, home or None, away or None, status, None, None]
+                for gid, cup, stage, rnd, tie, n, home, away, status in games]
+for i, vals in enumerate(cal_rows, start=2):
     for j, v in enumerate(vals, start=1):
         ws.cell(row=i, column=j, value=v)
 last = 1 + CAL_ROWS
 kinds = ['auto', 'auto', 'auto', 'in', 'auto', 'auto', 'in', 'in', 'in', 'in', 'in', 'in', 'in', 'in', 'calc']
 style_rows(ws, 2, last, 15, kinds)
 # Extra rows below the prefilled season are fully editable.
-for r in range(2 + len(games), last + 1):
+for r in range(2 + len(cal_rows), last + 1):
     for ci in range(1, 7):
         ws.cell(row=r, column=ci).fill = PatternFill('solid', fgColor=INPUT)
 for r in range(2, last + 1):
@@ -365,6 +375,10 @@ ws.cell(row=1, column=13).comment = Comment('Nav obligāti. Aizpilda tikai, ja m
 ws = wb.create_sheet('MVP')
 header(ws, ['Kauss', 'Kārtas datums', 'Spēlētājs', 'Komanda', 'Spēles ID', 'Piezīme'], [9, 14, 28, 14, 16, 36])
 MVP_ROWS = 60
+for i, m in enumerate(SHEET.get('mvps', []), start=2):
+    for j, v in enumerate([CUP_LABELS[m['cup']], date.fromisoformat(m['date']), m['player'], m['team'], m['game'] or None,
+                           m['note'] or None], start=1):
+        ws.cell(row=i, column=j, value=v)
 style_rows(ws, 2, 1 + MVP_ROWS, 6, ['in'] * 6)
 for r in range(2, 2 + MVP_ROWS):
     ws.cell(row=r, column=2).number_format = 'DD.MM.YYYY'
@@ -377,6 +391,10 @@ ws.cell(row=1, column=3).comment = Comment('Vārds un uzvārds tieši tā, kā b
 ws = wb.create_sheet('Mēneša MVP')
 header(ws, ['Kauss', 'Mēnesis', 'Spēlētājs', 'Komanda', 'Piezīme'], [9, 18, 28, 14, 36])
 MONTH_MVP_ROWS = 20
+for i, m in enumerate(SHEET.get('monthMvps', []), start=2):
+    label = f"{MONTHS[int(m['month'][5:]) - 1]} {m['month'][:4]}"
+    for j, v in enumerate([CUP_LABELS[m['cup']], label, m['player'], m['team'], m['note'] or None], start=1):
+        ws.cell(row=i, column=j, value=v)
 style_rows(ws, 2, 1 + MONTH_MVP_ROWS, 5, ['in'] * 5)
 _y1 = int(str(SHEET['settings']['season'])[:4])
 SEASON_MONTHS = [f'{m} {_y1}' for m in ('Oktobris', 'Novembris', 'Decembris')] + \
@@ -391,6 +409,10 @@ ws.cell(row=1, column=3).comment = Comment('Vārds un uzvārds tieši tā, kā b
 ws = wb.create_sheet('Lēmumi')
 header(ws, ['Spēles ID', 'Veids', 'Vērtība', 'Lēmuma datums', 'Kas pieņēma', 'Piezīme'], [16, 22, 24, 14, 22, 44])
 DEC_ROWS = 40
+for i, d in enumerate(SHEET.get('decisions', []), start=2):
+    for j, v in enumerate([d['game'], d['kind'], d['value'] or None, date.fromisoformat(d['date']) if d['date'] else None,
+                           d['by'] or None, d['note'] or None], start=1):
+        ws.cell(row=i, column=j, value=v)
 style_rows(ws, 2, 1 + DEC_ROWS, 6, ['in'] * 6)
 for r in range(2, 2 + DEC_ROWS):
     ws.cell(row=r, column=4).number_format = 'DD.MM.YYYY'

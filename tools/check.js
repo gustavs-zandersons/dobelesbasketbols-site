@@ -1,8 +1,9 @@
 // Sanity checks run in CI before every deploy:
 //   node tools/check.js
 // 1) the built page's inline scripts parse, 2) the engine runs at several
-// points of the season, 3) every box score adds up to its final score,
-// 4) sponsor logos and poster photos exist, 5) sponsors page data is valid.
+// points of the demo season, 3) every demo box score adds up to its final score,
+// 4) sponsor logos and poster photos exist, 5) sponsors page data is valid,
+// 6) teams from the sheet, 7) the real season (src/season.json) is consistent.
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -79,5 +80,42 @@ check(['Sezona ' + sheet.settings.season, sheet.settings.cups.dbck.name].every(x
 data.teams.forEach(t => ['website', 'facebook', 'instagram', 'tiktok'].forEach(k =>
   check(!t[k] || /^https:\/\/\S+$/.test(t[k]), 'team ' + t.id + ': ' + k + ' must start with https://')));
 
+// 7. The real season (src/season.json, from the sheet and basket.lv), when built.
+const seasonPath = path.join(root, 'src', 'season.json');
+let realGames = 0;
+if (fs.existsSync(seasonPath)) {
+  const real = JSON.parse(fs.readFileSync(seasonPath, 'utf8'));
+  realGames = real.games.length;
+  check(real.live === true, 'season.json is not marked live');
+  check(html.includes('"live":true') && !html.includes('data-today='), 'the built page uses the real season and today\'s date');
+  check(!html.includes('class="test-note"'), 'the test notice is gone from the live page');
+  const tids = new Set(real.teams.map(t => t.id)), vids = new Set(real.venues.map(v => v.id)), rids = new Set(real.rounds.map(r => r.id));
+  const ids = new Set();
+  real.games.forEach(g => {
+    check(!ids.has(g.id), 'duplicate game id ' + g.id); ids.add(g.id);
+    check(/^\d{4}-\d{2}-\d{2}$/.test(g.date) && /^\d{2}:\d{2}$/.test(g.time || ''), g.id + ': date or time missing');
+    check(vids.has(g.venue), g.id + ': unknown hall ' + g.venue);
+    check(rids.has(g.round), g.id + ': unknown round ' + g.round);
+    check(g.stage !== 'group' || (tids.has(g.home) && tids.has(g.away)), g.id + ': group game without both teams');
+    if (g.box) ['h', 'a'].forEach(side => {
+      const tid = g.stage === 'group' ? g[side === 'h' ? 'home' : 'away'] : null;
+      g.box[side].forEach(r => check(r.length === 19 || (r.length === 3 && r[2] == null), g.id + ': box row shape'));
+      if (tid) g.box[side].forEach(r => check(real.teams.find(t => t.id === tid).players[r[0]], g.id + ': box row points at no player'));
+      // basket.lv's own data can be off by a point; that is reported, not a reason to stop the update.
+      const pts = g.box[side].filter(r => r[2] != null).reduce((a, r) => a + r[3], 0);
+      if (pts !== (side === 'h' ? g.hs : g.as)) console.warn('NOTE ' + g.id + ' ' + side + ': players\' points ' + pts + ' vs score ' + (side === 'h' ? g.hs : g.as));
+    });
+  });
+  real.teams.forEach(t => check(Array.isArray(t.players), 'team ' + t.id + ' has no player list'));
+  [new Date().toISOString().slice(0, 10), '2099-12-31'].forEach(day => {
+    try {
+      const c = Engine.create(real, day);
+      ['A', 'B'].forEach(gr => check(c.groupTable(gr).length === 6, 'real season ' + day + ': group ' + gr + ' has 6 teams'));
+      c.dbckStage(); c.jsscStage(); c.bracket('dbck', { project: true }); c.bracket('jssc', { project: true });
+      c.lastRound('dbck'); c.nextRound('dbck'); c.lastRound('jssc'); c.nextRound('jssc');
+    } catch (e) { check(false, 'engine fails on the real season at ' + day + ': ' + e.message); }
+  });
+}
+
 if (failures) { console.error(failures + ' check(s) failed'); process.exit(1); }
-console.log('All checks passed (' + data.games.length + ' games).');
+console.log('All checks passed (demo ' + data.games.length + ' games' + (realGames ? ', real season ' + realGames + ' games' : '') + ').');

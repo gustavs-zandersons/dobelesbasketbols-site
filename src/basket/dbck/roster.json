@@ -1,0 +1,1194 @@
+{
+ "teams": [
+  {
+   "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+   "name": "BK Buki/Sandramebeles.lv"
+  },
+  {
+   "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+   "name": "Brocēni"
+  },
+  {
+   "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+   "name": "Doks"
+  },
+  {
+   "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+   "name": "Jaunpils"
+  },
+  {
+   "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
+   "name": "Jelgava BJSS U17"
+  },
+  {
+   "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+   "name": "Jelgava BJSS U19"
+  },
+  {
+   "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+   "name": "Lietus"
+  },
+  {
+   "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+   "name": "Skandijs/HQ Chipper Parts"
+  },
+  {
+   "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+   "name": "TSK Sprīdītis"
+  },
+  {
+   "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
+   "name": "Valauto"
+  },
+  {
+   "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+   "name": "Vilki"
+  },
+  {
+   "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+   "name": "Īle/Penkule"
+  }
+ ],
+ "players": [
+  {
+   "pid": "044bcaa4-1250-11ed-b114-2374ed1c31ce",
+   "name": "Andrejs Soroka",
+   "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+   "team": "BK Buki/Sandramebeles.lv"
+  },
+  {
+   "pid": "84645a26-124b-11ed-bbb0-798c0117a5a9",
+   "name": "Edgars Kokins",
+   "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+   "team": "BK Buki/Sandramebeles.lv"
+  },
+  {
+   "pid": "c01e5246-124b-11ed-af1e-85f4d1dadc7b",
+   "name": "Gaitis Leiskins",
+   "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+   "team": "BK Buki/Sandramebeles.lv"
+  },
+  {
+   "pid": "533c3671-1250-11ed-9e7b-5f095c4ea437",
+   "name": "Kaspars Iesalnieks",
+   "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+   "team": "BK Buki/Sandramebeles.lv"
+  },
+  {
+   "pid": "789e64eb-124b-11ed-888c-4d73ff065d6a",
+   "name": "Klāvs Pitkevičs",
+   "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+   "team": "BK Buki/Sandramebeles.lv"
+  },
+  {
+   "pid": "12450b3f-abab-11ee-b0a7-6708685f1fa2",
+   "name": "Klāvs Zambergs",
+   "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+   "team": "BK Buki/Sandramebeles.lv"
+  },
+  {
+   "pid": "c4c93378-124e-11ed-8cf6-350a9cd1b3bc",
+   "name": "Kristers Beķeris",
+   "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+   "team": "BK Buki/Sandramebeles.lv"
+  },
+  {
+   "pid": "6fd0ab25-1250-11ed-bf32-5f095c4ea437",
+   "name": "Kristers Freimanis",
+   "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+   "team": "BK Buki/Sandramebeles.lv"
+  },
+  {
+   "pid": "a5004a97-124b-11ed-8e53-c7816fab3c69",
+   "name": "Kristiāns Zarumba",
+   "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+   "team": "BK Buki/Sandramebeles.lv"
+  },
+  {
+   "pid": "6d810582-124d-11ed-8408-1d3ac9f850f7",
+   "name": "Maksims Līvmanis",
+   "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+   "team": "BK Buki/Sandramebeles.lv"
+  },
+  {
+   "pid": "e5ee64a4-abaa-11ee-8179-a989259ad6c6",
+   "name": "Māris Veltensons",
+   "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+   "team": "BK Buki/Sandramebeles.lv"
+  },
+  {
+   "pid": "9ee9420f-124d-11ed-8689-cbd8bdbcc085",
+   "name": "Norberts Ramanauskis",
+   "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+   "team": "BK Buki/Sandramebeles.lv"
+  },
+  {
+   "pid": "d577f118-abab-11ee-b70e-49c694a52a32",
+   "name": "Pauls Zandersons",
+   "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+   "team": "BK Buki/Sandramebeles.lv"
+  },
+  {
+   "pid": "72048f72-124f-11ed-9dc9-798c0117a5a9",
+   "name": "Ritvars Kļaviņš",
+   "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+   "team": "BK Buki/Sandramebeles.lv"
+  },
+  {
+   "pid": "61b5b2d6-124d-11ed-adca-599d9464ae0f",
+   "name": "Ričards Taukačs",
+   "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+   "team": "BK Buki/Sandramebeles.lv"
+  },
+  {
+   "pid": "718783db-8e54-11ef-8369-6bc764d4955d",
+   "name": "Roberts Brože",
+   "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+   "team": "BK Buki/Sandramebeles.lv"
+  },
+  {
+   "pid": "757d2e9c-1250-11ed-8516-6394d832acfc",
+   "name": "Sandris Freimanis",
+   "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+   "team": "BK Buki/Sandramebeles.lv"
+  },
+  {
+   "pid": "224ec9f0-1250-11ed-a067-79667b57d41b",
+   "name": "Ģirts Pommers",
+   "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+   "team": "BK Buki/Sandramebeles.lv"
+  },
+  {
+   "pid": "be017206-b02d-11f0-9e45-139d53bb7a37",
+   "name": "Andis Rozentāls",
+   "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+   "team": "Brocēni"
+  },
+  {
+   "pid": "aa70da69-124b-11ed-83e3-c7816fab3c69",
+   "name": "Artūrs Rieksts",
+   "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+   "team": "Brocēni"
+  },
+  {
+   "pid": "fcb0dc7f-124e-11ed-a94e-0b958117d9a1",
+   "name": "Edgars Grablovskis",
+   "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+   "team": "Brocēni"
+  },
+  {
+   "pid": "7cee2f7d-b02e-11f0-a7bb-139d53bb7a37",
+   "name": "Elvijs Stencelis",
+   "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+   "team": "Brocēni"
+  },
+  {
+   "pid": "16ef5fb6-124c-11ed-a08a-b1bab638688e",
+   "name": "Jānis Zaķis",
+   "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+   "team": "Brocēni"
+  },
+  {
+   "pid": "9be4f7eb-124d-11ed-8f97-cbd8bdbcc085",
+   "name": "Kristaps Liepa",
+   "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+   "team": "Brocēni"
+  },
+  {
+   "pid": "3c1e4390-124c-11ed-9a6f-5b2da3c36294",
+   "name": "Krišjānis Valters",
+   "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+   "team": "Brocēni"
+  },
+  {
+   "pid": "29780ff9-124c-11ed-a034-65e37c41e8bf",
+   "name": "Renārs Želvis",
+   "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+   "team": "Brocēni"
+  },
+  {
+   "pid": "30d1ce5f-124c-11ed-8b6b-613bda7c34a2",
+   "name": "Rihards Roberts Miķelsons",
+   "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+   "team": "Brocēni"
+  },
+  {
+   "pid": "4705ad1c-124c-11ed-b1b8-613bda7c34a2",
+   "name": "Salvis Fiļipovs",
+   "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+   "team": "Brocēni"
+  },
+  {
+   "pid": "9be29d2b-124d-11ed-a2aa-cbd8bdbcc085",
+   "name": "Vilnis Stalidzans",
+   "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+   "team": "Brocēni"
+  },
+  {
+   "pid": "fadd4273-124b-11ed-8199-ffb729481c17",
+   "name": "Ādams Maks",
+   "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+   "team": "Brocēni"
+  },
+  {
+   "pid": "2d206ae3-124f-11ed-b4ee-ab5d0a9e84a0",
+   "name": "Āris Rozentāls",
+   "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+   "team": "Brocēni"
+  },
+  {
+   "pid": "9d6b332d-124b-11ed-a7b8-798c0117a5a9",
+   "name": "Adrians Ganuļevičs",
+   "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+   "team": "Doks"
+  },
+  {
+   "pid": "928b304c-124b-11ed-9428-798c0117a5a9",
+   "name": "Aleksandrs Ganža",
+   "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+   "team": "Doks"
+  },
+  {
+   "pid": "a1900912-124d-11ed-a2c3-cbd8bdbcc085",
+   "name": "Alekss Jermoļenko",
+   "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+   "team": "Doks"
+  },
+  {
+   "pid": "bc9bc231-124b-11ed-a7e6-c7816fab3c69",
+   "name": "Andris Justovičs",
+   "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+   "team": "Doks"
+  },
+  {
+   "pid": "f8e85ee7-124e-11ed-86a7-ab5d0a9e84a0",
+   "name": "Dāvis Kupfers",
+   "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+   "team": "Doks"
+  },
+  {
+   "pid": "ef9cb45d-124f-11ed-9989-4fbf11ad779f",
+   "name": "Edvards Šalājevs",
+   "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+   "team": "Doks"
+  },
+  {
+   "pid": "39c40e9d-124c-11ed-92f1-5b2da3c36294",
+   "name": "Elvijs Pētersons",
+   "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+   "team": "Doks"
+  },
+  {
+   "pid": "9d67befd-124b-11ed-860a-798c0117a5a9",
+   "name": "Emīls Stepiņš",
+   "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+   "team": "Doks"
+  },
+  {
+   "pid": "39be6090-124c-11ed-88c7-5b2da3c36294",
+   "name": "Kaspars Kalniņš",
+   "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+   "team": "Doks"
+  },
+  {
+   "pid": "3a43d6fd-1250-11ed-ad4f-b7f468e54599",
+   "name": "Kristaps Erlends Kaufelds",
+   "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+   "team": "Doks"
+  },
+  {
+   "pid": "3a34954f-1250-11ed-9ce2-b7f468e54599",
+   "name": "Kristaps Kaminskis",
+   "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+   "team": "Doks"
+  },
+  {
+   "pid": "6d59d32f-124c-11ed-8443-416ab7514803",
+   "name": "Kristaps Veresčagins",
+   "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+   "team": "Doks"
+  },
+  {
+   "pid": "bb12672d-124b-11ed-a54d-c7816fab3c69",
+   "name": "Kristers Ainārs Tomass",
+   "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+   "team": "Doks"
+  },
+  {
+   "pid": "bd55b2e9-124b-11ed-aa2a-c7816fab3c69",
+   "name": "Pauls Zukuls",
+   "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+   "team": "Doks"
+  },
+  {
+   "pid": "a194cdff-124d-11ed-ab20-cbd8bdbcc085",
+   "name": "Rihards Pirogs",
+   "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+   "team": "Doks"
+  },
+  {
+   "pid": "39c0e8f8-124c-11ed-9138-5b2da3c36294",
+   "name": "Roberts Strazdiņš",
+   "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+   "team": "Doks"
+  },
+  {
+   "pid": "3c28f511-124c-11ed-bdc7-5b2da3c36294",
+   "name": "Viesturs Šulcs",
+   "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+   "team": "Doks"
+  },
+  {
+   "pid": "d88a0c97-124b-11ed-acf8-cbd8bdbcc085",
+   "name": "Arnolds Zuicāns",
+   "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+   "team": "Jaunpils"
+  },
+  {
+   "pid": "7e3bd245-1250-11ed-b954-5f095c4ea437",
+   "name": "Artūrs Liepa",
+   "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+   "team": "Jaunpils"
+  },
+  {
+   "pid": "74918213-71d6-11ef-9232-3d896ef9bea1",
+   "name": "Ernests Liepiņš",
+   "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+   "team": "Jaunpils"
+  },
+  {
+   "pid": "216cfb63-71d4-11ef-9abf-bf5d1c09c617",
+   "name": "Everts Rozenfelds",
+   "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+   "team": "Jaunpils"
+  },
+  {
+   "pid": "051037db-71d4-11ef-be37-c168be986025",
+   "name": "Jānis Kormis",
+   "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+   "team": "Jaunpils"
+  },
+  {
+   "pid": "f5513219-a32e-11ef-80f5-5da4bdd83f44",
+   "name": "Jānis Pavlovs",
+   "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+   "team": "Jaunpils"
+  },
+  {
+   "pid": "754cedab-61df-11ee-811c-9791ec4f6c61",
+   "name": "Jēkabs Mežgalis",
+   "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+   "team": "Jaunpils"
+  },
+  {
+   "pid": "3cd80de8-1250-11ed-afa9-b7060751001c",
+   "name": "Kristers Fēlikss Juzups",
+   "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+   "team": "Jaunpils"
+  },
+  {
+   "pid": "f7bea90c-124b-11ed-9344-ffb729481c17",
+   "name": "Madars Beķeris",
+   "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+   "team": "Jaunpils"
+  },
+  {
+   "pid": "c4d17c11-124e-11ed-b20c-350a9cd1b3bc",
+   "name": "Miks Kristers Priednieks",
+   "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+   "team": "Jaunpils"
+  },
+  {
+   "pid": "423f93d5-61df-11ee-8cc9-55729634e1b4",
+   "name": "Miks Toms Janševskis",
+   "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+   "team": "Jaunpils"
+  },
+  {
+   "pid": "eef36c40-d05f-11f1-afeb-6906d6e684f2",
+   "name": "Niks Kalniņš",
+   "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+   "team": "Jaunpils"
+  },
+  {
+   "pid": "f2ee5b69-71d3-11ef-89d9-594d90710993",
+   "name": "Ostins Edvards Zambergs",
+   "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+   "team": "Jaunpils"
+  },
+  {
+   "pid": "91bf0ad0-61df-11ee-878c-a5fb1a9fe681",
+   "name": "Patriks Bondars",
+   "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+   "team": "Jaunpils"
+  },
+  {
+   "pid": "c4ced88d-124e-11ed-92ae-350a9cd1b3bc",
+   "name": "Rolands Pētersons",
+   "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+   "team": "Jaunpils"
+  },
+  {
+   "pid": "6fce19a1-1250-11ed-a169-5f095c4ea437",
+   "name": "Rūdis Pušmucāns",
+   "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+   "team": "Jaunpils"
+  },
+  {
+   "pid": "d4147a80-4b1c-11ee-83bf-d1424ddbd08f",
+   "name": "Andrejs Gudeļins",
+   "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
+   "team": "Jelgava BJSS U17"
+  },
+  {
+   "pid": "a2ae0f04-ac54-11f1-90d0-dd18da1d8ad2",
+   "name": "Dominiks Kizilovs",
+   "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
+   "team": "Jelgava BJSS U17"
+  },
+  {
+   "pid": "7292ff82-1250-11ed-a6b1-d7a6305a6cd3",
+   "name": "Ernests Dzedons",
+   "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
+   "team": "Jelgava BJSS U17"
+  },
+  {
+   "pid": "4964d413-5aae-11ee-8046-3576bf75c811",
+   "name": "Gustavs Valainis",
+   "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
+   "team": "Jelgava BJSS U17"
+  },
+  {
+   "pid": "5ee3b324-1250-11ed-bcea-b32c0c68a2a7",
+   "name": "Linards Eglītis",
+   "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
+   "team": "Jelgava BJSS U17"
+  },
+  {
+   "pid": "728752a0-1250-11ed-9389-d7a6305a6cd3",
+   "name": "Markuss Gustavs Ziemelis",
+   "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
+   "team": "Jelgava BJSS U17"
+  },
+  {
+   "pid": "59baf2ba-5aae-11ee-8691-b39a010887b5",
+   "name": "Māris Vidiņš",
+   "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
+   "team": "Jelgava BJSS U17"
+  },
+  {
+   "pid": "729bce5d-1250-11ed-a1d8-d7a6305a6cd3",
+   "name": "Olivers Puriņš",
+   "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
+   "team": "Jelgava BJSS U17"
+  },
+  {
+   "pid": "8b5850aa-ac55-11f1-a1c7-434b87c1dd69",
+   "name": "Oskars Balodis",
+   "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
+   "team": "Jelgava BJSS U17"
+  },
+  {
+   "pid": "4c0d0e6f-ac54-11f1-a769-99bdd2d45ac8",
+   "name": "Ralfs Antons",
+   "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
+   "team": "Jelgava BJSS U17"
+  },
+  {
+   "pid": "3a51f80d-1250-11ed-aec0-b7f468e54599",
+   "name": "Rihards Bērziņš",
+   "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
+   "team": "Jelgava BJSS U17"
+  },
+  {
+   "pid": "72a3f4ae-1250-11ed-bc07-d7a6305a6cd3",
+   "name": "Rihards Nevlans",
+   "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
+   "team": "Jelgava BJSS U17"
+  },
+  {
+   "pid": "72905f1e-1250-11ed-aadb-d7a6305a6cd3",
+   "name": "Rūdolfs Kristāls",
+   "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
+   "team": "Jelgava BJSS U17"
+  },
+  {
+   "pid": "eb3af2e6-4b1c-11ee-9956-196d4e62c94c",
+   "name": "Valters Strupulis",
+   "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
+   "team": "Jelgava BJSS U17"
+  },
+  {
+   "pid": "3a37640d-1250-11ed-9f98-b7f468e54599",
+   "name": "Aleksis Leitis",
+   "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+   "team": "Jelgava BJSS U19"
+  },
+  {
+   "pid": "1552592a-1250-11ed-946d-a1e8977ac55c",
+   "name": "Evans Olivers Zambergs",
+   "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+   "team": "Jelgava BJSS U19"
+  },
+  {
+   "pid": "3a4a7643-1250-11ed-84d1-b7f468e54599",
+   "name": "Gabriels Rokols",
+   "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+   "team": "Jelgava BJSS U19"
+  },
+  {
+   "pid": "ef849f70-124f-11ed-a7c1-4fbf11ad779f",
+   "name": "Klāvs Kalniņš",
+   "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+   "team": "Jelgava BJSS U19"
+  },
+  {
+   "pid": "efa6128e-124f-11ed-9bde-4fbf11ad779f",
+   "name": "Kristiāns Klūns",
+   "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+   "team": "Jelgava BJSS U19"
+  },
+  {
+   "pid": "3a66ce50-1250-11ed-a2a6-b7f468e54599",
+   "name": "Kārlis Jaunsubrēns",
+   "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+   "team": "Jelgava BJSS U19"
+  },
+  {
+   "pid": "771b4067-c7c0-11ed-b112-ab2b039ae760",
+   "name": "Lauris Lukaševičs",
+   "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+   "team": "Jelgava BJSS U19"
+  },
+  {
+   "pid": "ef9a90ae-124f-11ed-a6b7-4fbf11ad779f",
+   "name": "Markuss Vaciks-Bumbieris",
+   "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+   "team": "Jelgava BJSS U19"
+  },
+  {
+   "pid": "3a40fc46-1250-11ed-bede-b7f468e54599",
+   "name": "Rainers Zīle",
+   "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+   "team": "Jelgava BJSS U19"
+  },
+  {
+   "pid": "3a54c6ea-1250-11ed-bda8-b7f468e54599",
+   "name": "Reinis Rīders",
+   "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+   "team": "Jelgava BJSS U19"
+  },
+  {
+   "pid": "727b7e19-1250-11ed-b76a-d7a6305a6cd3",
+   "name": "Renārs Šteinbergs",
+   "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+   "team": "Jelgava BJSS U19"
+  },
+  {
+   "pid": "ef8e17de-124f-11ed-b9ed-4fbf11ad779f",
+   "name": "Rihards Laimīte",
+   "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+   "team": "Jelgava BJSS U19"
+  },
+  {
+   "pid": "3a3e52b1-1250-11ed-aabb-b7f468e54599",
+   "name": "Roberts Kļava",
+   "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+   "team": "Jelgava BJSS U19"
+  },
+  {
+   "pid": "ef98d96d-124f-11ed-98e0-4fbf11ad779f",
+   "name": "Roberts Vairogs",
+   "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+   "team": "Jelgava BJSS U19"
+  },
+  {
+   "pid": "ef8a0e28-124f-11ed-a0d2-4fbf11ad779f",
+   "name": "Toms Butāns",
+   "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+   "team": "Jelgava BJSS U19"
+  },
+  {
+   "pid": "4b8f7b5e-1250-11ed-9c8c-79d9845714f7",
+   "name": "Toms Kronbergs",
+   "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+   "team": "Jelgava BJSS U19"
+  },
+  {
+   "pid": "8b7d5b23-ac51-11f1-9784-57b8d600e7b6",
+   "name": "Ēriks Muško",
+   "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+   "team": "Jelgava BJSS U19"
+  },
+  {
+   "pid": "00d5a4c5-fae0-11f0-b009-77914da3d4f9",
+   "name": "Adrians Kolčs",
+   "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+   "team": "Lietus"
+  },
+  {
+   "pid": "da4a2ea9-124e-11ed-9310-ab5d0a9e84a0",
+   "name": "Artūrs Andersons",
+   "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+   "team": "Lietus"
+  },
+  {
+   "pid": "08df8eea-124c-11ed-bdde-c3c6b05c2585",
+   "name": "Artūrs Antonovs",
+   "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+   "team": "Lietus"
+  },
+  {
+   "pid": "802aa0ec-124c-11ed-8f70-613bda7c34a2",
+   "name": "Daniels Agnis Andersons",
+   "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+   "team": "Lietus"
+  },
+  {
+   "pid": "92e73b02-99e8-11f0-bb27-177c3d52a291",
+   "name": "Edmunds Minasidi",
+   "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+   "team": "Lietus"
+  },
+  {
+   "pid": "61fc0a8b-d062-11f1-be93-a356579b4181",
+   "name": "Gatis Drieks",
+   "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+   "team": "Lietus"
+  },
+  {
+   "pid": "15b8217b-ad9b-11f0-86e8-a31dbe813369",
+   "name": "Gerts Vilde",
+   "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+   "team": "Lietus"
+  },
+  {
+   "pid": "8302fed6-1250-11ed-b698-d7a6305a6cd3",
+   "name": "Kristers Valters Cers",
+   "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+   "team": "Lietus"
+  },
+  {
+   "pid": "e8da523e-ad9a-11f0-9501-e155578398ca",
+   "name": "Krists Aukstars",
+   "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+   "team": "Lietus"
+  },
+  {
+   "pid": "0b96c763-1250-11ed-a9af-b7f2ae46b531",
+   "name": "Mareks Pudža",
+   "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+   "team": "Lietus"
+  },
+  {
+   "pid": "80458910-124c-11ed-a8d8-613bda7c34a2",
+   "name": "Martins Markuss Bernāns",
+   "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+   "team": "Lietus"
+  },
+  {
+   "pid": "dbd0ec59-d061-11f1-bcb3-754d0ab17078",
+   "name": "Ralfs Andris Štrauss",
+   "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+   "team": "Lietus"
+  },
+  {
+   "pid": "e50fc42b-124b-11ed-b51e-d1cff242a568",
+   "name": "Roberts Bervalds",
+   "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+   "team": "Lietus"
+  },
+  {
+   "pid": "8d07cd7f-124d-11ed-ae83-67ca3ef25d2c",
+   "name": "Toms Pudža",
+   "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+   "team": "Lietus"
+  },
+  {
+   "pid": "be5a0b7b-124f-11ed-9531-cd0bcc2efffd",
+   "name": "Viktors Dreimanis",
+   "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+   "team": "Lietus"
+  },
+  {
+   "pid": "1af62b90-1250-11ed-b9d6-29147fad053c",
+   "name": "Arnis Jēkabsons",
+   "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+   "team": "Skandijs/HQ Chipper Parts"
+  },
+  {
+   "pid": "1b34c282-1250-11ed-84c3-29147fad053c",
+   "name": "Artūrs Turiks",
+   "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+   "team": "Skandijs/HQ Chipper Parts"
+  },
+  {
+   "pid": "8d8eff99-124b-11ed-855d-798c0117a5a9",
+   "name": "Daniels Minajevs",
+   "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+   "team": "Skandijs/HQ Chipper Parts"
+  },
+  {
+   "pid": "716e2249-124d-11ed-989e-1d3ac9f850f7",
+   "name": "Gustavs Zandersons",
+   "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+   "team": "Skandijs/HQ Chipper Parts"
+  },
+  {
+   "pid": "f84e9649-124e-11ed-9dc0-ab5d0a9e84a0",
+   "name": "Kaspars Briedis",
+   "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+   "team": "Skandijs/HQ Chipper Parts"
+  },
+  {
+   "pid": "0eb4723e-124c-11ed-a335-5b2da3c36294",
+   "name": "Kaspars Neimanis",
+   "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+   "team": "Skandijs/HQ Chipper Parts"
+  },
+  {
+   "pid": "b53ff554-124d-11ed-9306-7327962c42d5",
+   "name": "Kristaps Āriņš",
+   "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+   "team": "Skandijs/HQ Chipper Parts"
+  },
+  {
+   "pid": "71614c99-124d-11ed-8fcb-1d3ac9f850f7",
+   "name": "Miķelis Reinfelds",
+   "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+   "team": "Skandijs/HQ Chipper Parts"
+  },
+  {
+   "pid": "715ddd8d-124d-11ed-8af4-1d3ac9f850f7",
+   "name": "Mārtiņš Jermacāns",
+   "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+   "team": "Skandijs/HQ Chipper Parts"
+  },
+  {
+   "pid": "71540471-124d-11ed-a6a3-1d3ac9f850f7",
+   "name": "Nauris Guoģis",
+   "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+   "team": "Skandijs/HQ Chipper Parts"
+  },
+  {
+   "pid": "199da6c6-124c-11ed-a440-b1bab638688e",
+   "name": "Oskars Liepiņš",
+   "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+   "team": "Skandijs/HQ Chipper Parts"
+  },
+  {
+   "pid": "d3c2b2b9-124e-11ed-9102-0b958117d9a1",
+   "name": "Raimonds Kripa",
+   "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+   "team": "Skandijs/HQ Chipper Parts"
+  },
+  {
+   "pid": "716712b8-124d-11ed-9916-1d3ac9f850f7",
+   "name": "Raivis Ziemelis",
+   "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+   "team": "Skandijs/HQ Chipper Parts"
+  },
+  {
+   "pid": "0b3bd7ed-124c-11ed-9b21-cbd8bdbcc085",
+   "name": "Raivis Zinkevičs",
+   "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+   "team": "Skandijs/HQ Chipper Parts"
+  },
+  {
+   "pid": "6d9eb590-124d-11ed-9afc-1d3ac9f850f7",
+   "name": "Roberts Millers",
+   "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+   "team": "Skandijs/HQ Chipper Parts"
+  },
+  {
+   "pid": "7158b156-124d-11ed-9ba3-1d3ac9f850f7",
+   "name": "Valters Seņko",
+   "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+   "team": "Skandijs/HQ Chipper Parts"
+  },
+  {
+   "pid": "252b365b-cae2-11ef-94eb-01eeb277328b",
+   "name": "Alberts Ozoliņš",
+   "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+   "team": "TSK Sprīdītis"
+  },
+  {
+   "pid": "57eb2cc6-abae-11ee-865d-2971db84b0f4",
+   "name": "Andis Brakmanis",
+   "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+   "team": "TSK Sprīdītis"
+  },
+  {
+   "pid": "b1cc3d71-c7c0-11ed-b5a9-173cb6926a7f",
+   "name": "Andrejs Zaharovs",
+   "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+   "team": "TSK Sprīdītis"
+  },
+  {
+   "pid": "1ba1eb23-abad-11ee-a4e3-f16b7880027d",
+   "name": "Dairis Suharevs",
+   "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+   "team": "TSK Sprīdītis"
+  },
+  {
+   "pid": "eed55909-abac-11ee-956c-73ccc821a5b3",
+   "name": "Emīls Granauskis",
+   "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+   "team": "TSK Sprīdītis"
+  },
+  {
+   "pid": "3737eb00-1250-11ed-b371-d7a6305a6cd3",
+   "name": "Jānis Misulis",
+   "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+   "team": "TSK Sprīdītis"
+  },
+  {
+   "pid": "06a4d131-abad-11ee-b67d-fb6fa2fd7d69",
+   "name": "Jēkabs Narvaišs",
+   "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+   "team": "TSK Sprīdītis"
+  },
+  {
+   "pid": "0b5f8fbb-124c-11ed-84a0-cbd8bdbcc085",
+   "name": "Kristaps Mierlauks",
+   "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+   "team": "TSK Sprīdītis"
+  },
+  {
+   "pid": "6e4dbb3d-abae-11ee-a2d0-192a67f0a9cc",
+   "name": "Kristers Suharevs",
+   "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+   "team": "TSK Sprīdītis"
+  },
+  {
+   "pid": "c6a0132b-124d-11ed-8321-cbd8bdbcc085",
+   "name": "Markuss Šveiduks",
+   "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+   "team": "TSK Sprīdītis"
+  },
+  {
+   "pid": "831f1b8c-e367-11ed-a149-47551c4e053f",
+   "name": "Matīss Grīnbergs",
+   "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+   "team": "TSK Sprīdītis"
+  },
+  {
+   "pid": "080484e0-124f-11ed-989a-8b1d9237b1cc",
+   "name": "Miks Šveiduks",
+   "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+   "team": "TSK Sprīdītis"
+  },
+  {
+   "pid": "48c40e79-cae2-11ef-bc94-d5555497e896",
+   "name": "Māris Brenčuks",
+   "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+   "team": "TSK Sprīdītis"
+  },
+  {
+   "pid": "7ba5c8f0-b02c-11f0-9138-4bbba1dc53bf",
+   "name": "Māris Pīlēģis",
+   "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+   "team": "TSK Sprīdītis"
+  },
+  {
+   "pid": "39a3bc9f-124c-11ed-8803-5b2da3c36294",
+   "name": "Mārtiņš Kiziks",
+   "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+   "team": "TSK Sprīdītis"
+  },
+  {
+   "pid": "7a53534c-cae2-11ef-be3e-7ded43839537",
+   "name": "Pēteris Ozoliņš",
+   "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+   "team": "TSK Sprīdītis"
+  },
+  {
+   "pid": "82f9cf81-4869-11ed-abe1-bfb60fd77603",
+   "name": "Ralfs Skadiņš",
+   "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+   "team": "TSK Sprīdītis"
+  },
+  {
+   "pid": "428592e0-cae6-11ef-afd8-abf99270214e",
+   "name": "Edgars Krūmiņš",
+   "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
+   "team": "Valauto"
+  },
+  {
+   "pid": "d444ade0-124b-11ed-a6ed-85f4d1dadc7b",
+   "name": "Edgars Krūmiņš",
+   "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
+   "team": "Valauto"
+  },
+  {
+   "pid": "8981c32f-124b-11ed-ad7d-8b1d9237b1cc",
+   "name": "Gatis Justovičs",
+   "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
+   "team": "Valauto"
+  },
+  {
+   "pid": "8a5b1f88-124b-11ed-b67a-8b1d9237b1cc",
+   "name": "Jānis Bērziņš",
+   "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
+   "team": "Valauto"
+  },
+  {
+   "pid": "d481168d-124b-11ed-806d-85f4d1dadc7b",
+   "name": "Kalvis Krūmiņš",
+   "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
+   "team": "Valauto"
+  },
+  {
+   "pid": "22d00773-1250-11ed-949e-79667b57d41b",
+   "name": "Kaspars Caune",
+   "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
+   "team": "Valauto"
+  },
+  {
+   "pid": "fdec4d16-124b-11ed-b7f5-c1fa6210bd8d",
+   "name": "Kristers Vējš",
+   "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
+   "team": "Valauto"
+  },
+  {
+   "pid": "8a41ebce-124c-11ed-857e-613bda7c34a2",
+   "name": "Pēteris Prolis",
+   "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
+   "team": "Valauto"
+  },
+  {
+   "pid": "fdeed054-124b-11ed-aca1-c1fa6210bd8d",
+   "name": "Rainers Barkāns",
+   "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
+   "team": "Valauto"
+  },
+  {
+   "pid": "850e06a4-3431-11ed-a9e7-a5ed412a7ab1",
+   "name": "Ralfs Bērziņš",
+   "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
+   "team": "Valauto"
+  },
+  {
+   "pid": "33e3d10f-124c-11ed-b2f4-b1bab638688e",
+   "name": "Roberts Barčevskis",
+   "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
+   "team": "Valauto"
+  },
+  {
+   "pid": "8a5f782f-124b-11ed-9654-8b1d9237b1cc",
+   "name": "Toms Bitītis",
+   "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
+   "team": "Valauto"
+  },
+  {
+   "pid": "8473811c-124b-11ed-b80a-798c0117a5a9",
+   "name": "Uvis Strogonovs",
+   "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
+   "team": "Valauto"
+  },
+  {
+   "pid": "8aa59484-6a5e-11ee-8982-0d655c06af32",
+   "name": "Ainārs Antanāvičs",
+   "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+   "team": "Vilki"
+  },
+  {
+   "pid": "50bece05-1250-11ed-9817-79d9845714f7",
+   "name": "Aivars Tihonovs",
+   "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+   "team": "Vilki"
+  },
+  {
+   "pid": "b39c02fc-abac-11ee-9840-8deb98e79162",
+   "name": "Andis Zeidmanis",
+   "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+   "team": "Vilki"
+  },
+  {
+   "pid": "b525e69a-124d-11ed-9f4d-7327962c42d5",
+   "name": "Andris Venevics",
+   "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+   "team": "Vilki"
+  },
+  {
+   "pid": "3bd0271d-124c-11ed-8bc6-5b2da3c36294",
+   "name": "Armands Kārkliņš",
+   "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+   "team": "Vilki"
+  },
+  {
+   "pid": "3a133ae5-124c-11ed-9244-5b2da3c36294",
+   "name": "Artūrs Rutkovskis",
+   "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+   "team": "Vilki"
+  },
+  {
+   "pid": "39f72d7e-124c-11ed-98be-5b2da3c36294",
+   "name": "Dagnis Krūmiņš",
+   "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+   "team": "Vilki"
+  },
+  {
+   "pid": "afd0750a-4c58-11ed-b25d-0b800d7734dd",
+   "name": "Daniels Zemzars",
+   "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+   "team": "Vilki"
+  },
+  {
+   "pid": "46de2e4f-730d-11ee-ae9e-4db81875e9aa",
+   "name": "Emīls Saulīte",
+   "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+   "team": "Vilki"
+  },
+  {
+   "pid": "b53864ba-124d-11ed-b72e-7327962c42d5",
+   "name": "Gunārs Valeinis",
+   "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+   "team": "Vilki"
+  },
+  {
+   "pid": "abf8ade8-6a5e-11ee-b04a-8f20b6c96533",
+   "name": "Ivars Grafs",
+   "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+   "team": "Vilki"
+  },
+  {
+   "pid": "74ca41f5-4c58-11ed-9252-23b1deea2cd0",
+   "name": "Kaspars Pafrāts",
+   "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+   "team": "Vilki"
+  },
+  {
+   "pid": "f655f485-cae3-11ef-b8b2-6f954e2b7a5d",
+   "name": "Kurts Melnis",
+   "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+   "team": "Vilki"
+  },
+  {
+   "pid": "6a3f3d87-1250-11ed-9594-6394d832acfc",
+   "name": "Markuss Liepa",
+   "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+   "team": "Vilki"
+  },
+  {
+   "pid": "39b27ba6-124c-11ed-ae28-5b2da3c36294",
+   "name": "Reinis Artimovičs",
+   "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+   "team": "Vilki"
+  },
+  {
+   "pid": "127b0256-124c-11ed-87c6-b1bab638688e",
+   "name": "Reinis Krūmiņš",
+   "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+   "team": "Vilki"
+  },
+  {
+   "pid": "5d0e6bce-e367-11ed-b717-7f2de3a193e0",
+   "name": "Renārs Kalniņš",
+   "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+   "team": "Vilki"
+  },
+  {
+   "pid": "f1728a96-8e5e-11ef-92b4-e3472f16860d",
+   "name": "Rolands Slava",
+   "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+   "team": "Vilki"
+  },
+  {
+   "pid": "a9f0990d-c6f3-11f1-8077-dfe7db1e0902",
+   "name": "Adrians Meiers",
+   "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+   "team": "Īle/Penkule"
+  },
+  {
+   "pid": "720c5812-124f-11ed-8526-798c0117a5a9",
+   "name": "Andris Sproģis",
+   "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+   "team": "Īle/Penkule"
+  },
+  {
+   "pid": "14c382e3-124f-11ed-9f51-ab5d0a9e84a0",
+   "name": "Andris Trahotkins",
+   "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+   "team": "Īle/Penkule"
+  },
+  {
+   "pid": "36697349-abaf-11ee-9807-192a67f0a9cc",
+   "name": "Armands Dargužis",
+   "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+   "team": "Īle/Penkule"
+  },
+  {
+   "pid": "5b1e7d7e-4be2-11ed-9627-91b1e01c5bb7",
+   "name": "Artūrs Kaktiņš",
+   "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+   "team": "Īle/Penkule"
+  },
+  {
+   "pid": "9ee22374-124d-11ed-adaa-cbd8bdbcc085",
+   "name": "Artūrs Stanga",
+   "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+   "team": "Īle/Penkule"
+  },
+  {
+   "pid": "fd63bf78-124f-11ed-8eea-2374ed1c31ce",
+   "name": "Atis Mateisons",
+   "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+   "team": "Īle/Penkule"
+  },
+  {
+   "pid": "d5addd14-124c-11ed-9637-7327962c42d5",
+   "name": "Edgars Matīss",
+   "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+   "team": "Īle/Penkule"
+  },
+  {
+   "pid": "4bfd3bac-abaf-11ee-abda-adac5588600c",
+   "name": "Egīls Politers",
+   "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+   "team": "Īle/Penkule"
+  },
+  {
+   "pid": "1fc58096-1250-11ed-9fc4-4f94336dbf2e",
+   "name": "Gatis Kobzars",
+   "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+   "team": "Īle/Penkule"
+  },
+  {
+   "pid": "808de0fd-1250-11ed-8f49-5f095c4ea437",
+   "name": "Jānis Pūpols",
+   "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+   "team": "Īle/Penkule"
+  },
+  {
+   "pid": "77b95b24-cae7-11ef-b53e-99562758010e",
+   "name": "Kristiāns Aleksejevs",
+   "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+   "team": "Īle/Penkule"
+  },
+  {
+   "pid": "fd1b39d2-124c-11ed-b04f-61088c7226c2",
+   "name": "Kārlis Bulmers",
+   "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+   "team": "Īle/Penkule"
+  },
+  {
+   "pid": "71747cb7-124d-11ed-ae3d-1d3ac9f850f7",
+   "name": "Matīss Hartmanis",
+   "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+   "team": "Īle/Penkule"
+  },
+  {
+   "pid": "091a4bd6-a51e-11ef-80a3-81d59cf8ca74",
+   "name": "Mārtiņš Mužics",
+   "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+   "team": "Īle/Penkule"
+  },
+  {
+   "pid": "94ce2610-abaf-11ee-b72f-0371525aded3",
+   "name": "Oskars Arājs",
+   "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+   "team": "Īle/Penkule"
+  }
+ ]
+}

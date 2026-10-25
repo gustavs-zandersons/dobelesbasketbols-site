@@ -1,0 +1,731 @@
+{
+ "cup": "dbck",
+ "link": "https://regionalie.basket.lv/dobeles-basketbola-cempionu-kauss/kalendars/",
+ "websiteId": "336",
+ "season": {
+  "id": "8fd4e7d4-cc5b-11f1-9064-bf1c8b250f0a",
+  "name": "2026/2027"
+ },
+ "fixtures": [
+  {
+   "id": "2475f42f-ce62-11f1-b78b-e9430a8fe50d",
+   "start": "2026-11-01T11:00",
+   "utc": "2026-11-01T09:00",
+   "venue": "Dobeles sporta halle",
+   "venueId": "097b3017-ab33-11ee-98a3-55391200b033",
+   "stage": "Grupu turnīrs",
+   "pool": "B grupa",
+   "round": "Kārta: 1",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Lietus",
+    "code": "LIETS",
+    "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+    "score": null
+   },
+   "away": {
+    "name": "TSK Sprīdītis",
+    "code": "TSKSP",
+    "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+    "score": null
+   }
+  },
+  {
+   "id": "cb266399-d055-11f1-963e-093e8a9088b0",
+   "start": "2026-11-01T12:30",
+   "utc": "2026-11-01T10:30",
+   "venue": "Dobeles sporta halle",
+   "venueId": "097b3017-ab33-11ee-98a3-55391200b033",
+   "stage": "Grupu turnīrs",
+   "pool": "A grupa",
+   "round": "Kārta: 1",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Doks",
+    "code": "DOK",
+    "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+    "score": null
+   },
+   "away": {
+    "name": "Brocēni",
+    "code": "BROC",
+    "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+    "score": null
+   }
+  },
+  {
+   "id": "e7bdc1d1-d055-11f1-a507-c5a31a8e5c72",
+   "start": "2026-11-01T14:00",
+   "utc": "2026-11-01T12:00",
+   "venue": "Dobeles sporta halle",
+   "venueId": "097b3017-ab33-11ee-98a3-55391200b033",
+   "stage": "Grupu turnīrs",
+   "pool": "A grupa",
+   "round": "Kārta: 1",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Jaunpils",
+    "code": "JPL",
+    "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+    "score": null
+   },
+   "away": {
+    "name": "Skandijs/HQ Chipper Parts",
+    "code": "SKAND",
+    "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+    "score": null
+   }
+  },
+  {
+   "id": "019126bf-d056-11f1-821b-6b21f3c61da8",
+   "start": "2026-11-01T15:30",
+   "utc": "2026-11-01T13:30",
+   "venue": "Dobeles sporta halle",
+   "venueId": "097b3017-ab33-11ee-98a3-55391200b033",
+   "stage": "Grupu turnīrs",
+   "pool": "B grupa",
+   "round": "Kārta: 1",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Jelgava BJSS U19",
+    "code": "JEL19",
+    "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+    "score": null
+   },
+   "away": {
+    "name": "Valauto",
+    "code": "VALAU",
+    "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
+    "score": null
+   }
+  },
+  {
+   "id": "253633c7-d056-11f1-bc9b-b39c9ca81b6c",
+   "start": "2026-11-08T11:00",
+   "utc": "2026-11-08T09:00",
+   "venue": "Jelgavas sporta halle",
+   "venueId": "650a279e-124b-11ed-ab51-85f4d1dadc7b",
+   "stage": "Grupu turnīrs",
+   "pool": "A grupa",
+   "round": "Kārta: 2",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Doks",
+    "code": "DOK",
+    "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+    "score": null
+   },
+   "away": {
+    "name": "Jaunpils",
+    "code": "JPL",
+    "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+    "score": null
+   }
+  },
+  {
+   "id": "42e8e258-d056-11f1-b95a-9fadf601be86",
+   "start": "2026-11-08T12:30",
+   "utc": "2026-11-08T10:30",
+   "venue": "Jelgavas sporta halle",
+   "venueId": "650a279e-124b-11ed-ab51-85f4d1dadc7b",
+   "stage": "Grupu turnīrs",
+   "pool": "A grupa",
+   "round": "Kārta: 2",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Jelgava BJSS U17",
+    "code": "JEL17",
+    "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
+    "score": null
+   },
+   "away": {
+    "name": "Vilki",
+    "code": "VILKI",
+    "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+    "score": null
+   }
+  },
+  {
+   "id": "5c3b64a6-d056-11f1-b15b-73598b3a1276",
+   "start": "2026-11-08T14:00",
+   "utc": "2026-11-08T12:00",
+   "venue": "Jelgavas sporta halle",
+   "venueId": "650a279e-124b-11ed-ab51-85f4d1dadc7b",
+   "stage": "Grupu turnīrs",
+   "pool": "B grupa",
+   "round": "Kārta: 2",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Lietus",
+    "code": "LIETS",
+    "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+    "score": null
+   },
+   "away": {
+    "name": "Īle/Penkule",
+    "code": "ILEPE",
+    "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+    "score": null
+   }
+  },
+  {
+   "id": "a52d785f-d056-11f1-9b35-d13871d73e39",
+   "start": "2026-11-08T15:30",
+   "utc": "2026-11-08T13:30",
+   "venue": "Jelgavas sporta halle",
+   "venueId": "650a279e-124b-11ed-ab51-85f4d1dadc7b",
+   "stage": "Grupu turnīrs",
+   "pool": "B grupa",
+   "round": "Kārta: 2",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "BK Buki/Sandramebeles.lv",
+    "code": "BKBUK",
+    "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+    "score": null
+   },
+   "away": {
+    "name": "Jelgava BJSS U19",
+    "code": "JEL19",
+    "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+    "score": null
+   }
+  },
+  {
+   "id": "ffad9df5-d057-11f1-8e19-61b4acd41887",
+   "start": "2026-11-15T11:00",
+   "utc": "2026-11-15T09:00",
+   "venue": "Tērvetes sporta centrs",
+   "venueId": "da780327-d057-11f1-9d10-3da40ac80a73",
+   "stage": "Grupu turnīrs",
+   "pool": "A grupa",
+   "round": "Kārta: 3",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Brocēni",
+    "code": "BROC",
+    "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+    "score": null
+   },
+   "away": {
+    "name": "Jaunpils",
+    "code": "JPL",
+    "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+    "score": null
+   }
+  },
+  {
+   "id": "1f61cff7-d059-11f1-8bf7-9da0e36f59db",
+   "start": "2026-11-15T12:30",
+   "utc": "2026-11-15T10:30",
+   "venue": "Tērvetes sporta centrs",
+   "venueId": "da780327-d057-11f1-9d10-3da40ac80a73",
+   "stage": "Grupu turnīrs",
+   "pool": "B grupa",
+   "round": "Kārta: 3",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Valauto",
+    "code": "VALAU",
+    "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
+    "score": null
+   },
+   "away": {
+    "name": "TSK Sprīdītis",
+    "code": "TSKSP",
+    "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+    "score": null
+   }
+  },
+  {
+   "id": "1f5797f2-d059-11f1-82ae-7bc44c89764a",
+   "start": "2026-11-15T14:00",
+   "utc": "2026-11-15T12:00",
+   "venue": "Tērvetes sporta centrs",
+   "venueId": "da780327-d057-11f1-9d10-3da40ac80a73",
+   "stage": "Grupu turnīrs",
+   "pool": "A grupa",
+   "round": "Kārta: 3",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Doks",
+    "code": "DOK",
+    "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+    "score": null
+   },
+   "away": {
+    "name": "Vilki",
+    "code": "VILKI",
+    "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+    "score": null
+   }
+  },
+  {
+   "id": "782f2abf-d059-11f1-ae45-e907b2e7ab8e",
+   "start": "2026-11-15T15:30",
+   "utc": "2026-11-15T13:30",
+   "venue": "Tērvetes sporta centrs",
+   "venueId": "da780327-d057-11f1-9d10-3da40ac80a73",
+   "stage": "Grupu turnīrs",
+   "pool": "B grupa",
+   "round": "Kārta: 3",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "BK Buki/Sandramebeles.lv",
+    "code": "BKBUK",
+    "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+    "score": null
+   },
+   "away": {
+    "name": "Lietus",
+    "code": "LIETS",
+    "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+    "score": null
+   }
+  },
+  {
+   "id": "ad0dccad-d05c-11f1-bd28-2bebf51f7a71",
+   "start": "2026-11-22T14:00",
+   "utc": "2026-11-22T12:00",
+   "venue": "Dobeles sporta halle",
+   "venueId": "097b3017-ab33-11ee-98a3-55391200b033",
+   "stage": "Grupu turnīrs",
+   "pool": "A grupa",
+   "round": "Kārta: 4",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Brocēni",
+    "code": "BROC",
+    "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+    "score": null
+   },
+   "away": {
+    "name": "Jelgava BJSS U17",
+    "code": "JEL17",
+    "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
+    "score": null
+   }
+  },
+  {
+   "id": "ad3ee3cb-d05c-11f1-ba88-ddaff12d522f",
+   "start": "2026-11-22T15:30",
+   "utc": "2026-11-22T13:30",
+   "venue": "Dobeles sporta halle",
+   "venueId": "097b3017-ab33-11ee-98a3-55391200b033",
+   "stage": "Grupu turnīrs",
+   "pool": "A grupa",
+   "round": "Kārta: 4",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Vilki",
+    "code": "VILKI",
+    "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+    "score": null
+   },
+   "away": {
+    "name": "Skandijs/HQ Chipper Parts",
+    "code": "SKAND",
+    "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+    "score": null
+   }
+  },
+  {
+   "id": "ad1b6743-d05c-11f1-ae58-4b2ad2a88e1d",
+   "start": "2026-11-22T17:00",
+   "utc": "2026-11-22T15:00",
+   "venue": "Dobeles sporta halle",
+   "venueId": "097b3017-ab33-11ee-98a3-55391200b033",
+   "stage": "Grupu turnīrs",
+   "pool": "B grupa",
+   "round": "Kārta: 4",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "TSK Sprīdītis",
+    "code": "TSKSP",
+    "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+    "score": null
+   },
+   "away": {
+    "name": "BK Buki/Sandramebeles.lv",
+    "code": "BKBUK",
+    "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+    "score": null
+   }
+  },
+  {
+   "id": "ad28e788-d05c-11f1-bdf0-75b2f92dd113",
+   "start": "2026-11-22T18:30",
+   "utc": "2026-11-22T16:30",
+   "venue": "Dobeles sporta halle",
+   "venueId": "097b3017-ab33-11ee-98a3-55391200b033",
+   "stage": "Grupu turnīrs",
+   "pool": "B grupa",
+   "round": "Kārta: 4",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Valauto",
+    "code": "VALAU",
+    "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
+    "score": null
+   },
+   "away": {
+    "name": "Īle/Penkule",
+    "code": "ILEPE",
+    "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+    "score": null
+   }
+  },
+  {
+   "id": "ad233751-d05c-11f1-8c4b-1bc159828529",
+   "start": "2026-11-29T11:00",
+   "utc": "2026-11-29T09:00",
+   "venue": "Dobeles sporta halle",
+   "venueId": "097b3017-ab33-11ee-98a3-55391200b033",
+   "stage": "Grupu turnīrs",
+   "pool": "A grupa",
+   "round": "Kārta: 5",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Doks",
+    "code": "DOK",
+    "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+    "score": null
+   },
+   "away": {
+    "name": "Jelgava BJSS U17",
+    "code": "JEL17",
+    "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
+    "score": null
+   }
+  },
+  {
+   "id": "ad1aa463-d05c-11f1-8836-c36b56c42a10",
+   "start": "2026-11-29T12:30",
+   "utc": "2026-11-29T10:30",
+   "venue": "Dobeles sporta halle",
+   "venueId": "097b3017-ab33-11ee-98a3-55391200b033",
+   "stage": "Grupu turnīrs",
+   "pool": "B grupa",
+   "round": "Kārta: 5",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Valauto",
+    "code": "VALAU",
+    "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
+    "score": null
+   },
+   "away": {
+    "name": "Lietus",
+    "code": "LIETS",
+    "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+    "score": null
+   }
+  },
+  {
+   "id": "ad18155e-d05c-11f1-9d8a-791175885d7a",
+   "start": "2026-11-29T14:00",
+   "utc": "2026-11-29T12:00",
+   "venue": "Dobeles sporta halle",
+   "venueId": "097b3017-ab33-11ee-98a3-55391200b033",
+   "stage": "Grupu turnīrs",
+   "pool": "B grupa",
+   "round": "Kārta: 5",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Īle/Penkule",
+    "code": "ILEPE",
+    "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+    "score": null
+   },
+   "away": {
+    "name": "Jelgava BJSS U19",
+    "code": "JEL19",
+    "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+    "score": null
+   }
+  },
+  {
+   "id": "ad201ef9-d05c-11f1-96c0-77346eefb094",
+   "start": "2026-11-29T15:30",
+   "utc": "2026-11-29T13:30",
+   "venue": "Dobeles sporta halle",
+   "venueId": "097b3017-ab33-11ee-98a3-55391200b033",
+   "stage": "Grupu turnīrs",
+   "pool": "A grupa",
+   "round": "Kārta: 5",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Skandijs/HQ Chipper Parts",
+    "code": "SKAND",
+    "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+    "score": null
+   },
+   "away": {
+    "name": "Brocēni",
+    "code": "BROC",
+    "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+    "score": null
+   }
+  },
+  {
+   "id": "ad25ef78-d05c-11f1-947e-13016f4dd91b",
+   "start": "2026-12-06T10:00",
+   "utc": "2026-12-06T08:00",
+   "venue": "Dobeles sporta halle",
+   "venueId": "097b3017-ab33-11ee-98a3-55391200b033",
+   "stage": "Grupu turnīrs",
+   "pool": "A grupa",
+   "round": "Kārta: 6",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Skandijs/HQ Chipper Parts",
+    "code": "SKAND",
+    "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+    "score": null
+   },
+   "away": {
+    "name": "Jelgava BJSS U17",
+    "code": "JEL17",
+    "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
+    "score": null
+   }
+  },
+  {
+   "id": "ad1d00f7-d05c-11f1-8721-7b018cec738e",
+   "start": "2026-12-06T11:30",
+   "utc": "2026-12-06T09:30",
+   "venue": "Dobeles sporta halle",
+   "venueId": "097b3017-ab33-11ee-98a3-55391200b033",
+   "stage": "Grupu turnīrs",
+   "pool": "B grupa",
+   "round": "Kārta: 6",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Īle/Penkule",
+    "code": "ILEPE",
+    "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+    "score": null
+   },
+   "away": {
+    "name": "TSK Sprīdītis",
+    "code": "TSKSP",
+    "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+    "score": null
+   }
+  },
+  {
+   "id": "ad26aaa0-d05c-11f1-b761-15593e83634d",
+   "start": "2026-12-06T13:00",
+   "utc": "2026-12-06T11:00",
+   "venue": "Dobeles sporta halle",
+   "venueId": "097b3017-ab33-11ee-98a3-55391200b033",
+   "stage": "Grupu turnīrs",
+   "pool": "A grupa",
+   "round": "Kārta: 6",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Vilki",
+    "code": "VILKI",
+    "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+    "score": null
+   },
+   "away": {
+    "name": "Jaunpils",
+    "code": "JPL",
+    "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+    "score": null
+   }
+  },
+  {
+   "id": "ad24e505-d05c-11f1-b3ab-f12d5920872e",
+   "start": "2026-12-13T11:00",
+   "utc": "2026-12-13T09:00",
+   "venue": "Jelgavas sporta halle",
+   "venueId": "650a279e-124b-11ed-ab51-85f4d1dadc7b",
+   "stage": "Grupu turnīrs",
+   "pool": "A grupa",
+   "round": "Kārta: 7",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Brocēni",
+    "code": "BROC",
+    "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+    "score": null
+   },
+   "away": {
+    "name": "Vilki",
+    "code": "VILKI",
+    "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
+    "score": null
+   }
+  },
+  {
+   "id": "ad20f229-d05c-11f1-9472-0b2853db22e3",
+   "start": "2026-12-13T12:30",
+   "utc": "2026-12-13T10:30",
+   "venue": "Jelgavas sporta halle",
+   "venueId": "650a279e-124b-11ed-ab51-85f4d1dadc7b",
+   "stage": "Grupu turnīrs",
+   "pool": "A grupa",
+   "round": "Kārta: 7",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Jaunpils",
+    "code": "JPL",
+    "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
+    "score": null
+   },
+   "away": {
+    "name": "Jelgava BJSS U17",
+    "code": "JEL17",
+    "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
+    "score": null
+   }
+  },
+  {
+   "id": "ad1e2d90-d05c-11f1-bd8e-c9f0d33e90dd",
+   "start": "2026-12-13T14:00",
+   "utc": "2026-12-13T12:00",
+   "venue": "Jelgavas sporta halle",
+   "venueId": "650a279e-124b-11ed-ab51-85f4d1dadc7b",
+   "stage": "Grupu turnīrs",
+   "pool": "B grupa",
+   "round": "Kārta: 7",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "BK Buki/Sandramebeles.lv",
+    "code": "BKBUK",
+    "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+    "score": null
+   },
+   "away": {
+    "name": "Īle/Penkule",
+    "code": "ILEPE",
+    "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
+    "score": null
+   }
+  },
+  {
+   "id": "ad27d077-d05c-11f1-849e-073545d6b403",
+   "start": "2026-12-13T15:30",
+   "utc": "2026-12-13T13:30",
+   "venue": "Jelgavas sporta halle",
+   "venueId": "650a279e-124b-11ed-ab51-85f4d1dadc7b",
+   "stage": "Grupu turnīrs",
+   "pool": "B grupa",
+   "round": "Kārta: 7",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Jelgava BJSS U19",
+    "code": "JEL19",
+    "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+    "score": null
+   },
+   "away": {
+    "name": "Lietus",
+    "code": "LIETS",
+    "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
+    "score": null
+   }
+  },
+  {
+   "id": "ad1e6f94-d05c-11f1-8aaf-45da8d1dc0a5",
+   "start": "2027-01-03T11:00",
+   "utc": "2027-01-03T09:00",
+   "venue": "Dobeles sporta halle",
+   "venueId": "097b3017-ab33-11ee-98a3-55391200b033",
+   "stage": "Grupu turnīrs",
+   "pool": "B grupa",
+   "round": "Kārta: 8",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "TSK Sprīdītis",
+    "code": "TSKSP",
+    "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
+    "score": null
+   },
+   "away": {
+    "name": "Jelgava BJSS U19",
+    "code": "JEL19",
+    "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
+    "score": null
+   }
+  },
+  {
+   "id": "ad23a850-d05c-11f1-ba45-f3be058c972b",
+   "start": "2027-01-03T12:30",
+   "utc": "2027-01-03T10:30",
+   "venue": "Dobeles sporta halle",
+   "venueId": "097b3017-ab33-11ee-98a3-55391200b033",
+   "stage": "Grupu turnīrs",
+   "pool": "A grupa",
+   "round": "Kārta: 8",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Doks",
+    "code": "DOK",
+    "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
+    "score": null
+   },
+   "away": {
+    "name": "Skandijs/HQ Chipper Parts",
+    "code": "SKAND",
+    "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
+    "score": null
+   }
+  },
+  {
+   "id": "ad27fde7-d05c-11f1-b924-f747076bd1de",
+   "start": "2027-01-03T14:00",
+   "utc": "2027-01-03T12:00",
+   "venue": "Dobeles sporta halle",
+   "venueId": "097b3017-ab33-11ee-98a3-55391200b033",
+   "stage": "Grupu turnīrs",
+   "pool": "B grupa",
+   "round": "Kārta: 8",
+   "type": "REGULAR",
+   "status": "SCHEDULED",
+   "home": {
+    "name": "Valauto",
+    "code": "VALAU",
+    "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
+    "score": null
+   },
+   "away": {
+    "name": "BK Buki/Sandramebeles.lv",
+    "code": "BKBUK",
+    "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
+    "score": null
+   }
+  }
+ ]
+}

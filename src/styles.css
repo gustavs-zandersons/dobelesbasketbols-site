@@ -2489,6 +2489,11 @@ p.sp-ph { padding: 12px 14px; border-radius: 10px; font-style: italic; }
 
 /* Rows for next games and results. */
 .tm-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+/* Registered players before the first game: names only */
+.tm-names-k { margin: -4px 0 10px; color: var(--fg-muted); font-size: 0.92rem; }
+.tm-names { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 8px; }
+.tm-names a.tm-name { display: block; padding: 11px 14px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); color: var(--fg); font-weight: 600; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tm-names a.tm-name:hover { background: var(--surface-hi); border-color: var(--line-strong); }
 .tm-row {
   display: grid;
   grid-template-columns: 52px minmax(0, 1fr) auto;

@@ -6,9 +6,9 @@
     add --expect-same to fail when the sheet differs from src/sheet.json
         (CI: the template built from src/sheet.json must import back unchanged)
 
-Reads the tabs "Iestatījumi", "Komandas", "Zāles" and "Sponsori". The calendar
-is not synced yet: until the real schedule is in, the site shows demo games
-generated for the real teams (tools/gen-season.js).
+Reads the tabs "Iestatījumi", "Komandas", "Zāles", "Sponsori", "Kalendārs",
+"MVP", "Mēneša MVP" and "Lēmumi". The site's games come from the calendar
+together with basket.lv (tools/basket_sync.py, tools/real-season.js).
 
 Writes src/sheet.json, src/sponsors.json, src/logo-sources.json and any new
 logos (assets/teams/<id>.webp, assets/sponsors/<id>.webp). Logos come from the
@@ -92,6 +92,42 @@ SPONSOR_COLS = [
 LINK_NAMES = {'website': 'Mājaslapa', 'facebook': 'Facebook', 'instagram': 'Instagram', 'tiktok': 'TikTok',
               'logo': 'Logo (saite)'}
 
+# Kalendārs, MVP, Mēneša MVP, Lēmumi
+CAL_COLS = [
+    ('id', ('Spēles ID',), True), ('cup', ('Kauss',), True), ('stage', ('Posms',), True), ('round', ('Kārta',), False),
+    ('tie', ('Pāris',), False), ('n', ('Spēle Nr.',), False), ('date', ('Datums',), True), ('time', ('Laiks',), True),
+    ('hall', ('Zāle',), True), ('home', ('Mājinieki',), True), ('away', ('Viesi',), True), ('status', ('Statuss',), False),
+    ('basket', ('basket.lv saite',), False), ('note', ('Piezīme',), False),
+]
+MVP_COLS = [('cup', ('Kauss',), True), ('date', ('Kārtas datums',), True), ('player', ('Spēlētājs',), True),
+            ('team', ('Komanda',), True), ('game', ('Spēles ID',), False), ('note', ('Piezīme',), False)]
+MONTH_COLS = [('cup', ('Kauss',), True), ('month', ('Mēnesis',), True), ('player', ('Spēlētājs',), True),
+              ('team', ('Komanda',), True), ('note', ('Piezīme',), False)]
+DEC_COLS = [('game', ('Spēles ID',), True), ('kind', ('Veids',), True), ('value', ('Vērtība',), False),
+            ('date', ('Lēmuma datums',), False), ('by', ('Kas pieņēma',), False), ('note', ('Piezīme',), False)]
+CUP_CODES = {'DBČK': 'dbck', 'JSSC': 'jssc'}
+CUP_LABELS = {v: k for k, v in CUP_CODES.items()}
+KG = 'Playoff kvalifikācijas grupa'
+# Posms per cup -> the site's game stage
+STAGES = {
+    'dbck': {'Grupu turnīrs': 'group', KG: 'k', 'Cerību kauss': 'hope', 'Pusfināls': 'playoff',
+             'Spēle par 3. vietu': 'playoff', 'Fināls': 'playoff'},
+    'jssc': {'Astotdaļfināls': 'cup', 'Ceturtdaļfināls': 'cup', 'Pusfināls': 'cup', 'Fināls': 'cup'},
+}
+# Pairs (Pāris) per cup -> the Posms they belong to
+TIES = {
+    'dbck': {'H1': 'Cerību kauss', 'H2': 'Cerību kauss', 'HF': 'Cerību kauss', 'SF1': 'Pusfināls', 'SF2': 'Pusfināls',
+             'BRONZE': 'Spēle par 3. vietu', 'GOLD': 'Fināls'},
+    'jssc': dict([(f'R16_{i}', 'Astotdaļfināls') for i in range(1, 5)] + [(f'QF{i}', 'Ceturtdaļfināls') for i in range(1, 5)] +
+                 [('SF1', 'Pusfināls'), ('SF2', 'Pusfināls'), ('F', 'Fināls')]),
+}
+STATUSES = ('Plānota', 'Ja vajag', 'Pārcelta', 'Atcelta')
+SLOT_RE = re.compile(r'^(?:[AB][1-6]|K[1-8]|[WL]:[A-Z0-9_]+)$')
+GAME_ID_RE = re.compile(r'^[A-Za-z0-9_]+(-[A-Za-z0-9_]+)*$')
+DECISIONS = ('Neieradās mājinieki', 'Neieradās viesi', 'Rezultāts anulēts', 'Rezultāta labojums', 'Izloze')
+MONTHS = ('Janvāris', 'Februāris', 'Marts', 'Aprīlis', 'Maijs', 'Jūnijs', 'Jūlijs', 'Augusts', 'Septembris',
+          'Oktobris', 'Novembris', 'Decembris')
+
 
 class SyncError(Exception):
     """The sheet could not be read at all (bad link, not published, …)."""
@@ -126,7 +162,7 @@ class Report:
         return '\n'.join(out) + '\n'
 
 
-TAB_ORDER = ('Iestatījumi', 'Komandas', 'Zāles', 'Sponsori')
+TAB_ORDER = ('Iestatījumi', 'Komandas', 'Zāles', 'Sponsori', 'Kalendārs', 'MVP', 'Mēneša MVP', 'Lēmumi')
 
 
 def table(items, what):
@@ -205,8 +241,9 @@ def norm(h):
     return text(h).casefold()
 
 
-def read_tab(wb, name, cols, rep):
-    """Rows of one tab as (row number, {key: text}). Columns are found by header."""
+def read_tab(wb, name, cols, rep, raw=()):
+    """Rows of one tab as (row number, {key: text}). Columns are found by header.
+    Keys in `raw` keep the cell's own value (dates and times)."""
     if name not in wb.sheetnames:
         rep.err(name, None, f'Tabulā nav lapas „{name}”. Lapas nosaukumu mainīt nedrīkst.')
         return []
@@ -224,8 +261,13 @@ def read_tab(wb, name, cols, rep):
         return []
     rows = []
     for r, cells in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
-        vals = {k: text(cells[i]) if i < len(cells) else '' for k, i in where.items()}
-        if any(vals.values()):
+        vals = {k: (cells[i] if k in raw else text(cells[i])) if i < len(cells) else '' for k, i in where.items()}
+        for k in raw:
+            if isinstance(vals.get(k), str):
+                vals[k] = text(vals[k])
+            elif vals.get(k) is None:
+                vals[k] = ''
+        if any(v not in ('', None) for v in vals.values()):
             rows.append((r, vals))
     return rows
 
@@ -358,6 +400,209 @@ def read_sponsors(wb, rep):
     return out
 
 
+# ---------------------------------------------------------------- calendar, MVPs, decisions
+
+def parse_date(v):
+    """A cell -> 'YYYY-MM-DD', '' for empty, None when it can't be read."""
+    if v in ('', None):
+        return ''
+    if isinstance(v, datetime):
+        return v.date().isoformat()
+    if isinstance(v, date):
+        return v.isoformat()
+    s = str(v).strip()
+    m = re.match(r'^(\d{1,2})\.(\d{1,2})\.(\d{4})\.?$', s) or re.match(r'^(\d{4})-(\d{1,2})-(\d{1,2})$', s)
+    if not m:
+        return None
+    a, b, c = (int(x) for x in m.groups())
+    y, mo, d = (a, b, c) if a > 31 else (c, b, a)
+    try:
+        return date(y, mo, d).isoformat()
+    except ValueError:
+        return None
+
+
+def parse_time(v):
+    """A cell -> 'HH:MM', '' for empty, None when it can't be read."""
+    from datetime import time as dtime
+    if v in ('', None):
+        return ''
+    if isinstance(v, datetime):
+        v = v.time()
+    if isinstance(v, dtime):
+        return f'{v.hour:02d}:{v.minute:02d}'
+    if isinstance(v, (int, float)) and 0 <= v < 1:        # a time stored as a fraction of a day
+        mins = round(v * 24 * 60)
+        return f'{mins // 60:02d}:{mins % 60:02d}'
+    m = re.match(r'^(\d{1,2})[:.](\d{2})(?::\d{2})?$', str(v).strip())
+    if not m or int(m.group(1)) > 23 or int(m.group(2)) > 59:
+        return None
+    return f'{int(m.group(1)):02d}:{m.group(2)}'
+
+
+def read_calendar(wb, rep, team_ids, hall_ids, season_years):
+    tab = 'Kalendārs'
+    seen, out = {}, []
+    lo, hi = (f'{season_years[0]}-08-01', f'{season_years[1]}-07-31') if season_years else ('0000', '9999')
+    for r, v in read_tab(wb, tab, CAL_COLS, rep, raw=('date', 'time')):
+        gid = v.get('id', '')
+        if not gid:
+            rep.err(tab, r, 'Rindā ir dati, bet nav spēles ID. Ieraksti ID vai izdzēs rindu.')
+            continue
+        if not GAME_ID_RE.match(gid):
+            rep.err(tab, r, f'Spēles ID „{gid}”: drīkst lietot tikai latīņu burtus, ciparus, domuzīmi un apakšsvītru (piem., „DBCK-GR-01”).')
+            continue
+        if gid.casefold() in seen:
+            rep.err(tab, r, f'Spēles ID „{gid}” jau ir {seen[gid.casefold()]}. rindā — katrai spēlei savs ID.')
+            continue
+        seen[gid.casefold()] = r
+        cup = CUP_CODES.get(v.get('cup', ''))
+        if not cup:
+            rep.err(tab, r, f'{gid}: kausam jābūt „DBČK” vai „JSSC” (tagad: „{v.get("cup", "")}”).')
+            continue
+        stage = v.get('stage', '')
+        if stage not in STAGES[cup]:
+            rep.err(tab, r, f'{gid}: posms „{stage}” nav {v["cup"]} posmu sarakstā (izvēlies no saraksta).')
+            continue
+        rnd = None
+        if v.get('round'):
+            m = re.match(r'^(\d+)\.?\s*(kārta)?$', v['round'])
+            if m:
+                rnd = int(m.group(1))
+            else:
+                rep.err(tab, r, f'{gid}: kārta jāraksta kā „1. kārta” (tagad: „{v["round"]}”).')
+        tie = v.get('tie', '')
+        if STAGES[cup][stage] in ('group', 'k'):
+            if tie:
+                rep.warn(tab, r, f'{gid}: grupu spēlēm pāri nenorāda — „{tie}” netiek izmantots.')
+                tie = ''
+            if rnd is None and parse_date(v.get('date')):
+                rep.warn(tab, r, f'{gid}: nav norādīta kārta.')
+        else:
+            if tie not in TIES[cup]:
+                rep.err(tab, r, f'{gid}: izslēgšanas spēlei jānorāda pāris no saraksta (tagad: „{tie}”).')
+                continue
+            if TIES[cup][tie] != stage:
+                rep.err(tab, r, f'{gid}: pāris {tie} pieder posmam „{TIES[cup][tie]}”, nevis „{stage}”.')
+        n = None
+        if v.get('n'):
+            if re.match(r'^[1-3]$', v['n']):
+                n = int(v['n'])
+            else:
+                rep.err(tab, r, f'{gid}: spēles numurs var būt 1, 2 vai 3 (tagad: „{v["n"]}”).')
+        d = parse_date(v.get('date'))
+        if d is None:
+            rep.err(tab, r, f'{gid}: datumu neizdevās nolasīt („{text(v.get("date"))}”). Raksti DD.MM.GGGG.')
+            d = ''
+        elif d and not lo <= d <= hi:
+            rep.err(tab, r, f'{gid}: datums {d} nav šajā sezonā.')
+        t = parse_time(v.get('time'))
+        if t is None:
+            rep.err(tab, r, f'{gid}: laiku neizdevās nolasīt („{text(v.get("time"))}”). Raksti, piem., 11:00.')
+            t = ''
+        hall = v.get('hall', '')
+        if hall and hall not in hall_ids:
+            rep.err(tab, r, f'{gid}: zāle „{hall}” nav lapā „Zāles” (norādi zāles ID).')
+        elif d and not hall:
+            rep.warn(tab, r, f'{gid}: nav norādīta zāle.')
+        sides = []
+        for key, label in (('home', 'Mājinieki'), ('away', 'Viesi')):
+            x = v.get(key, '')
+            if not x:
+                rep.err(tab, r, f'{gid}: nav norādīti {label.lower()} (komandas ID vai vietas kods, piem., A1).')
+            elif x not in team_ids and not SLOT_RE.match(x):
+                rep.err(tab, r, f'{gid}: {label.lower()} „{x}” — nav ne komandas ID, ne vietas kods (A1…B6, K1…K8, W:SF1 …).')
+            elif STAGES[cup][stage] == 'group' and x not in team_ids:
+                rep.err(tab, r, f'{gid}: grupu turnīrā jānorāda komandas ID (tagad: „{x}”).')
+            sides.append(x)
+        if sides[0] and sides[0] == sides[1]:
+            rep.err(tab, r, f'{gid}: mājinieki un viesi ir viena komanda.')
+        status = v.get('status', '') or 'Plānota'
+        if status not in STATUSES:
+            rep.err(tab, r, f'{gid}: statuss „{status}” — izvēlies no saraksta ({", ".join(STATUSES)}).')
+        link = v.get('basket', '')
+        if link and not allowed_link(link):
+            rep.err(tab, r, f'{gid}: basket.lv saitei jāsākas ar https://.')
+        out.append({'id': gid, 'cup': cup, 'stage': stage, 'round': rnd, 'tie': tie, 'n': n, 'date': d, 'time': t,
+                    'hall': hall, 'home': sides[0], 'away': sides[1], 'status': status, 'basket': link,
+                    'note': v.get('note', '')})
+    return out
+
+
+def read_mvps(wb, rep, team_ids, game_ids):
+    tab = 'MVP'
+    out = []
+    for r, v in read_tab(wb, tab, MVP_COLS, rep, raw=('date',)):
+        cup = CUP_CODES.get(v.get('cup', ''))
+        d = parse_date(v.get('date'))
+        ok = True
+        if not cup:
+            rep.err(tab, r, f'Kausam jābūt „DBČK” vai „JSSC” (tagad: „{v.get("cup", "")}”).'); ok = False
+        if not d:
+            rep.err(tab, r, 'Kārtas datumu neizdevās nolasīt. Raksti DD.MM.GGGG.'); ok = False
+        if not v.get('player'):
+            rep.err(tab, r, 'Nav spēlētāja vārda.'); ok = False
+        if v.get('team') not in team_ids:
+            rep.err(tab, r, f'Komanda „{v.get("team", "")}” — norādi komandas ID no saraksta.'); ok = False
+        game = v.get('game', '')
+        if game and game.casefold() not in game_ids:
+            rep.warn(tab, r, f'Spēle „{game}” nav kalendārā — spēli atradīs pēc datuma un komandas.')
+            game = ''
+        if ok:
+            out.append({'cup': cup, 'date': d, 'player': v['player'], 'team': v['team'], 'game': game, 'note': v.get('note', '')})
+    return out
+
+
+def read_month_mvps(wb, rep, team_ids):
+    tab = 'Mēneša MVP'
+    out, seen = [], {}
+    names = {m.casefold(): i + 1 for i, m in enumerate(MONTHS)}
+    for r, v in read_tab(wb, tab, MONTH_COLS, rep):
+        cup = CUP_CODES.get(v.get('cup', ''))
+        m = re.match(r'^(\S+)\s+(\d{4})$', v.get('month', ''))
+        month = f'{m.group(2)}-{names[m.group(1).casefold()]:02d}' if m and m.group(1).casefold() in names else None
+        ok = True
+        if not cup:
+            rep.err(tab, r, f'Kausam jābūt „DBČK” vai „JSSC” (tagad: „{v.get("cup", "")}”).'); ok = False
+        if not month:
+            rep.err(tab, r, f'Mēnesi neizdevās nolasīt („{v.get("month", "")}”) — izvēlies no saraksta.'); ok = False
+        if not v.get('player'):
+            rep.err(tab, r, 'Nav spēlētāja vārda.'); ok = False
+        if v.get('team') not in team_ids:
+            rep.err(tab, r, f'Komanda „{v.get("team", "")}” — norādi komandas ID no saraksta.'); ok = False
+        if ok and (cup, month) in seen:
+            rep.err(tab, r, f'{v["cup"]} {v["month"]}: MVP jau ir {seen[(cup, month)]}. rindā.'); ok = False
+        if ok:
+            seen[(cup, month)] = r
+            out.append({'cup': cup, 'month': month, 'player': v['player'], 'team': v['team'], 'note': v.get('note', '')})
+    return out
+
+
+def read_decisions(wb, rep, game_ids, team_ids):
+    tab = 'Lēmumi'
+    out = []
+    for r, v in read_tab(wb, tab, DEC_COLS, rep, raw=('date',)):
+        game, kind, value = v.get('game', ''), v.get('kind', ''), v.get('value', '')
+        ok = True
+        if game.casefold() not in game_ids:
+            rep.err(tab, r, f'Spēle „{game}” nav kalendārā (norādi spēles ID).'); ok = False
+        if kind not in DECISIONS:
+            rep.err(tab, r, f'Lēmuma veids „{kind}” — izvēlies no saraksta.'); ok = False
+        if kind == 'Rezultāta labojums' and not re.match(r'^\d{1,3}\s*:\s*\d{1,3}$', value):
+            rep.err(tab, r, f'Labojumam vērtībā jāraksta rezultāts, piem., 78:71 (tagad: „{value}”).'); ok = False
+        if kind == 'Izloze':
+            ids = [x.strip() for x in value.split(',') if x.strip()]
+            bad = [x for x in ids if x not in team_ids]
+            if len(ids) < 2 or bad:
+                rep.err(tab, r, f'Izlozei vērtībā jāraksta komandu ID izlozes secībā, piem., „buki, doks” (tagad: „{value}”).'); ok = False
+        d = parse_date(v.get('date'))
+        if d is None:
+            rep.warn(tab, r, 'Lēmuma datumu neizdevās nolasīt.'); d = ''
+        if ok:
+            out.append({'game': game, 'kind': kind, 'value': value, 'date': d, 'by': v.get('by', ''), 'note': v.get('note', '')})
+    return out
+
+
 # ---------------------------------------------------------------- logos
 
 def trim(im, pad=0.02):
@@ -473,6 +718,21 @@ def describe_changes(old, new, rep):
             parts.append('mainītas ' + ', '.join(changed))
         if parts:
             rep.changes.append(f'{label}: ' + '; '.join(parts) + '.')
+    cal_old = {g['id']: g for g in old.get('calendar', [])}
+    cal_new = {g['id']: g for g in new['calendar']}
+    if cal_old != cal_new:
+        changed = [i for i in cal_new if cal_old.get(i) != cal_new[i]]
+        removed = [i for i in cal_old if i not in cal_new]
+        dated = sum(1 for g in new['calendar'] if g['date'])
+        msg = f'Kalendārs: {len(new["calendar"])} spēles ({dated} ar datumu)'
+        if changed:
+            msg += '; mainītas ' + (', '.join(changed) if len(changed) <= 8 else f'{len(changed)} rindas')
+        if removed:
+            msg += '; izņemtas ' + ', '.join(removed)
+        rep.changes.append(msg + '.')
+    for key, label in (('mvps', 'MVP'), ('monthMvps', 'Mēneša MVP'), ('decisions', 'Lēmumi')):
+        if old.get(key, []) != new[key]:
+            rep.changes.append(f'{label}: {len(new[key])} ieraksti.')
 
 
 def dig(d, key):
@@ -499,6 +759,16 @@ def sync(wb, write=True):
             if sp and sp.casefold() not in names:
                 rep.warn('Iestatījumi', None, f'{what} „{sp}” nav lapā „Sponsori” — MVP blokā rādīs tikai nosaukumu.')
 
+    team_ids = {t['id'] for _, t, _ in teams}
+    hall_ids = {h['id'] for h in halls}
+    m = re.match(r'^(\d{4})\s*/\s*(\d{2}|\d{4})$', settings.get('season', ''))
+    years = (int(m.group(1)), int(m.group(2)) if len(m.group(2)) == 4 else int(m.group(1)) // 100 * 100 + int(m.group(2))) if m else None
+    calendar = read_calendar(wb, rep, team_ids, hall_ids, years)
+    game_ids = {g['id'].casefold() for g in calendar}
+    mvps = read_mvps(wb, rep, team_ids, game_ids)
+    month_mvps = read_month_mvps(wb, rep, team_ids)
+    decisions = read_decisions(wb, rep, game_ids, team_ids)
+
     sources = json.loads(SOURCES_JSON.read_text()) if SOURCES_JSON.exists() else {}
     team_logos, sources = get_logos('teams', teams, sources, rep, 'Komandas')
     sp_logos, sources = get_logos('sponsors', sponsors, sources, rep, 'Sponsori')
@@ -514,7 +784,11 @@ def sync(wb, write=True):
             'teams': [t for _, t, _ in teams],
             'venues': halls,
             'sponsors': sorted((s for _, s, _ in sponsors),
-                               key=lambda s: (LEVELS.index(s['level']) if s['level'] in LEVELS else 9, s['order']))}
+                               key=lambda s: (LEVELS.index(s['level']) if s['level'] in LEVELS else 9, s['order'])),
+            'calendar': calendar,
+            'mvps': mvps,
+            'monthMvps': month_mvps,
+            'decisions': decisions}
     if rep.errors:
         return rep, None
     old = json.loads(SHEET_JSON.read_text()) if SHEET_JSON.exists() else None
