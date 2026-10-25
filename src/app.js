@@ -36,6 +36,8 @@
   // for the whole season) come from the sheet's "Iestatījumi" tab.
   var SET = DATA.settings || {};
   var SEASON_LABEL = SET.season || DATA.season;
+  // The season in addresses ("2026-27"): game IDs start again every season, so game pages carry it.
+  var SEASON_ID = String(SEASON_LABEL).replace('/', '-');
   var CUPS = {
     dbck: { hash: 'dobele', short: 'Dobeles čempionu kauss', name: 'Dobeles Basketbola čempionu kauss', logo: 'assets/dbck-logo.webp', mvpSponsor: null, monthMvpSponsor: null },
     jssc: { hash: 'jelgava', short: 'Izaicinājuma kauss', name: 'Jelgavas Sporta servisa centra Izaicinājuma kauss', logo: 'assets/jssc-logo.webp', mvpSponsor: null, monthMvpSponsor: null }
@@ -103,7 +105,7 @@
   function toHref(path) { return PATHS ? path : '#' + path; }
   function cupHome(c) { return c === 'jssc' ? '/jelgava/' : '/'; }
   function cupPath(c, sub) { return '/' + CUPS[c || state.cup].hash + '/' + sub + '/'; }
-  function gameHref(id) { return toHref('/speles/' + id + '/'); }
+  function gameHref(id) { return toHref('/speles/' + SEASON_ID + '/' + id + '/'); }
   // Cup title on the home page: the last two words ("Čempionu kauss",
   // "Izaicinājuma kauss") always start the second line, so both cups break
   // the same way whatever the screen width.
@@ -2655,7 +2657,7 @@
   }
 
   // ---------- Routing ----------
-  // Paths: / and /jelgava/ (cup home), /kalendars/, /speles/<game id>/,
+  // Paths: / and /jelgava/ (cup home), /kalendars/, /speles/<season>/<game id>/,
   // /<cup>/kopvertejums/, /<cup>/komandas/[<team>/], /<cup>/lideri/,
   // /<cup>/statistika/[komandas/], /<cup>/speletaji/<team>/<player>/, /<cup>/sponsori/
   // (<cup> = dobele | jelgava).
@@ -2667,7 +2669,7 @@
     if (h === 'dobele') return '/';
     if (h === 'jelgava') return '/jelgava/';
     if (h === 'kalendars') return '/kalendars/';
-    if ((m = /^spele-([a-z0-9_-]+)$/.exec(h))) return '/speles/' + m[1] + '/';
+    if ((m = /^spele-([a-z0-9_-]+)$/.exec(h))) return '/speles/' + SEASON_ID + '/' + m[1] + '/';
     if ((m = /^(dobele|jelgava)-komanda-([a-z0-9-]+)$/.exec(h))) return '/' + m[1] + '/komandas/' + m[2] + '/';
     if ((m = /^(dobele|jelgava)-speletajs-([a-z0-9-]+)$/.exec(h))) {
       for (var i = 0; i < DATA.teams.length; i++) {
@@ -2698,8 +2700,8 @@
     } else if (parts.length === 1 && a === 'kalendars') {
       if (state.view !== 'calendar') state.cal.month = null;   // fresh visit: current month
       state.view = 'calendar';
-    } else if (a === 'speles' && parts.length === 2 && RAW[b]) {
-      state.view = 'game'; state.gameId = b; state.cup = RAW[b].comp;
+    } else if (a === 'speles' && parts.length === 3 && b === SEASON_ID && RAW[parts[2]]) {
+      state.view = 'game'; state.gameId = parts[2]; state.cup = RAW[parts[2]].comp;
     } else if ((a === 'dobele' || a === 'jelgava') && b) {
       state.cup = cupOf(a);
       var c = parts[2], d = parts[3];
@@ -2733,7 +2735,7 @@
     if (state.notFound) return null;
     if (v === 'home') return cupHome(c);
     if (v === 'calendar') return '/kalendars/';
-    if (v === 'game') return '/speles/' + state.gameId + '/';
+    if (v === 'game') return '/speles/' + SEASON_ID + '/' + state.gameId + '/';
     if (v === 'teams') return cupPath(c, 'komandas');
     if (v === 'team') return cupPath(c, 'komandas/' + state.teamId);
     if (v === 'leaders') return cupPath(c, 'lideri');

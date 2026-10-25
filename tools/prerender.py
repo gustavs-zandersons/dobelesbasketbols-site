@@ -9,7 +9,7 @@ would, and saves what it shows:
     dist/index.html                                  /
     dist/jelgava/index.html                          /jelgava/
     dist/dobele/komandas/valauto/index.html          /dobele/komandas/valauto/
-    dist/speles/dbck-gr-01/index.html                /speles/dbck-gr-01/   (games with a result)
+    dist/speles/2026-27/dbck-gr-01/index.html        /speles/2026-27/dbck-gr-01/   (games with a result)
     …
     dist/404.html, dist/sitemap.xml, dist/robots.txt
 
@@ -43,7 +43,8 @@ LIST_JS = r"""() => {
       t.players.forEach(p => out.push('/' + c + '/speletaji/' + t.id + '/' + (p.key || slug(p.name)) + '/'));
     }
   }
-  ctx.games().filter(g => g.final).forEach(g => out.push('/speles/' + g.id + '/'));
+  const season = String(D.settings.season || D.season).replace('/', '-');
+  ctx.games().filter(g => g.final).forEach(g => out.push('/speles/' + season + '/' + g.id + '/'));
   return out;
 }"""
 

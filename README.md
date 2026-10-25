@@ -31,7 +31,7 @@ and shareable:
 | Līderi | `/dobele/lideri/` |
 | Statistika — players / teams | `/dobele/statistika/`, `/dobele/statistika/komandas/` |
 | Player page | `/dobele/speletaji/valauto/edgars-krumins/` |
-| Game page with box score (once played) | `/speles/dbck-gr-01/` (the sheet's game ID) |
+| Game page with box score (once played) | `/speles/2026-27/dbck-gr-01/` (season + the sheet's game ID) |
 | Sponsori | `/dobele/sponsori/` |
 
 The same paths under `/jelgava/` for the Challenge Cup. Old `#…` links
