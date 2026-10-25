@@ -95,6 +95,7 @@ if (fs.existsSync(seasonPath)) {
   const real = JSON.parse(fs.readFileSync(seasonPath, 'utf8'));
   realGames = real.games.length;
   check(real.live === true, 'season.json is not marked live');
+  check(MULTI, 'the live site is built as one page per address (dist/sitemap.xml)');
   check(pageData.includes('"live":true') && !html.includes('data-today='), 'the built page uses the real season and today\'s date');
   check(!html.includes('class="test-note"'), 'the test notice is gone from the live page');
   const tids = new Set(real.teams.map(t => t.id)), vids = new Set(real.venues.map(v => v.id)), rids = new Set(real.rounds.map(r => r.id));
