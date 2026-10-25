@@ -1,5 +1,34 @@
 # Changelog
 
+## Round 10 — released 25 Oct 2026: the real season goes live
+
+- **Real data on the live site; test mode off.** No "Testa versija" notice, no
+  made-up games or players, no fixed test date: the site uses today's date in
+  Latvia. Previews keep the demo season and its stage bar.
+- **Games** come from the sheet's "Kalendārs" (76 games: IDs, stages, rounds,
+  pairs, slot codes) together with basket.lv. A basket.lv game is tied to its
+  calendar row by cup + the two teams (slot codes such as A1, K4, W:SF1 resolved
+  from the results so far) + the nearest date. basket.lv wins on date, time,
+  hall, home/away, score, quarters and box scores; "Lēmumi" always win
+  (no-shows 20:0, annulled results, corrections, drawing lots).
+- **Players:** each cup's registered players from basket.lv (names and teams
+  only — no birth dates, sizes, nationality or photos). Team pages list them
+  before the first game; shirt numbers are shown per game in box scores only.
+- **MVPs and monthly MVPs** from the sheet's "MVP" / "Mēneša MVP" tabs, with the
+  stats from the box scores.
+- **basket.lv reader** (`tools/basket_sync.py`): games, results and box scores,
+  both of basket.lv's lists (Kalendārs and Rezultāti), the 2026/27 one-season
+  pages, registered players.
+- **Sheet importer** reads Kalendārs, MVP, Mēneša MVP and Lēmumi with Latvian
+  errors per row; the template (`tools/season_sheet.py`) writes them back.
+- **Update button** ("Atjaunot datus no tabulas"): reads the sheet and basket.lv
+  and builds the season (`tools/real-season.js`, report in the job summary).
+  Manual only for now. It can also be started on a test branch, where it saves
+  the data to that branch and does not publish.
+- **Game addresses** use the sheet's IDs: `#spele-dbck-gr-01`.
+- Team rebounds are part of team totals (game pages, team and stats pages), as on
+  basket.lv. A drawn lot ("Izloze") decides a tie that the rules leave level.
+
 ## Round 9 — released 22 Oct 2026 (PR #13)
 
 - **New page "Statistika"** (menu, after Līderi; `#dobele-statistika`,
