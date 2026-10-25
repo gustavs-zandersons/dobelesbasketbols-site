@@ -42,7 +42,7 @@ jobs:
         with:
           node-version: '20'
       - name: Install Python packages
-        run: pip install openpyxl==3.1.5 pillow==11.0.0
+        run: pip install openpyxl==3.1.5 pillow==11.0.0 playwright==1.56.0
       - name: Read the sheet
         env:
           SHEET_URL: ${{ secrets.SHEET_URL }}
@@ -59,6 +59,8 @@ jobs:
       - name: The season from the sheet and basket.lv
         run: node tools/real-season.js > src/season.json
       - name: Build and check the site
+        env:
+          PRERENDER_CHANNEL: chrome
         run: |
           python3 tools/build.py
           node tools/check.js

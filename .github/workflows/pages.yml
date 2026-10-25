@@ -30,10 +30,13 @@ jobs:
           node-version: '20'
       - name: Check the season sheet template and importer agree
         run: |
-          pip install openpyxl==3.1.5 pillow==11.0.0
+          pip install openpyxl==3.1.5 pillow==11.0.0 playwright==1.56.0
           python3 tools/season_sheet.py "$RUNNER_TEMP/sheet.xlsx"
           python3 tools/sheet_sync.py --file "$RUNNER_TEMP/sheet.xlsx" --expect-same
+      # One page per address, pre-rendered in a headless browser (the runner's Chrome).
       - name: Build site
+        env:
+          PRERENDER_CHANNEL: chrome
         run: python3 tools/build.py
       - name: Run checks
         run: node tools/check.js

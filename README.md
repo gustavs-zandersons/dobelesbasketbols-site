@@ -19,16 +19,30 @@ verification TXT record.
 
 ## What's in it
 
+Every page has its own address (since 26 Oct 2026), readable by search engines
+and shareable:
+
 | Page | Address |
 |---|---|
-| Home — Dobele cup | `#dobele` |
-| Home — Jelgava cup | `#jelgava` |
-| Game page with box score | `#spele-g68` |
-| Calendar (both cups, team filter) | `#kalendars` |
-| Kopvērtējums — Dobele / Jelgava | `#dobele-kopvertejums`, `#jelgava-kopvertejums` |
-| Sponsori (same on both cups, in the cup's colours) | `#dobele-sponsori`, `#jelgava-sponsori` |
-| Komandas — team list | `#dobele-komandas`, `#jelgava-komandas` |
-| Team page (stats for that cup, switch to the other) | `#dobele-komanda-buki`, `#jelgava-komanda-buki` |
+| Home — Dobele cup / Jelgava cup | `/`, `/jelgava/` |
+| Calendar (both cups, team filter) | `/kalendars/` |
+| Kopvērtējums | `/dobele/kopvertejums/`, `/jelgava/kopvertejums/` |
+| Komandas — team list / a team | `/dobele/komandas/`, `/dobele/komandas/buki/` |
+| Līderi | `/dobele/lideri/` |
+| Statistika — players / teams | `/dobele/statistika/`, `/dobele/statistika/komandas/` |
+| Player page | `/dobele/speletaji/valauto/edgars-krumins/` |
+| Game page with box score (once played) | `/speles/2026-27/dbck-gr-01/` (season + the sheet's game ID) |
+| Sponsori | `/dobele/sponsori/` |
+
+The same paths under `/jelgava/` for the Challenge Cup. Old `#…` links
+(`#dobele-komanda-buki`, `#kalendars`, `#spele-…`) forward to the new addresses.
+
+Each address is a real page in `dist/` with its content already rendered, its own
+title, description, canonical address and link-preview tags (Open Graph, with
+one image per cup: `assets/og/`), plus `sitemap.xml` and `robots.txt`. Player
+pages enter the sitemap once the player has played in that cup; game pages once
+the game has a result. In the browser the app takes over and moves between pages
+without reloading.
 
 Team pages are calculated from results and box scores per cup: record, last
 five games, team averages with the cup average and rank, leaders (top three per
@@ -53,8 +67,8 @@ for the Dobele group stage and K group (incl. Hope Cup games) and the Jelgava
 template, so the button is hidden there for now. With the test date both cups
 show the button; `/?demo` adds the bar to jump between season stages.
 
-Add `?demo` to the address (e.g. `/?demo#dobele`) to show the prototype bar and
-jump between season stages: pre-season, group stage, K group, playoffs, season end.
+The prototype bar (jump between season stages: pre-season, group stage, K group,
+playoffs, season end) is in the Claude previews of the demo season.
 
 ## How it works
 
@@ -90,7 +104,11 @@ src/
   logo-sources.json  which Drive link each downloaded logo came from (written by sheet_sync.py)
   poster-photos.json photo pool for the posters (generated)
 tools/
-  build.py           builds dist/ (GitHub Pages) or dist-preview/
+  build.py           builds dist/ (GitHub Pages: one page per address) or a preview fragment
+  prerender.py       renders every page in a headless browser for dist/ (Playwright)
+  real-season.js     builds src/season.json from the sheet and basket.lv
+  basket_sync.py     reads games, results, box scores and players from basket.lv
+  og_images.py       draws the link-preview images (assets/og/), run by hand
   prepare_assets.py  web copies of sponsor logos and poster photos
   gen-season.js      regenerates the mock season
   check.js           sanity checks run in CI
@@ -98,13 +116,15 @@ tools/
   sheet_sync.py      reads the season sheet into src/sheet.json + logos (Latvian error report)
 assets/              web-optimised logos and poster photos (published)
 design/sponsors/     original sponsor logo files (not published)
+design/fonts/         Anton and Barlow Condensed (SIL Open Font License) for tools/og_images.py
 .github/workflows/   pages.yml: build + deploy · sync.yml: "Atjaunot datus no tabulas"
 ```
 
 ## Working on it locally
 
 ```bash
-python3 tools/build.py              # → dist/index.html, open it in a browser
+python3 tools/build.py              # → dist/ (needs: pip install playwright); serve it:
+python3 -m http.server 8000 --directory dist   # then open http://localhost:8000/
 node tools/check.js                 # sanity checks
 node tools/gen-season.js > src/sample-data.json   # regenerate the demo season
 python3 tools/sheet_sync.py --file sheet.xlsx      # import a downloaded copy of the sheet

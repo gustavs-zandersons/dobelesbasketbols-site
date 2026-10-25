@@ -14,10 +14,10 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
     <nav class="cup-switch" aria-label="Izvēlies kausu">
-      <a class="cup-btn" href="#dobele" data-cup="dbck" aria-label="{{DBCK_NAME}}" title="{{DBCK_NAME}}">
+      <a class="cup-btn" href="{{HREF_HOME}}" data-cup="dbck" aria-label="{{DBCK_NAME}}" title="{{DBCK_NAME}}">
         <img src="assets/dbck-mark.webp" alt="" width="46" height="46"><span class="cup-btn-label">Čempionu kauss</span>
       </a>
-      <a class="cup-btn" href="#jelgava" data-cup="jssc" aria-label="{{JSSC_NAME}}" title="{{JSSC_NAME}}">
+      <a class="cup-btn" href="{{HREF_JELGAVA}}" data-cup="jssc" aria-label="{{JSSC_NAME}}" title="{{JSSC_NAME}}">
         <img src="assets/jssc-mark.webp" alt="" width="46" height="46"><span class="cup-btn-label">Izaicinājuma kauss</span>
       </a>
     </nav>
@@ -79,17 +79,17 @@
   </div>
   <nav class="drawer-sec" aria-label="Lapas">
     <button class="nav-item" type="button" data-nav="home" aria-current="page">Sākums</button>
-    <a class="nav-item" href="#kalendars" data-nav="cal">Kalendārs</a>
-    <a class="nav-item" href="#dobele-kopvertejums" data-nav="std" id="nav-std">Kopvērtējums</a>
-    <a class="nav-item" href="#dobele-komandas" data-nav="tm" id="nav-tm">Komandas</a>
-    <a class="nav-item" href="#dobele-lideri" data-nav="ld" id="nav-ld">Līderi</a>
-    <a class="nav-item" href="#dobele-statistika" data-nav="sts" id="nav-sts">Statistika</a>
-    <a class="nav-item" href="#dobele-sponsori" data-nav="sp" id="nav-sp">Sponsori</a>
+    <a class="nav-item" href="{{HREF_CAL}}" data-nav="cal">Kalendārs</a>
+    <a class="nav-item" href="{{HREF_STD}}" data-nav="std" id="nav-std">Kopvērtējums</a>
+    <a class="nav-item" href="{{HREF_TM}}" data-nav="tm" id="nav-tm">Komandas</a>
+    <a class="nav-item" href="{{HREF_LD}}" data-nav="ld" id="nav-ld">Līderi</a>
+    <a class="nav-item" href="{{HREF_STS}}" data-nav="sts" id="nav-sts">Statistika</a>
+    <a class="nav-item" href="{{HREF_SP}}" data-nav="sp" id="nav-sp">Sponsori</a>
   </nav>
   <nav class="drawer-sec" aria-label="Kausi">
     <p class="eyebrow">Kausi</p>
-    <a class="nav-item nav-cup" href="#dobele" data-cup="dbck"><img src="assets/dbck-mark.webp" alt="" width="34" height="34">Dobeles čempionu kauss</a>
-    <a class="nav-item nav-cup" href="#jelgava" data-cup="jssc"><img src="assets/jssc-mark.webp" alt="" width="34" height="34">Jelgavas Izaicinājuma kauss</a>
+    <a class="nav-item nav-cup" href="{{HREF_HOME}}" data-cup="dbck"><img src="assets/dbck-mark.webp" alt="" width="34" height="34">Dobeles čempionu kauss</a>
+    <a class="nav-item nav-cup" href="{{HREF_JELGAVA}}" data-cup="jssc"><img src="assets/jssc-mark.webp" alt="" width="34" height="34">Jelgavas Izaicinājuma kauss</a>
   </nav>
 </aside>
 
