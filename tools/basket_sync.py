@@ -11,9 +11,13 @@ embed-api.eui.connect.sportradar.com. No browser and no key are needed.
 
 Per cup and update:
   1. the page link (sheet: Iestatījumi → "DBČK/JSSC basket.lv saite") → website id
-  2. the game list for the season named like the sheet's "Sezona" (2026/27 →
-     "…2026/2027"): date, time, hall, round, teams, score, status
-  3. the box score of every final game (status CONFIRMED) that is not saved yet;
+  2. the season named like the sheet's "Sezona" (2026/27 → "…2026/2027"); a page
+     made for one season lists no seasons, and then its own season is used
+  3. both of the season's game lists — "Kalendārs" (games still to play) and
+     "Rezultāti" (played games): a game moves from the first to the second once
+     it is played. Per game: date, time, hall, stage, group, round, teams, score,
+     status
+  4. the box score of every final game (status CONFIRMED) that is not saved yet;
      games from the last few days are read again in case a result was corrected
 
 Writes src/basket/<cup>/fixtures.json (the list) and
@@ -162,7 +166,7 @@ def pick_season(listing, years):
     return None
 
 
-def norm_fixture(f):
+def norm_fixture(f, stages=None):
     comp = {('home' if c.get('isHome') else 'away'): c for c in f.get('competitors') or []}
     side = lambda c: {'name': (c.get('name') or '').strip(), 'code': c.get('code'), 'entity': c.get('entityId'),
                       'score': int(c['score']) if str(c.get('score') or '').isdigit() else None}
@@ -172,6 +176,8 @@ def norm_fixture(f):
         'utc': (f.get('startTimeUTC') or '')[:16],
         'venue': (f.get('venue') or '').strip(),
         'venueId': f.get('venueId'),
+        'stage': (stages or {}).get(f.get('stageCode')) or f.get('stageCode'),
+        'pool': (f.get('pool') or '').strip() or None,
         'round': f.get('round'),
         'type': f.get('fixtureType'),
         'status': (f.get('status') or {}).get('value'),
@@ -232,14 +238,34 @@ def read_cup(client, cup, link, years, rep, check_only, today):
     wid = website_id(client, link)
     listing = client.get(API.format(wid=wid, page='fixtures'), 'Spēļu saraksts')
     season = pick_season(listing, years)
-    if not season:
-        names = ', '.join(s.get('nameLocal', '?') for s in ((listing.get('seasons') or {}).get('seasons') or []))
-        rep.warn(cup, f'basket.lv vēl nav sezonas {years[0]}/{years[1]} (ir: {names or "nav"}). Kad to izveidos, spēles parādīsies.')
+    listed = (listing.get('seasons') or {}).get('seasons') or []
+    if not season and listed:
+        names = ', '.join(s.get('nameLocal', '?') for s in listed)
+        rep.warn(cup, f'basket.lv vēl nav sezonas {years[0]}/{years[1]} (ir: {names}). Kad to izveidos, spēles parādīsies.')
         return None
-    if season.get('seasonId') != listing.get('seasonId'):
-        listing = client.get(API.format(wid=wid, page='fixtures') + '?state=' + token({'s': season['seasonId'], 'l': 'lv-LV'}), 'Spēļu saraksts')
-    fixtures = [norm_fixture(f) for f in listing.get('fixtures') or []]
+    if not season:
+        # A page made for one season lists no seasons: the season it shows is its own.
+        season = {'seasonId': listing.get('seasonId'), 'nameLocal': f'{years[0]}/{years[1]}'}
+    # The season's two lists: games still to play and played games. A game moves
+    # from the first to the second once it is played, so both are read.
+    by_id, stages = {}, {}
+    for sub, label in (('FIXTURES', 'Kalendārs'), ('RESULTS', 'Rezultāti')):
+        part = client.get(API.format(wid=wid, page='fixtures') + '?state=' +
+                          token({'s': season['seasonId'], 'l': 'lv-LV', 'z': sub}), f'Spēļu saraksts ({label})')
+        for o in ((part.get('stageTabs') or {}).get('options')) or []:
+            if o.get('value') not in (None, 'All'):
+                stages[o['value']] = o.get('label')
+        for f in part.get('fixtures') or []:
+            by_id[f['fixtureId']] = f              # a played game: the Rezultāti copy wins
+    fixtures = [norm_fixture(f, stages) for f in by_id.values()]
     fixtures.sort(key=lambda f: (f['start'], f['id']))
+    if not listed:
+        lo, hi = f'{years[0]}-08-01', f'{years[1]}-07-31'
+        odd = [f for f in fixtures if f['start'] and not lo <= f['start'][:10] <= hi]
+        if odd:
+            rep.warn(cup, f'basket.lv lapā ir spēles ārpus sezonas {years[0]}/{years[1]} (piem., {odd[0]["start"][:10]}). '
+                          'Vai saite ir uz šīs sezonas kausa lapu? Mājaslapā paliek iepriekš nolasītie dati.')
+            return None
     gdir = OUT / cup / 'games'
     saved = {p.stem for p in gdir.glob('*.json')} if gdir.exists() else set()
     recent = (today - timedelta(days=RECHECK_DAYS)).isoformat()
