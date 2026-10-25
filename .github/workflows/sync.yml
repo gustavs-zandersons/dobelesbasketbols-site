@@ -1,9 +1,10 @@
 name: Atjaunot datus no tabulas
 
 # Reads the season sheet (Google Sheets) and basket.lv and updates the site:
-# settings, teams, halls, sponsors and logos; games and box scores from basket.lv
-# (saved in src/basket, shown on the site once the calendar sync is switched on). Until the real calendar syncs, the demo games are
-# re-generated for the sheet's teams.
+# settings, teams, halls, sponsors and logos; the calendar, MVPs and decisions;
+# games, results, box scores and registered players from basket.lv (saved in
+# src/basket). tools/real-season.js combines them into the site's season
+# (src/season.json). The demo season (src/sample-data.json) is kept for previews.
 #
 # Run it from the Actions tab: "Atjaunot datus no tabulas" -> Run workflow.
 # If the sheet has errors, nothing changes on the site; the run fails and its
@@ -51,8 +52,12 @@ jobs:
       # reached the saved data stays and the update carries on.
       - name: Read basket.lv
         run: python3 tools/basket_sync.py
-      - name: Demo games for the sheet's teams
+      - name: Demo games for the sheet's teams (previews)
         run: node tools/gen-season.js > src/sample-data.json
+      # The site's season: the sheet's calendar, MVPs and decisions with basket.lv's
+      # games, results, box scores and players. Report in the job summary.
+      - name: The season from the sheet and basket.lv
+        run: node tools/real-season.js > src/season.json
       - name: Build and check the site
         run: |
           python3 tools/build.py

@@ -1,7 +1,12 @@
 """Build the site.
 
-    python3 tools/build.py            -> dist/          full standalone site (GitHub Pages)
-    python3 tools/build.py --preview  -> dist-preview/  page fragment for Claude previews
+    python3 tools/build.py                 -> dist/               full standalone site (GitHub Pages)
+    python3 tools/build.py --preview       -> dist-preview/       page fragment for Claude previews (demo season)
+    python3 tools/build.py --preview-live  -> dist-preview-live/  page fragment with the real season
+
+The live site uses the real season (src/season.json, built by tools/real-season.js
+from the sheet and basket.lv) and today's date. Without it, the demo season with a
+fixed test date and the test notice (the site before the season was connected).
 
 The page is a single HTML file with styles, scripts and season data inlined,
 plus the assets/ folder next to it.
@@ -15,10 +20,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / 'src'
 
-# Mock "today" for the test deployment: Dobele K group after round 1, next
-# round = K group round 2 + the first Hope Cup semifinal; Challenge Cup after
-# the first leg of the 1/8 finals, next round = second leg. Remove once real
-# data syncs.
+# Fallback only (no src/season.json): mock "today" for the demo season.
 MOCK_TODAY = '2027-01-05'
 
 NOTICE = ('<div class="test-note" role="note">Testa versija — rezultāti, spēlētāji un statistika ir izdomāti. '
@@ -139,9 +141,17 @@ def site_settings(sheet, sponsors):
     return {'season': st['season'], 'cups': cups, 'sponsorsText': st.get('sponsorsText', '')}
 
 
-def render(preview):
+def season_data(real):
+    """The real season if it has been built, else the demo season. -> (data, is_real)"""
+    path = SRC / 'season.json'
+    if real and path.exists():
+        return json.loads(path.read_text()), True
+    return json.loads((SRC / 'sample-data.json').read_text()), False
+
+
+def render(preview, real):
     tpl = (SRC / 'template.html').read_text()
-    data = json.loads((SRC / 'sample-data.json').read_text())
+    data, real = season_data(real)
     sheet = json.loads((SRC / 'sheet.json').read_text())
     sponsors = json.loads((SRC / 'sponsors.json').read_text())
     photos = json.loads((SRC / 'poster-photos.json').read_text())
@@ -164,23 +174,24 @@ def render(preview):
             .replace('{{SPONSORS_HTML}}', sponsors_html(sponsors))
             .replace('{{RIDGE_A}}', ridge(7))
             .replace('{{RIDGE_B}}', ridge(11, base=36, amp=24))
-            .replace('{{NOTICE}}', '' if preview else NOTICE))
+            .replace('{{NOTICE}}', '' if preview or real else NOTICE))
     head, body = page.split('<!--BODY-->', 1)
     if preview:
         return head + body
-    return (HEAD.format(today_attr=f' data-today="{MOCK_TODAY}"' if MOCK_TODAY else '')
+    return (HEAD.format(today_attr='' if real else f' data-today="{MOCK_TODAY}"')
             + head + '</head>\n<body>\n' + body + '\n</body>\n</html>\n')
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--preview', action='store_true', help='build the fragment used for Claude previews')
+    ap.add_argument('--preview', action='store_true', help='build the fragment used for Claude previews (demo season)')
+    ap.add_argument('--preview-live', action='store_true', help='build a preview fragment with the real season')
     args = ap.parse_args()
-    out = ROOT / ('dist-preview' if args.preview else 'dist')
+    out = ROOT / ('dist-preview-live' if args.preview_live else 'dist-preview' if args.preview else 'dist')
     if out.exists():
         shutil.rmtree(out)
     out.mkdir()
-    (out / 'index.html').write_text(render(args.preview))
+    (out / 'index.html').write_text(render(args.preview or args.preview_live, real=not args.preview))
     shutil.copytree(ROOT / 'assets', out / 'assets')
     if not args.preview:
         (out / '.nojekyll').write_text('')

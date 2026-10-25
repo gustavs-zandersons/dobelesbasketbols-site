@@ -19,7 +19,15 @@
   // Deployed test site: a fixed mock date from <html data-today> and no
   // prototype bar unless the address has ?demo. Previews keep the bar.
   var FIXED_TODAY = document.documentElement.getAttribute('data-today');
-  var SHOW_DEMO = !FIXED_TODAY || /[?&]demo\b/.test(window.location.search);
+  // Live site: the real season (sheet + basket.lv) and today's date in Latvia.
+  var LIVE = !!DATA.live && !FIXED_TODAY;
+  var SHOW_DEMO = !LIVE && (!FIXED_TODAY || /[?&]demo\b/.test(window.location.search));
+  function liveToday() {
+    try { return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Riga' }); } catch (e) {
+      var d = new Date();
+      return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+    }
+  }
 
   // Per-cup settings. Full names, the season and the MVP sponsor (one per cup
   // for the whole season) come from the sheet's "Iestatījumi" tab.
@@ -950,7 +958,18 @@
     return t;
   }
   function playerName(teamId, idx) { return team(teamId).players[idx].name; }
-  function playerNo(teamId, idx) { return team(teamId).players[idx].no; }
+  function playerNo(teamId, idx) { return team(teamId).players[idx].no || ''; }
+  // Shirt number in one game (basket.lv records it per game); the demo keeps one per player.
+  function gameNo(raw, side, teamId, idx) {
+    var b = raw.bib && raw.bib[side];
+    return b && b[idx] != null ? b[idx] : playerNo(teamId, idx);
+  }
+  // Team rebounds (not credited to a player) belong in the team's totals, as on basket.lv.
+  function addTeamReb(t, raw, side) {
+    var r = raw.treb && raw.treb[side];
+    if (r) { t[10] += r[0]; t[11] += r[1]; }
+    return t;
+  }
 
   // "1. pusfināls · 1. spēle", "Grupu turnīrs · 4. kārta · A grupa", "Astotdaļfināls · 1. spēle" …
   function gameStage(g, rnd) {
@@ -1033,7 +1052,7 @@
     }).join('') + '</div></section>';
 
     // Team comparison
-    var th = totals(raw.box.h), ta = totals(raw.box.a);
+    var th = addTeamReb(totals(raw.box.h), raw, 'h'), ta = addTeamReb(totals(raw.box.a), raw, 'a');
     var CMP = [
       { l: 'Divpunktu metieni', m: 4, a: 5 },
       { l: 'Trīspunktu metieni', m: 6, a: 7 },
@@ -1069,14 +1088,14 @@
       cmpRows + '</div></section>';
 
     // Box scores
-    function boxTable(tid, rows, score) {
+    function boxTable(tid, rows, score, side) {
       var on = played(rows), dnp = rows.filter(function (r) { return r[2] == null; });
       var st = on.filter(function (r) { return r[1]; }).sort(function (x, y) { return y[3] - x[3]; });
       var bn = on.filter(function (r) { return !r[1]; }).sort(function (x, y) { return y[3] - x[3]; });
-      var t = totals(rows);
+      var t = addTeamReb(totals(rows), raw, side);
       function tr(r, cls) {
         var isMvp = mvp && mvp.team === tid && mvp.idx === r[0];
-        return '<tr class="' + cls + '"><td class="pl"><span class="row"><span class="no">' + esc(playerNo(tid, r[0])) + '</span>' + playerLink(tid, r[0], g.comp, 'nm') + '' + (isMvp ? '<span class="mvp-chip" title="Kārtas MVP">MVP</span>' : '') + '</span></td>' +
+        return '<tr class="' + cls + '"><td class="pl"><span class="row"><span class="no">' + esc(gameNo(raw, side, tid, r[0])) + '</span>' + playerLink(tid, r[0], g.comp, 'nm') + '' + (isMvp ? '<span class="mvp-chip" title="Kārtas MVP">MVP</span>' : '') + '</span></td>' +
           '<td>' + mins(r[2]) + '</td><td class="pts">' + r[3] + '</td>' +
           '<td>' + r[4] + '/' + r[5] + '</td><td>' + r[6] + '/' + r[7] + '</td><td>' + r[8] + '/' + r[9] + '</td>' +
           '<td>' + r[10] + '</td><td>' + r[11] + '</td><td class="pts">' + (r[10] + r[11]) + '</td>' +
@@ -1086,7 +1105,7 @@
       var body = st.map(function (r) { return tr(r, 'st'); }).join('') +
         bn.map(function (r, i) { return tr(r, i === 0 ? 'bench-start' : ''); }).join('') +
         dnp.map(function (r) {
-          return '<tr class="dnp"><td class="pl"><span class="row"><span class="no">' + esc(playerNo(tid, r[0])) + '</span>' + playerLink(tid, r[0], g.comp, 'nm') + '</span></td><td colspan="15">Nepiedalījās</td></tr>';
+          return '<tr class="dnp"><td class="pl"><span class="row"><span class="no">' + esc(gameNo(raw, side, tid, r[0])) + '</span>' + playerLink(tid, r[0], g.comp, 'nm') + '</span></td><td colspan="15">Nepiedalījās</td></tr>';
         }).join('') +
         '<tr class="tot"><td class="pl">Komanda kopā</td><td>' + Math.round(t[2] / 60) + '</td><td class="pts">' + t[3] + '</td>' +
         '<td>' + t[4] + '/' + t[5] + '</td><td>' + t[6] + '/' + t[7] + '</td><td>' + t[8] + '/' + t[9] + '</td>' +
@@ -1103,7 +1122,7 @@
         '</tr></thead><tbody>' + body + '</tbody></table></div></div>';
     }
     html += '<section aria-labelledby="g-b"><h2 class="g-title" id="g-b">Spēlētāju statistika</h2><div class="bx-grid">' +
-      boxTable(hId, raw.box.h, g.hs) + boxTable(aId, raw.box.a, g.as) + '</div>' +
+      boxTable(hId, raw.box.h, g.hs, 'h') + boxTable(aId, raw.box.a, g.as, 'a') + '</div>' +
       '<p class="note">Treknrakstā — pamatsastāvs. 2P / 3P / SM — divu un trīs punktu metieni un soda metieni (iemesti/mesti). AB — atlēkušās bumbas (Uzb — uzbrukumā, Aizs — aizsardzībā). RP — rezultatīvas piespēles, PK — pārķertās bumbas, BL — bloķētie metieni, KĻ — kļūdas, PZ — piezīmes, EF — efektivitāte, +/− — punktu starpība, spēlētājam atrodoties laukumā.</p></section>';
 
     $('game-view').innerHTML = html;
@@ -1740,6 +1759,7 @@
           p.gp++;
           for (var i = 2; i < 19; i++) { t.tot[i] += r[i]; p.sum[i] += r[i]; }
         });
+        if (raw.treb && raw.treb[s[0]]) { t.tot[10] += raw.treb[s[0]][0]; t.tot[11] += raw.treb[s[0]][1]; }
       });
     });
     statsMemo[key] = T;
@@ -1862,7 +1882,14 @@
       }).join('') + '</ul>' : '<div class="empty"><strong>' + (cup === 'jssc' ? 'Izaicinājuma kausā' : 'Čempionu kausā') + ' komandai nākamās spēles vēl nav ieplānotas.</strong></div>') + '</section>';
 
     if (!s.list.length) {
-      html += '<div class="empty"><strong>' + (cup === 'jssc' ? 'Izaicinājuma kausā' : 'Čempionu kausā') + ' komanda vēl nav aizvadījusi nevienu spēli.</strong>Statistika parādīsies pēc pirmās spēles.</div>' + nextHtml;
+      // Before the first game: the registered players (basket.lv), names only.
+      var names = t.players.map(function (pl, i) { return { i: i, name: pl.name }; })
+        .sort(function (x, y) { return x.name.localeCompare(y.name, 'lv'); });
+      var n = names.length, word = n % 10 === 1 && n % 100 !== 11 ? 'spēlētājs' : 'spēlētāji';
+      var rosterHtml = n ? '<section class="tm-sec" aria-labelledby="tm-rost"><h2 class="g-title" id="tm-rost">Sastāvs</h2>' +
+        '<p class="tm-names-k">' + n + ' reģistrēti ' + word + '</p><ul class="tm-names">' +
+        names.map(function (x) { return '<li>' + playerLink(id, x.i, null, 'tm-name') + '</li>'; }).join('') + '</ul></section>' : '';
+      html += '<div class="empty"><strong>' + (cup === 'jssc' ? 'Izaicinājuma kausā' : 'Čempionu kausā') + ' komanda vēl nav aizvadījusi nevienu spēli.</strong>Statistika parādīsies pēc pirmās spēles.</div>' + nextHtml + rosterHtml;
       $('teams-view').innerHTML = html;
       return;
     }
@@ -2126,9 +2153,11 @@
   function slug(s) {
     return String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   }
+  // A player's address part: the name, or its own key when two players in a team share a name.
+  function playerKey(p) { return p.key || slug(p.name); }
   function playerHref(teamId, idx, comp) {
     var t = DATA.teams.filter(function (x) { return x.id === teamId; })[0];
-    return '#' + CUPS[comp || state.cup].hash + '-speletajs-' + teamId + '-' + slug(t.players[idx].name);
+    return '#' + CUPS[comp || state.cup].hash + '-speletajs-' + teamId + '-' + playerKey(t.players[idx]);
   }
   // Player name as a link to his statistics page (everywhere except the MVP blocks).
   function playerLink(teamId, idx, comp, cls, inner) {
@@ -2140,11 +2169,13 @@
       var t = DATA.teams[i];
       if (rest.indexOf(t.id + '-') !== 0) continue;
       var s = rest.slice(t.id.length + 1);
-      for (var j = 0; j < t.players.length; j++) if (slug(t.players[j].name) === s) return { team: t.id, idx: j };
+      for (var j = 0; j < t.players.length; j++) if (playerKey(t.players[j]) === s) return { team: t.id, idx: j };
     }
     return null;
   }
   function signed(x, unit) { return (x > 0 ? '+' : x < 0 ? '−' : '±') + fmt1(Math.abs(x)) + (unit || ''); }
+  // Has the cup had any game with a result yet (as of the site's today)?
+  function cupPlayed(cup) { return ctx.games().some(function (g) { return g.comp === cup && g.final; }); }
   function cupDates(cup) {
     var ds = DATA.games.filter(function (g) { return g.comp === cup; }).map(function (g) { return g.date; }).sort();
     return { first: ds[0], last: ds[ds.length - 1] };
@@ -2238,7 +2269,10 @@
     var box = $('sts-table');
     if (!box) return;
     var cup = state.cup, f = state.sts, rg = stsRange(), S = cupStats(cup, rg.from, rg.to), teams = f.mode === 'teams';
-    var none = '<div class="empty"><strong>Šajā periodā ' + (cup === 'jssc' ? 'Izaicinājuma kausā' : 'Čempionu kausā') + ' nav aizvadīta neviena spēle.</strong>Izvēlies citus datumus.</div>';
+    var cupName = cup === 'jssc' ? 'Izaicinājuma kausā' : 'Čempionu kausā';
+    var none = cupPlayed(cup)
+      ? '<div class="empty"><strong>Šajā periodā ' + cupName + ' nav aizvadīta neviena spēle.</strong>Izvēlies citus datumus.</div>'
+      : '<div class="empty"><strong>' + cupName + ' vēl nav aizvadīta neviena spēle.</strong>Statistika parādīsies pēc pirmās spēles.</div>';
     var html;
     if (teams) {
       var rows = Object.keys(S).map(function (tid) { return S[tid]; }).filter(function (s) { return s.list.length; });
@@ -2407,7 +2441,9 @@
         '<div><dd>' + avg([10, 11]) + '</dd><dt>Atl. bumbas</dt></div><div><dd>' + avg([12]) + '</dd><dt>Rez. piesp.</dt></div>' +
         '<div><dd>' + avg([17]) + '</dd><dt>Efektivitāte</dt></div></dl></div>' : '') + '</section>';
     if (!all.length) {
-      $('stats-view').innerHTML = html + '<div class="empty"><strong>' + (cup === 'jssc' ? 'Izaicinājuma kausā' : 'Čempionu kausā') + ' spēlētājs vēl nav spēlējis.</strong>Otra kausa statistiku vari redzēt, izvēloties kausu augšā.</div>';
+      var other = cup === 'jssc' ? 'dbck' : 'jssc';
+      $('stats-view').innerHTML = html + '<div class="empty"><strong>' + (cup === 'jssc' ? 'Izaicinājuma kausā' : 'Čempionu kausā') + ' spēlētājs vēl nav spēlējis.</strong>' +
+        (playerLog(other, pl.team, pl.idx).length ? 'Otra kausa statistiku vari redzēt, izvēloties kausu augšā.' : 'Statistika parādīsies pēc viņa pirmās spēles.') + '</div>';
       return;
     }
     var rg = periodRange();
@@ -2612,7 +2648,7 @@
   // #dobele / #jelgava = cup home; #spele-g12 = a single game.
   function route() {
     var h = (window.location.hash || '').replace('#', '');
-    var m = /^spele-(g\d+)$/.exec(h), fp;
+    var m = /^spele-([a-z0-9_-]+)$/.exec(h), fp;
     if (m && RAW[m[1]]) {
       state.view = 'game'; state.gameId = m[1]; state.cup = RAW[m[1]].comp;
     } else if (h === 'kalendars') {
@@ -2651,7 +2687,7 @@
 
   // ---------- Render ----------
   function render() {
-    ctx = window.Engine.create(DATA, SHOW_DEMO ? (DEMO[state.demo] || DEMO.group) : FIXED_TODAY);
+    ctx = window.Engine.create(DATA, SHOW_DEMO ? (DEMO[state.demo] || DEMO.group) : LIVE ? liveToday() : FIXED_TODAY);
     document.documentElement.setAttribute('data-cup', state.cup);
     document.querySelectorAll('a[data-cup]').forEach(function (a) {
       if (a.getAttribute('data-cup') === state.cup) a.setAttribute('aria-current', 'page');

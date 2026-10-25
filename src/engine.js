@@ -64,7 +64,9 @@
     data.teams.forEach(function (t, i) { teams.set(t.id, Object.assign({ order: i }, t)); });
 
     var games = data.games.map(function (g) {
-      var final = g.date < today && g.hs != null && g.as != null;
+      // A result counts from the next day; a game marked done (a confirmed basket.lv
+      // result or a decision) counts at once.
+      var final = g.hs != null && g.as != null && (g.date < today || !!g.done);
       return Object.assign({}, g, { final: final });
     });
     var memo = new Map();
@@ -118,7 +120,10 @@
           }, []);
         }
       }
-      // 8.6.4 — lot. Until a lot is drawn, keep the draw order.
+      // 8.6.4 — lot ("Lēmumi" → Izloze: team ids in the order drawn). Until a lot
+      // is drawn, keep the draw order.
+      var lot = (data.lots || []).filter(function (l) { return ids.every(function (id) { return l.indexOf(id) >= 0; }); })[0];
+      if (lot) return ids.slice().sort(function (x, y) { return lot.indexOf(x) - lot.indexOf(y); });
       return ids.slice().sort(function (x, y) { return orderOf(x) - orderOf(y); });
     }
 
