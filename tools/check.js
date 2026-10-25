@@ -1,9 +1,11 @@
 // Sanity checks run in CI before every deploy:
 //   node tools/check.js
-// 1) the built page's inline scripts parse, 2) the engine runs at several
-// points of the demo season, 3) every demo box score adds up to its final score,
-// 4) sponsor logos and poster photos exist, 5) sponsors page data is valid,
-// 6) teams from the sheet, 7) the real season (src/season.json) is consistent.
+// 1) the built site's scripts parse, 2) the engine runs at several points of the
+// demo season, 3) every demo box score adds up to its final score, 4) sponsor
+// logos and poster photos exist, 5) sponsors page data is valid, 6) teams from
+// the sheet, 7) the real season (src/season.json) is consistent, 8) every page
+// of the live site: title, description, canonical address, link-preview tags,
+// sitemap and robots.txt, and every link to another page of the site works.
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -15,11 +17,17 @@ function check(ok, msg) {
   if (!ok) { failures++; console.error('FAIL ' + msg); }
 }
 
-// 1. Built page
-const html = fs.readFileSync(path.join(__dirname, '..', 'dist', 'index.html'), 'utf8');
-const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
-check(scripts.length >= 2, 'expected inline scripts in dist/index.html');
-scripts.forEach((s, i) => { try { new Function(s); } catch (e) { check(false, 'script ' + i + ' does not parse: ' + e.message); } });
+// 1. Built site: one page per address with shared scripts (dist/sitemap.xml), or
+// the single-page fallback with everything inline.
+const DIST = path.join(__dirname, '..', 'dist');
+const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
+const MULTI = fs.existsSync(path.join(DIST, 'sitemap.xml'));
+const scriptFiles = [...html.matchAll(/<script src="\/([^"]+)"><\/script>/g)].map(m => m[1]);
+const scripts = MULTI ? scriptFiles.map(f => fs.readFileSync(path.join(DIST, f), 'utf8'))
+  : [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
+check(scripts.length >= (MULTI ? 4 : 2), 'expected the site\'s scripts in dist/index.html');
+scripts.forEach((s, i) => { try { new Function(s); } catch (e) { check(false, 'script ' + (scriptFiles[i] || i) + ' does not parse: ' + e.message); } });
+const pageData = MULTI ? scripts[0] : html;   // data file (live site) or the inline data
 
 // 2. Engine at different dates
 const expect = {
@@ -59,7 +67,7 @@ const photos = require('../src/poster-photos.json');
 check(sponsors.length > 0, 'sponsor list is empty');
 check(photos.length > 0, 'poster photo pool is empty');
 sponsors.concat(photos).forEach(a => check(fs.existsSync(path.join(root, a.src)), 'missing file ' + a.src));
-check(html.includes('id="poster-data"') && html.includes('window.Poster'), 'poster script and data are in the page');
+check(MULTI ? pageData.includes('"poster":') && scripts.join('').includes('window.Poster') : html.includes('id="poster-data"') && html.includes('window.Poster'), 'poster script and data are in the page');
 
 // 5. Sponsors page data (the sheet's "Sponsori" tab, src/sheet.json): every row
 // has a logo, a known level, and links are full https addresses.
@@ -71,7 +79,7 @@ info.forEach(r => {
   check(['Ģenerālsponsors', 'Atbalstītājs'].includes(r.level), 'sponsor ' + r.id + ': unknown level ' + r.level);
   ['website', 'facebook', 'instagram', 'tiktok'].forEach(k => check(!r[k] || /^https:\/\/\S+$/.test(r[k]), 'sponsor ' + r.id + ': ' + k + ' must start with https://'));
 });
-check(html.includes('id="sponsor-data"'), 'sponsor data is in the page');
+check(MULTI ? pageData.includes('"sponsors":') : html.includes('id="sponsor-data"'), 'sponsor data is in the page');
 
 // 6. Teams from the sheet's "Komandas" tab: the page has all of them, links are full https addresses.
 check(sheet.teams.every(s => data.teams.some(t => t.id === s.id && t.name === s.name && t.short === s.short)),
@@ -87,7 +95,7 @@ if (fs.existsSync(seasonPath)) {
   const real = JSON.parse(fs.readFileSync(seasonPath, 'utf8'));
   realGames = real.games.length;
   check(real.live === true, 'season.json is not marked live');
-  check(html.includes('"live":true') && !html.includes('data-today='), 'the built page uses the real season and today\'s date');
+  check(pageData.includes('"live":true') && !html.includes('data-today='), 'the built page uses the real season and today\'s date');
   check(!html.includes('class="test-note"'), 'the test notice is gone from the live page');
   const tids = new Set(real.teams.map(t => t.id)), vids = new Set(real.venues.map(v => v.id)), rids = new Set(real.rounds.map(r => r.id));
   const ids = new Set();
@@ -117,5 +125,50 @@ if (fs.existsSync(seasonPath)) {
   });
 }
 
+// 8. Every page of the live site.
+let pageCount = 0;
+if (MULTI) {
+  const SITE = 'https://dobelesbasketbols.lv';
+  const pages = [];
+  (function walk(dir) {
+    fs.readdirSync(dir, { withFileTypes: true }).forEach(e => {
+      const f = path.join(dir, e.name);
+      if (e.isDirectory() && e.name !== 'assets') walk(f);
+      else if (e.name === 'index.html') pages.push('/' + path.relative(DIST, dir).split(path.sep).filter(Boolean).map(x => x + '/').join(''));
+    });
+  })(DIST);
+  pageCount = pages.length;
+  const exists = p => p.startsWith('/assets/') ? fs.existsSync(path.join(DIST, p.split(/[?#]/)[0])) : fs.existsSync(path.join(DIST, p.split(/[?#]/)[0], 'index.html'));
+  const sitemap = [...fs.readFileSync(path.join(DIST, 'sitemap.xml'), 'utf8').matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1].replace(SITE, ''));
+  check(sitemap.length > 10, 'sitemap.xml lists the pages');
+  check(fs.readFileSync(path.join(DIST, 'robots.txt'), 'utf8').includes('Sitemap: ' + SITE + '/sitemap.xml'), 'robots.txt points to the sitemap');
+  const titles = {};
+  const bad = new Set();
+  pages.forEach(p => {
+    const t = fs.readFileSync(path.join(DIST, p, 'index.html'), 'utf8');
+    if (p === '/dobele/') { check(t.includes('url=/'), '/dobele/ forwards to the front page'); return; }
+    const get = re => (re.exec(t) || [])[1];
+    const title = get(/<title>([^<]*)<\/title>/), desc = get(/<meta name="description" content="([^"]*)"/);
+    const robots = get(/<meta name="robots" content="([^"]*)"/), canon = get(/<link rel="canonical" href="([^"]*)"/);
+    check(title && title.length > 10, p + ': title');
+    check(desc && desc.length > 50, p + ': description');
+    check(t.includes('property="og:title"') && t.includes('property="og:image"') && t.includes('property="og:description"'), p + ': link-preview tags');
+    check(/<h1[\s>]/.test(t.replace(/<section class="hero"[\s\S]*?<\/section>/, '')) || p === '/' || p === '/jelgava/', p + ': a heading in the page content');
+    if (robots === 'index, follow') {
+      check(canon && canon.startsWith(SITE + '/'), p + ': canonical address');
+      if (canon === SITE + p) {
+        check(sitemap.includes(p), p + ': in the sitemap');
+        if (titles[title]) check(false, p + ': same title as ' + titles[title]); else titles[title] = p;
+      }
+    } else check(!sitemap.includes(p), p + ': not indexed, so not in the sitemap');
+    [...t.matchAll(/href="(\/[^"]*)"/g)].forEach(m => { if (!m[1].startsWith('//') && !exists(m[1])) bad.add(p + ' → ' + m[1]); });
+    [...t.matchAll(/src="(\/[^"]*)"/g)].forEach(m => { if (!exists(m[1])) bad.add(p + ' → ' + m[1]); });
+  });
+  sitemap.forEach(p => check(pages.includes(p), 'sitemap address has a page: ' + p));
+  check(!bad.size, 'links to pages that do not exist:\n  ' + [...bad].slice(0, 20).join('\n  '));
+  const nf = fs.readFileSync(path.join(DIST, '404.html'), 'utf8');
+  check(nf.includes('content="noindex'), '404.html is kept out of search results');
+}
+
 if (failures) { console.error(failures + ' check(s) failed'); process.exit(1); }
-console.log('All checks passed (demo ' + data.games.length + ' games' + (realGames ? ', real season ' + realGames + ' games' : '') + ').');
+console.log('All checks passed (demo ' + data.games.length + ' games' + (realGames ? ', real season ' + realGames + ' games' : '') + (pageCount ? ', ' + pageCount + ' pages' : '') + ').');

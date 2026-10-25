@@ -1,24 +1,33 @@
 """Build the site.
 
-    python3 tools/build.py                 -> dist/               full standalone site (GitHub Pages)
+    python3 tools/build.py                 -> dist/               the live site (GitHub Pages)
     python3 tools/build.py --preview       -> dist-preview/       page fragment for Claude previews (demo season)
     python3 tools/build.py --preview-live  -> dist-preview-live/  page fragment with the real season
 
 The live site uses the real season (src/season.json, built by tools/real-season.js
-from the sheet and basket.lv) and today's date. Without it, the demo season with a
-fixed test date and the test notice (the site before the season was connected).
+from the sheet and basket.lv) and today's date. It is one HTML page per address
+(/, /jelgava/, /kalendars/, /dobele/komandas/valauto/, /speles/dbck-gr-01/ …), each
+with its content already rendered (tools/prerender.py, a headless browser), its own
+title, description, canonical address and link-preview tags, plus sitemap.xml,
+robots.txt and 404.html. Styles, scripts and data are shared files under assets/.
+In the browser the same app takes over and moves between pages without reloading.
 
-The page is a single HTML file with styles, scripts and season data inlined,
-plus the assets/ folder next to it.
+Previews are a single file with everything inlined and the addresses after "#"
+(#/dobele/komandas/valauto/). Without src/season.json the live build falls back to
+the demo season as a single page with a fixed test date and the test notice.
 """
 import argparse
+import hashlib
 import json
 import random
+import re
 import shutil
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / 'src'
+import sys  # noqa: E402
+sys.path.insert(0, str(ROOT / 'tools'))
 
 # Fallback only (no src/season.json): mock "today" for the demo season.
 MOCK_TODAY = '2027-01-05'
@@ -149,8 +158,20 @@ def season_data(real):
     return json.loads((SRC / 'sample-data.json').read_text()), False
 
 
+SITE_URL = 'https://dobelesbasketbols.lv'
+PAGE_LINKS = {'HOME': '/', 'JELGAVA': '/jelgava/', 'CAL': '/kalendars/', 'STD': '/dobele/kopvertejums/',
+              'TM': '/dobele/komandas/', 'LD': '/dobele/lideri/', 'STS': '/dobele/statistika/', 'SP': '/dobele/sponsori/'}
+
+
+def fill_links(page, paths):
+    """Menu and header links: real paths on the live site, "#/path" in previews."""
+    for key, path in PAGE_LINKS.items():
+        page = page.replace('{{HREF_' + key + '}}', path if paths else '#' + path)
+    return page
+
+
 def render(preview, real):
-    tpl = (SRC / 'template.html').read_text()
+    tpl = fill_links((SRC / 'template.html').read_text(), paths=False)
     data, real = season_data(real)
     sheet = json.loads((SRC / 'sheet.json').read_text())
     sponsors = json.loads((SRC / 'sponsors.json').read_text())
@@ -182,6 +203,59 @@ def render(preview, real):
             + head + '</head>\n<body>\n' + body + '\n</body>\n</html>\n')
 
 
+def site_parts():
+    """Everything the live pages share: the template with settings filled in, styles,
+    scripts and the data file."""
+    data, real = season_data(True)
+    sheet = json.loads((SRC / 'sheet.json').read_text())
+    sponsors = json.loads((SRC / 'sponsors.json').read_text())
+    photos = json.loads((SRC / 'poster-photos.json').read_text())
+    data['settings'] = site_settings(sheet, sponsors)
+    footer = sheet['settings'].get('footer', {})
+    names = data['settings']['cups']
+    tpl = fill_links((SRC / 'template.html').read_text(), paths=True)
+    tpl = (tpl.replace('{{SEASON}}', esc(data['settings']['season']))
+           .replace('{{DBCK_NAME}}', esc(names['dbck']['name']))
+           .replace('{{JSSC_NAME}}', esc(names['jssc']['name']))
+           .replace('{{FOOTER_TEXT}}', f'<p>{esc(footer["text"])}</p>' if footer.get('text') else '')
+           .replace('{{SOCIALS}}', socials_html(footer.get('links', {})))
+           .replace('{{SPONSORS_HTML}}', sponsors_html(sponsors))
+           .replace('{{RIDGE_A}}', ridge(7))
+           .replace('{{RIDGE_B}}', ridge(11, base=36, amp=24))
+           .replace('{{NOTICE}}', ''))
+    head, body = tpl.split('<!--BODY-->', 1)
+    body = body[:body.index('<script id="season-data"')].rstrip() + '\n'
+    fonts = [line.strip() for line in head.splitlines() if 'fonts.g' in line]
+    site_data = {'season': data, 'poster': {'sponsors': sponsors, 'photos': photos},
+                 'sponsors': sponsor_page(sheet['sponsors'], sponsors)}
+    files = {
+        'css': ('site', 'css', (SRC / 'styles.css').read_text()),
+        'data': ('js/data', 'js', 'window.SITE_DATA = ' + as_json(site_data) + ';\n'),
+        'engine': ('js/engine', 'js', (SRC / 'engine.js').read_text()),
+        'poster': ('js/poster', 'js', (SRC / 'poster.js').read_text()),
+        'app': ('js/app', 'js', (SRC / 'app.js').read_text()),
+    }
+    return real, body, fonts, files
+
+
+def build_pages(out):
+    """The live site: shared files under assets/ and one pre-rendered page per address."""
+    real, body, fonts, files = site_parts()
+    if not real:
+        return False
+    urls = {}
+    for key, (name, ext, text) in files.items():
+        h = hashlib.sha256(text.encode()).hexdigest()[:10]
+        rel = f'assets/{name}.{h}.{ext}'
+        (out / rel).parent.mkdir(parents=True, exist_ok=True)
+        (out / rel).write_text(text)
+        urls[key] = '/' + rel
+    import prerender                       # tools/prerender.py (Playwright)
+    n = prerender.prerender(out, SITE_URL, body, fonts, urls)
+    print('pre-rendered', n, 'pages')
+    return True
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--preview', action='store_true', help='build the fragment used for Claude previews (demo season)')
@@ -191,10 +265,15 @@ def main():
     if out.exists():
         shutil.rmtree(out)
     out.mkdir()
-    (out / 'index.html').write_text(render(args.preview or args.preview_live, real=not args.preview))
     shutil.copytree(ROOT / 'assets', out / 'assets')
-    if not args.preview:
+    live = not (args.preview or args.preview_live)
+    if live:
         (out / '.nojekyll').write_text('')
+        if build_pages(out):
+            size = sum(f.stat().st_size for f in out.rglob('*.html'))
+            print('built', out.relative_to(ROOT), len(list(out.rglob('*.html'))), 'pages,', size, 'bytes of HTML')
+            return
+    (out / 'index.html').write_text(render(not live, real=not args.preview))
     print('built', out.relative_to(ROOT), (out / 'index.html').stat().st_size, 'bytes')
 
 
