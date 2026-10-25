@@ -1,5 +1,26 @@
 # Changelog
 
+## Round 11 — released 25 Oct 2026: real addresses, open to Google
+
+- **Every page has its own address:** `/`, `/jelgava/`, `/kalendars/`,
+  `/dobele/kopvertejums/`, `/dobele/komandas/` and `/dobele/komandas/<team>/`,
+  `/dobele/lideri/`, `/dobele/statistika/` and `…/statistika/komandas/`,
+  `/dobele/speletaji/<team>/<player>/`, `/dobele/sponsori/`, the same under
+  `/jelgava/`, and game pages `/speles/2026-27/<game id>/` (the season is in the
+  address because game IDs start again every season). Old `#…` links forward.
+- **Readable by search engines:** each address is a real page with its content
+  already in the HTML (pre-rendered in a headless browser at build time), its own
+  title and description, a canonical address, and schema.org match data on game
+  pages. `sitemap.xml` (player pages once the player has played in that cup, game
+  pages once played), `robots.txt`, a 404 page; the "noindex" block is gone.
+- **Link previews** (Facebook, WhatsApp, Messenger): page title and description
+  with one image per cup (`assets/og/dobele.png`, `jelgava.png`).
+- In the browser nothing changes: the app moves between pages without reloading,
+  the back button works. Previews keep one file, addresses after `#`.
+- Shared styles, scripts and data are cache-busted files under `assets/`.
+- Checks cover every page (title, description, canonical, preview tags, heading),
+  the sitemap, robots.txt and every link between pages.
+
 ## Round 10 — released 25 Oct 2026: the real season goes live
 
 - **Real data on the live site; test mode off.** No "Testa versija" notice, no
