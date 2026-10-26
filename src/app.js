@@ -2652,59 +2652,54 @@
   }
 
   // ---------- Par mums (about) ----------
-  // One page for both cups. Text, names and roles live here for now; photos go to
-  // assets/about/<file> (square, at least 400 px) — until then a round placeholder.
+  // One page for both cups. Text, names, roles, quotes and awards live here for
+  // now; photos go to assets/about/<file> (square, at least 400 px) — until then
+  // a round placeholder.
   var ABOUT = {
-    statement: 'Dobelē basketbols nekad neguļ.',
     intro: [
-      'Katru sezonu komandas no Dobeles, Jelgavas un apkārtnes pēc darba, studijām un garas nedēļas satiekas laukumā, lai spēlētu to, ko mīl.',
-      'Mūsu mērķis ir ienest amatieru basketbolā to, ko redzam profesionāļu spēlēs: sakārtotu kalendāru, kvalitatīvu tiesāšanu, elektronisko statistiku un rezultātus tajā pašā vakarā. Lai katrs spēlētājs var no jauna izdzīvot savu aizrautību ar basketbolu un vienkārši izbaudīt spēli.'
+      'Mūsu mērķis ir ienest amatieru basketbolā to, ko redzam profesionāļu spēlēs: kvalitatīvu tiesāšanu, spēļu tiešraides, sīvu konkurenci laukumā un aktīvu turnīra dzīvi sociālajos tīklos.',
+      'To visu darām aiz tīra entuziasma un mīlestības pret basketbolu.',
+      'Mūsu mājas ir Dobele, taču gribam laukumā pulcēt arī komandas no citiem novadiem, lai pēc lekcijām, darba un garas nedēļas kopā spēlētu spēli, ko mīlam.'
     ],
-    teamLine: 'Nekas no tā nebūtu iespējams bez komandas.',
     organizers: [
-      { name: 'Vārds Uzvārds', role: 'Turnīra organizators', photo: '', bio: '' },
-      { name: 'Vārds Uzvārds', role: 'Turnīra organizators', photo: '', bio: '' }
+      { name: 'Vārds Uzvārds', role: 'Turnīra organizators', photo: '', quote: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore.' },
+      { name: 'Vārds Uzvārds', role: 'Turnīra organizators', photo: '', quote: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam, quis nostrud exercitation.' }
     ],
-    teamSub: 'Cilvēki, kuri katrā spēļu dienā zālē ir pirmie un aiziet pēdējie.',
-    groups: [
-      { title: 'Galvenais tiesnesis', sub: '', people: [{ name: 'Vārds Uzvārds', role: 'Galvenais tiesnesis', photo: '' }] },
-      { title: 'Sekretariāts', sub: 'Pie sekretariāta galdiņa: spēles protokols, laiks, 24 sekundes un elektroniskā statistika.', people: [
-        { name: 'Vārds Uzvārds', role: 'Sekretariāts', photo: '' },
-        { name: 'Vārds Uzvārds', role: 'Sekretariāts', photo: '' },
-        { name: 'Vārds Uzvārds', role: 'Sekretariāts', photo: '' }
-      ] }
+    awards: [
+      { year: '2024', title: 'Dobeles novada populārākais amatieru sporta turnīrs' },
+      { year: '2023', title: 'Dobeles novada populārākais amatieru sporta turnīrs' }
+    ],
+    teamSub: 'Īpašs paldies cilvēkiem, bez kuriem neviena spēļu diena nenotiktu.',
+    team: [
+      { name: 'Vārds Uzvārds', role: 'Galvenais tiesnesis', photo: '' },
+      { name: 'Vārds Uzvārds', role: 'Sekretariāts', photo: '' },
+      { name: 'Vārds Uzvārds', role: 'Sekretariāts', photo: '' }
     ],
     thanks: 'Paldies spēlētājiem, skatītājiem un atbalstītājiem. Tiekamies laukumā!'
   };
   var PERSON_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="4.2"/><path d="M3.8 21c.7-4.6 4-7.3 8.2-7.3s7.5 2.7 8.2 7.3z"/></svg>';
-  function lvCount(n, one, many) { return n + ' ' + (n % 10 === 1 && n % 100 !== 11 ? one : many); }
+  var CUP_ICON = '<svg class="ab-award-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10v4.2a5 5 0 0 1-10 0z"/><path d="M7 5.2H4.2v1.3A3.6 3.6 0 0 0 7.6 10M17 5.2h2.8v1.3a3.6 3.6 0 0 1-3.4 3.5"/><path d="M12 12.7v3.6M8.2 20.5h7.6M9.3 16.3h5.4v4.2H9.3z"/></svg>';
   function aboutPerson(p) {
     var photo = p.photo
       ? '<img class="ab-photo" src="' + esc(p.photo) + '" alt="' + esc(p.name) + '" loading="lazy">'
       : '<span class="ab-photo ab-photo--empty" aria-hidden="true">' + PERSON_ICON + '</span>';
     return '<figure class="ab-person">' + photo + '<figcaption><span class="ab-name">' + esc(p.name) + '</span>' +
-      '<span class="ab-role">' + esc(p.role) + '</span>' + (p.bio ? '<span class="ab-bio">' + esc(p.bio) + '</span>' : '') + '</figcaption></figure>';
+      '<span class="ab-role">' + esc(p.role) + '</span>' +
+      (p.quote ? '<q class="ab-quote">' + esc(p.quote) + '</q>' : '') + '</figcaption></figure>';
   }
   function renderAbout() {
-    var players = DATA.teams.reduce(function (a, t) { return a + t.players.length; }, 0);
-    var facts = [lvCount(2, 'kauss', 'kausi'), lvCount(DATA.teams.length, 'komanda', 'komandas'),
-      players ? lvCount(players, 'spēlētājs', 'spēlētāji') : '', lvCount(DATA.games.length, 'spēle', 'spēles')].filter(Boolean);
     var html = '<div class="page-head"><p class="eyebrow">Dobeles basketbols</p><h1 class="page-title">Par mums</h1></div>' +
-      '<section class="ab-intro" aria-label="Par mums">' +
-      '<p class="ab-statement">' + esc(ABOUT.statement) + '</p>' +
-      '<div class="ab-text">' + ABOUT.intro.map(function (t) { return '<p>' + esc(t) + '</p>'; }).join('') +
-      '<p class="ab-team-line">' + esc(ABOUT.teamLine) + '</p></div>' +
-      '<ul class="ab-facts" aria-label="Sezona ' + esc(SEASON_LABEL) + '">' + facts.map(function (f) {
-        var i = f.indexOf(' ');
-        return '<li><b>' + f.slice(0, i) + '</b><span>' + esc(f.slice(i + 1)) + '</span></li>';
+      '<div class="ab-text">' + ABOUT.intro.map(function (t) { return '<p>' + esc(t) + '</p>'; }).join('') + '</div>' +
+      // The two organizers: photo, name, title and a quote (no section title).
+      '<section class="ab-people ab-people--lg" aria-label="Turnīra organizatori">' + ABOUT.organizers.map(aboutPerson).join('') + '</section>' +
+      '<section class="ab-sec" aria-labelledby="ab-awards"><h2 class="g-title" id="ab-awards">Sasniegumi</h2>' +
+      '<ul class="ab-awards">' + ABOUT.awards.map(function (a) {
+        return '<li class="ab-award">' + CUP_ICON + '<span class="ab-award-year">' + esc(a.year) + '</span>' +
+          '<span class="ab-award-title">' + esc(a.title) + '</span></li>';
       }).join('') + '</ul></section>' +
-      '<section class="ab-sec" aria-labelledby="ab-org"><h2 class="g-title" id="ab-org">Organizatori</h2>' +
-      '<div class="ab-people ab-people--lg">' + ABOUT.organizers.map(aboutPerson).join('') + '</div></section>' +
-      '<section class="ab-sec" aria-labelledby="ab-team"><h2 class="g-title" id="ab-team">Komanda</h2>' +
-      '<p class="ab-sub">' + esc(ABOUT.teamSub) + '</p><div class="ab-groups">' + ABOUT.groups.map(function (g) {
-        return '<div class="ab-group"><h3 class="ab-gt">' + esc(g.title) + '</h3>' + (g.sub ? '<p class="ab-gsub">' + esc(g.sub) + '</p>' : '') +
-          '<div class="ab-people">' + g.people.map(aboutPerson).join('') + '</div></div>';
-      }).join('') + '</div></section>' +
+      '<section class="ab-sec" aria-labelledby="ab-team"><h2 class="g-title" id="ab-team">Mūsu komanda</h2>' +
+      '<p class="ab-sub">' + esc(ABOUT.teamSub) + '</p>' +
+      '<div class="ab-people">' + ABOUT.team.map(aboutPerson).join('') + '</div></section>' +
       '<p class="ab-thanks"><span>' + esc(ABOUT.thanks) + '</span><a class="head-link" href="' + toHref(cupPath(state.cup, 'sponsori')) + '">Mūsu atbalstītāji ›</a></p>';
     $('about-view').innerHTML = html;
   }
