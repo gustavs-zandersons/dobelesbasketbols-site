@@ -1628,13 +1628,6 @@ a.tie.is-final:hover { box-shadow: inset 0 4px 0 var(--accent-fill), 0 0 0 2px v
 }
 .seg button[aria-pressed="true"] { background: var(--accent-fill); color: var(--on-accent); }
 .seg .sm { display: none; }
-/* Calendar cup switch: three boxes of exactly the same width; on phones the
-   cup names wrap onto two lines when needed. */
-.cal-filters .seg { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
-.cal-filters .seg button { min-width: 0; text-align: center; }
-@media (max-width: 559px) {
-  .cal-filters .seg button { padding: 6px 8px; font-size: 0.8rem; letter-spacing: 0.02em; white-space: normal; line-height: 1.1; }
-}
 @media (max-width: 559px) {
   .team-pick { max-width: none; }
   .seg { flex: 1 1 100%; }
