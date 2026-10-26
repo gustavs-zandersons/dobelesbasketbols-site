@@ -821,10 +821,17 @@ a.res:hover .res-go { color: var(--fg); }
 .fx-team { display: flex; align-items: center; gap: 10px; min-width: 0; font-weight: 600; font-size: 1.02rem; }
 .fx-team .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fx-team.is-tbd { color: var(--fg-dim); font-weight: 500; font-style: italic; }
+/* Home page, next round: the full team name on every screen; a long one
+   wraps onto a second line instead of being cut. */
+#block-next .nm-full { display: inline; }
+#block-next .nm-short { display: none; }
+#block-next .fx-team .nm { white-space: normal; overflow: visible; overflow-wrap: break-word; min-width: 0; line-height: 1.2; }
 .fx-home { grid-area: home; }
 .fx-away { grid-area: away; }
 .fx-vs { display: none; }
-@media (min-width: 760px) {
+/* Wide screens: one line per game (home – away side by side). Below 960px the
+   two teams stack, so full names have room on tablets too. */
+@media (min-width: 960px) {
   .fx {
     grid-template-columns: 76px minmax(0, 1fr) 28px minmax(0, 1fr) minmax(0, 150px);
     grid-template-areas: "time home vs away tag";
