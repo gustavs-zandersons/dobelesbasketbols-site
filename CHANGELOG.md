@@ -1,5 +1,23 @@
 # Changelog
 
+## Round 12 — released 26 Oct 2026: new poster photos, Latvian accents, calendar
+
+- **New poster photos:** 6 for the next-round posters (photo strip) and 12 for
+  the results posters (full photo), shared by both cups; each with its own crop.
+  Last season's photo strip and the three earlier results photos are gone.
+- **Latvian accents sit on the letter again:** headings showed the bar of Ā, Ē,
+  Ī, Ū pushed to the right (e.g. "IZAICINĀJUMA KAUSS"). The site now serves its
+  own fonts (`assets/fonts/*.woff2`, made by `tools/prepare_assets.py fonts`)
+  instead of Google Fonts: one file per weight with every Latvian letter.
+  No requests to Google any more.
+- **Calendar:** the cup switch is gone; the calendar always shows both cups. The
+  team picker starts on "Visas komandas" every time the calendar is opened (no
+  longer remembered between visits).
+- **Calendar day pop-up:** logo + short team name on every screen, nothing cut
+  off with "…"; places not decided yet ("A grupas 3. vieta") wrap.
+- **Home page, next round:** full team names on phones too; long names wrap.
+  Home – away on one line from 960px; tablets stack the two teams.
+
 ## Round 11 — released 25 Oct 2026: real addresses, open to Google
 
 - **Every page has its own address:** `/`, `/jelgava/`, `/kalendars/`,
