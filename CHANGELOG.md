@@ -1,5 +1,16 @@
 # Changelog
 
+## Round 14 — released 27 Oct 2026: new sponsor Spēka Stacija
+
+- **Spēka Stacija** (fitnesa studija, Dobele) joins the sponsors as
+  Atbalstītājs, 15th in the order: footer, Sponsori page (with its description
+  and Instagram link from the sheet) and the poster sponsor bands.
+- Logo `assets/sponsors/speka-stacija.webp` (259×200, transparent), made with
+  the sheet importer's own processing; original in `design/sponsors/`. The
+  sheet's Sponsori row links `https://dobelesbasketbols.lv/assets/sponsors/speka-stacija.webp`
+  (ID `speka-stacija`), which the importer keeps as the site's own logo.
+- Sponsor data from the sheet ("Atjaunot datus no tabulas" run on this branch).
+
 ## Round 13 — released 26 Oct 2026: new Brocēni logo
 
 - **Brocēni:** new logo — the Brocēni coat of arms (blue and silver shield
