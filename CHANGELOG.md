@@ -1,5 +1,14 @@
 # Changelog
 
+## Round 13 — released 26 Oct 2026: new Brocēni logo
+
+- **Brocēni:** new logo — the Brocēni coat of arms (blue and silver shield
+  with a white water lily), without the "BROCĒNI" lettering of the old one.
+  Original in `design/teams/broceni.png`, web copy made with
+  `tools/prepare_assets.py teams broceni` (256 px square, like the other
+  newer logos). Shows everywhere a team logo appears: team pages, tables,
+  games, calendar and posters.
+
 ## Round 12 — released 26 Oct 2026: new poster photos, Latvian accents, calendar
 
 - **New poster photos:** 6 for the next-round posters (photo strip) and 12 for
