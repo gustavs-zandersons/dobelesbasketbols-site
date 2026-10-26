@@ -1840,6 +1840,11 @@ body.no-scroll { overflow: hidden; }
   color: var(--title);
 }
 .sheet-body { display: grid; gap: 12px; }
+/* The pop-up is narrow on every screen: logo + short team name, never cut.
+   Places not decided yet ("A grupas 3. vieta") wrap instead of being cut. */
+.sheet .nm-full { display: none; }
+.sheet .nm-short { display: inline; }
+.sheet .fx-team.is-tbd .nm { white-space: normal; overflow: visible; line-height: 1.2; }
 .sheet-cup {
   display: flex;
   align-items: center;
