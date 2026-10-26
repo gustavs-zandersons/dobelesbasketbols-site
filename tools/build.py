@@ -160,7 +160,8 @@ def season_data(real):
 
 SITE_URL = 'https://dobelesbasketbols.lv'
 PAGE_LINKS = {'HOME': '/', 'JELGAVA': '/jelgava/', 'CAL': '/kalendars/', 'STD': '/dobele/kopvertejums/',
-              'TM': '/dobele/komandas/', 'LD': '/dobele/lideri/', 'STS': '/dobele/statistika/', 'SP': '/dobele/sponsori/'}
+              'TM': '/dobele/komandas/', 'LD': '/dobele/lideri/', 'STS': '/dobele/statistika/', 'SP': '/dobele/sponsori/',
+              'AB': '/par-mums/'}
 
 
 def fill_links(page, paths):

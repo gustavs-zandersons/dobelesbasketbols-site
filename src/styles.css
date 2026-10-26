@@ -2223,6 +2223,79 @@ body.no-scroll { overflow: hidden; }
 }
 
 /* ---------- Sponsori page ---------- */
+/* ---------- Par mums ---------- */
+.ab-view { display: grid; gap: 44px; padding-block: 20px 72px; }
+.ab-intro { display: grid; gap: 20px; }
+.ab-statement {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.9rem, 5.6vw, 3rem);
+  line-height: 1.12;            /* room for Ē, Ļ above and below */
+  text-transform: uppercase;
+  color: var(--fg);
+  max-width: 18ch;
+  text-wrap: balance;
+}
+.ab-text { display: grid; gap: 12px; max-width: 62ch; font-size: 1.08rem; line-height: 1.6; color: var(--fg-muted); }
+.ab-team-line {
+  font-family: var(--font-cond);
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--title);
+  line-height: 1.3;
+}
+.ab-facts {
+  list-style: none; margin: 0; padding: 16px 0;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px;
+  border-block: 1px solid var(--line);
+  max-width: 720px;
+}
+@media (min-width: 600px) { .ab-facts { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.ab-facts li { display: grid; gap: 2px; }
+.ab-facts b { font-family: var(--font-display); font-weight: 400; font-size: 2.3rem; line-height: 1; color: var(--title); font-variant-numeric: tabular-nums; }
+.ab-facts span { font-family: var(--font-cond); font-weight: 600; font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg-muted); }
+.ab-sub { color: var(--fg-muted); max-width: 62ch; margin: -4px 0 22px; }
+/* Any number of people: rows centred on phones (a last single person sits in
+   the middle), aligned under the group title on wide screens. */
+.ab-people { display: flex; flex-wrap: wrap; justify-content: center; gap: 28px 16px; }
+.ab-people > .ab-person { width: 140px; }
+@media (min-width: 900px) { .ab-people { justify-content: flex-start; } .ab-people > .ab-person { width: 150px; } }
+.ab-people--lg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 660px; gap: 28px 20px; }
+.ab-people--lg > .ab-person { width: auto; }
+.ab-person { margin: 0; display: grid; justify-items: center; align-content: start; gap: 14px; text-align: center; }
+.ab-photo {
+  --ph: 128px;
+  width: var(--ph); max-width: 100%; aspect-ratio: 1;
+  border-radius: 50%; object-fit: cover;
+  box-shadow: 0 0 0 3px var(--title), 0 10px 26px rgba(0, 0, 0, 0.28);
+}
+.ab-people--lg .ab-photo { --ph: clamp(136px, 34vw, 196px); }
+.ab-photo--empty {
+  display: grid; place-items: center;
+  background: var(--surface);
+  border: 2px dashed var(--line-strong);
+  box-shadow: none;
+}
+.ab-photo--empty svg { width: 44%; fill: var(--fg-dim); }
+.ab-person figcaption { display: grid; gap: 3px; }
+.ab-name { font-family: var(--font-cond); font-weight: 700; font-size: 1.2rem; letter-spacing: 0.02em; text-transform: uppercase; color: var(--fg); line-height: 1.15; }
+.ab-people--lg .ab-name { font-size: 1.45rem; }
+.ab-role { font-family: var(--font-cond); font-weight: 600; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+.ab-bio { color: var(--fg-muted); font-size: 0.95rem; max-width: 30ch; margin-top: 4px; }
+.ab-groups { display: grid; gap: 36px; }
+@media (min-width: 900px) { .ab-groups { grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); column-gap: 40px; align-items: start; } }
+.ab-gt {
+  font-family: var(--font-cond); font-weight: 700; font-size: 0.9rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--fg-muted); padding-bottom: 8px; border-bottom: 1px solid var(--line); margin-bottom: 20px;
+}
+.ab-gsub { color: var(--fg-muted); font-size: 0.92rem; margin: -10px 0 20px; max-width: 60ch; }
+.ab-thanks {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 18px;
+  padding-top: 18px; border-top: 1px solid var(--line); font-weight: 600; color: var(--fg);
+}
+
 .sp-view { display: grid; gap: 36px; padding-block: 20px 72px; }
 .sp-grid {
   --k: 0.82;

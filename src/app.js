@@ -2651,8 +2651,66 @@
     if (cl) cl.focus();
   }
 
+  // ---------- Par mums (about) ----------
+  // One page for both cups. Text, names and roles live here for now; photos go to
+  // assets/about/<file> (square, at least 400 px) — until then a round placeholder.
+  var ABOUT = {
+    statement: 'Dobelē basketbols nekad neguļ.',
+    intro: [
+      'Katru sezonu komandas no Dobeles, Jelgavas un apkārtnes pēc darba, studijām un garas nedēļas satiekas laukumā, lai spēlētu to, ko mīl.',
+      'Mūsu mērķis ir ienest amatieru basketbolā to, ko redzam profesionāļu spēlēs: sakārtotu kalendāru, kvalitatīvu tiesāšanu, elektronisko statistiku un rezultātus tajā pašā vakarā. Lai katrs spēlētājs var no jauna izdzīvot savu aizrautību ar basketbolu un vienkārši izbaudīt spēli.'
+    ],
+    teamLine: 'Nekas no tā nebūtu iespējams bez komandas.',
+    organizers: [
+      { name: 'Vārds Uzvārds', role: 'Turnīra organizators', photo: '', bio: '' },
+      { name: 'Vārds Uzvārds', role: 'Turnīra organizators', photo: '', bio: '' }
+    ],
+    teamSub: 'Cilvēki, kuri katrā spēļu dienā zālē ir pirmie un aiziet pēdējie.',
+    groups: [
+      { title: 'Galvenais tiesnesis', sub: '', people: [{ name: 'Vārds Uzvārds', role: 'Galvenais tiesnesis', photo: '' }] },
+      { title: 'Sekretariāts', sub: 'Pie sekretariāta galdiņa: spēles protokols, laiks, 24 sekundes un elektroniskā statistika.', people: [
+        { name: 'Vārds Uzvārds', role: 'Sekretariāts', photo: '' },
+        { name: 'Vārds Uzvārds', role: 'Sekretariāts', photo: '' },
+        { name: 'Vārds Uzvārds', role: 'Sekretariāts', photo: '' }
+      ] }
+    ],
+    thanks: 'Paldies spēlētājiem, skatītājiem un atbalstītājiem. Tiekamies laukumā!'
+  };
+  var PERSON_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="4.2"/><path d="M3.8 21c.7-4.6 4-7.3 8.2-7.3s7.5 2.7 8.2 7.3z"/></svg>';
+  function lvCount(n, one, many) { return n + ' ' + (n % 10 === 1 && n % 100 !== 11 ? one : many); }
+  function aboutPerson(p) {
+    var photo = p.photo
+      ? '<img class="ab-photo" src="' + esc(p.photo) + '" alt="' + esc(p.name) + '" loading="lazy">'
+      : '<span class="ab-photo ab-photo--empty" aria-hidden="true">' + PERSON_ICON + '</span>';
+    return '<figure class="ab-person">' + photo + '<figcaption><span class="ab-name">' + esc(p.name) + '</span>' +
+      '<span class="ab-role">' + esc(p.role) + '</span>' + (p.bio ? '<span class="ab-bio">' + esc(p.bio) + '</span>' : '') + '</figcaption></figure>';
+  }
+  function renderAbout() {
+    var players = DATA.teams.reduce(function (a, t) { return a + t.players.length; }, 0);
+    var facts = [lvCount(2, 'kauss', 'kausi'), lvCount(DATA.teams.length, 'komanda', 'komandas'),
+      players ? lvCount(players, 'spēlētājs', 'spēlētāji') : '', lvCount(DATA.games.length, 'spēle', 'spēles')].filter(Boolean);
+    var html = '<div class="page-head"><p class="eyebrow">Dobeles basketbols</p><h1 class="page-title">Par mums</h1></div>' +
+      '<section class="ab-intro" aria-label="Par mums">' +
+      '<p class="ab-statement">' + esc(ABOUT.statement) + '</p>' +
+      '<div class="ab-text">' + ABOUT.intro.map(function (t) { return '<p>' + esc(t) + '</p>'; }).join('') +
+      '<p class="ab-team-line">' + esc(ABOUT.teamLine) + '</p></div>' +
+      '<ul class="ab-facts" aria-label="Sezona ' + esc(SEASON_LABEL) + '">' + facts.map(function (f) {
+        var i = f.indexOf(' ');
+        return '<li><b>' + f.slice(0, i) + '</b><span>' + esc(f.slice(i + 1)) + '</span></li>';
+      }).join('') + '</ul></section>' +
+      '<section class="ab-sec" aria-labelledby="ab-org"><h2 class="g-title" id="ab-org">Organizatori</h2>' +
+      '<div class="ab-people ab-people--lg">' + ABOUT.organizers.map(aboutPerson).join('') + '</div></section>' +
+      '<section class="ab-sec" aria-labelledby="ab-team"><h2 class="g-title" id="ab-team">Komanda</h2>' +
+      '<p class="ab-sub">' + esc(ABOUT.teamSub) + '</p><div class="ab-groups">' + ABOUT.groups.map(function (g) {
+        return '<div class="ab-group"><h3 class="ab-gt">' + esc(g.title) + '</h3>' + (g.sub ? '<p class="ab-gsub">' + esc(g.sub) + '</p>' : '') +
+          '<div class="ab-people">' + g.people.map(aboutPerson).join('') + '</div></div>';
+      }).join('') + '</div></section>' +
+      '<p class="ab-thanks"><span>' + esc(ABOUT.thanks) + '</span><a class="head-link" href="' + toHref(cupPath(state.cup, 'sponsori')) + '">Mūsu atbalstītāji ›</a></p>';
+    $('about-view').innerHTML = html;
+  }
+
   // ---------- Routing ----------
-  // Paths: / and /jelgava/ (cup home), /kalendars/, /speles/<season>/<game id>/,
+  // Paths: / and /jelgava/ (cup home), /kalendars/, /par-mums/, /speles/<season>/<game id>/,
   // /<cup>/kopvertejums/, /<cup>/komandas/[<team>/], /<cup>/lideri/,
   // /<cup>/statistika/[komandas/], /<cup>/speletaji/<team>/<player>/, /<cup>/sponsori/
   // (<cup> = dobele | jelgava).
@@ -2696,6 +2754,8 @@
       // Fresh visit: current month, all games (no team picked).
       if (state.view !== 'calendar') { state.cal.month = null; state.cal.team = ''; }
       state.view = 'calendar';
+    } else if (parts.length === 1 && a === 'par-mums') {
+      state.view = 'about';               // one page for both cups (keeps the cup colours)
     } else if (a === 'speles' && parts.length === 3 && b === SEASON_ID && RAW[parts[2]]) {
       state.view = 'game'; state.gameId = parts[2]; state.cup = RAW[parts[2]].comp;
     } else if ((a === 'dobele' || a === 'jelgava') && b) {
@@ -2731,6 +2791,7 @@
     if (state.notFound) return null;
     if (v === 'home') return cupHome(c);
     if (v === 'calendar') return '/kalendars/';
+    if (v === 'about') return '/par-mums/';
     if (v === 'game') return '/speles/' + SEASON_ID + '/' + state.gameId + '/';
     if (v === 'teams') return cupPath(c, 'komandas');
     if (v === 'team') return cupPath(c, 'komandas/' + state.teamId);
@@ -2811,6 +2872,11 @@
         m.desc = pl.name + ' — ' + tp.name + ' spēlētājs, ' + cupName + ' ' + season + '. Statistika parādīsies pēc pirmās spēles.';
         m.index = false;                 // no games in this cup yet: nothing to rank
       }
+    } else if (v === 'about') {
+      m.title = 'Par mums — ' + SITE_NAME;
+      m.desc = 'Cilvēki, kas rīko ' + CUPS.dbck.name.replace(/kauss$/, 'kausu') + ' un ' + CUPS.jssc.name.replace(/kauss$/, 'kausu') +
+        ': organizatori, galvenais tiesnesis un sekretariāts. Dobelē basketbols nekad neguļ.';
+      m.image = SITE_URL + '/assets/og/dobele.png';
     } else if (v === 'sponsors') {
       m.title = 'Sponsori un atbalstītāji — ' + SITE_NAME;
       m.desc = 'Uzņēmumi un organizācijas, kas atbalsta ' + CUPS.dbck.name + ' un ' + CUPS.jssc.name + ' sezonā ' + season + '.';
@@ -2847,7 +2913,7 @@
       b.setAttribute('aria-pressed', String(b.getAttribute('data-demo') === state.demo));
     });
     var hero = document.querySelector('.hero');
-    var NAVV = { home: ['home'], cal: ['calendar'], std: ['standings'], sp: ['sponsors'], tm: ['teams', 'team'], ld: ['leaders'], sts: ['stats', 'player'] };
+    var NAVV = { home: ['home'], cal: ['calendar'], std: ['standings'], sp: ['sponsors'], ab: ['about'], tm: ['teams', 'team'], ld: ['leaders'], sts: ['stats', 'player'] };
     document.querySelectorAll('[data-nav]').forEach(function (n) {
       if ((NAVV[n.getAttribute('data-nav')] || []).indexOf(state.view) >= 0) n.setAttribute('aria-current', 'page'); else n.removeAttribute('aria-current');
     });
@@ -2856,18 +2922,23 @@
     });
     document.querySelectorAll('a[data-cup]').forEach(function (a) { a.setAttribute('href', toHref(cupHome(a.getAttribute('data-cup')))); });
     document.querySelectorAll('a[data-nav="cal"]').forEach(function (a) { a.setAttribute('href', toHref('/kalendars/')); });
+    document.querySelectorAll('a[data-nav="ab"]').forEach(function (a) { a.setAttribute('href', toHref('/par-mums/')); });
     var team = state.view === 'teams' || state.view === 'team', ldr = state.view === 'leaders', sts = state.view === 'stats' || state.view === 'player';
+    var ab = state.view === 'about';
     $('sponsors-view').hidden = state.view !== 'sponsors';
+    $('about-view').hidden = !ab;
+    if (!ab) $('about-view').innerHTML = '';
     $('teams-view').hidden = !team;
     if (!team) $('teams-view').innerHTML = '';
     $('leaders-view').hidden = !ldr;
     if (!ldr) $('leaders-view').innerHTML = '';
     $('stats-view').hidden = !sts;
     if (!sts) $('stats-view').innerHTML = '';
-    if (state.view === 'sponsors' || team || ldr || sts) {
+    if (state.view === 'sponsors' || ab || team || ldr || sts) {
       hero.hidden = true; $('main').hidden = true; $('game-view').hidden = true;
       $('calendar-view').hidden = true; $('standings-view').hidden = true; $('standings-view').innerHTML = '';
       if (state.view === 'sponsors') renderSponsors();
+      else if (ab) renderAbout();
       else if (ldr) renderLeaders();
       else if (state.view === 'stats') renderStats();
       else if (state.view === 'player') renderPlayer();
