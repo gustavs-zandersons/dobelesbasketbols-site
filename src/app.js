@@ -52,7 +52,7 @@
 
   var state = {
     cup: 'dbck', view: 'home', gameId: null, teamId: null, demo: load('demo') || 'group', tabs: {},
-    cal: { month: null, team: load('team') || '', cup: 'all', open: null, showAll: false },
+    cal: { month: null, team: '', open: null, showAll: false },
     std: { season: null },
     sts: { mode: 'players', team: '', q: '', cup: null, from: null, to: null, sort: { players: null, teams: null } },
     pl: { team: null, idx: null, from: null, to: null, cat: 'pts' }
@@ -1211,12 +1211,11 @@
       return Object.assign({}, g, { ht: ctx.resolve(g.comp, g.home).team, at: ctx.resolve(g.comp, g.away).team });
     });
   }
+  // The calendar always shows both cups; the only filter is a team.
   function calFiltered() {
     var c = state.cal;
     return calGames().filter(function (g) {
-      if (c.cup !== 'all' && g.comp !== c.cup) return false;
-      if (c.team && g.ht !== c.team && g.at !== c.team) return false;
-      return true;
+      return !c.team || g.ht === c.team || g.at === c.team;
     });
   }
   function byDate(list) {
@@ -1265,17 +1264,13 @@
     var opts = '<option value="">Visas komandas</option>' + teamsSorted.map(function (t) {
       return '<option value="' + esc(t.id) + '"' + (c.team === t.id ? ' selected' : '') + '>' + esc(t.name) + '</option>';
     }).join('');
-    var CUPF = [{ k: 'all', l: 'Visi kausi', s: 'Visi' }, { k: 'dbck', l: 'Čempionu kauss', s: 'Čempionu kauss' }, { k: 'jssc', l: 'Izaicinājuma kauss', s: 'Izaicinājuma kauss' }];
 
     var html = '<div class="page-head"><p class="eyebrow">Sezona ' + esc(SEASON_LABEL) + '</p><h1 class="page-title">Kalendārs</h1>' +
       '<p class="page-sub">Visas Dobeles čempionu kausa un Jelgavas Izaicinājuma kausa spēles. Izvēlies dienu, lai redzētu spēles.</p></div>';
 
     html += '<div class="cal-filters">' +
       '<label class="team-pick" for="team-filter">' + (c.team ? badge(c.team, 'sm') : '<svg class="team-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle cx="17" cy="9" r="2.4"/><path d="M15.5 14.2c2.6-.3 4.8 1.2 5.5 4.3"/></svg>') +
-      '<span class="sr-only">Komanda</span><select id="team-filter">' + opts + '</select></label>' +
-      '<div class="seg" role="group" aria-label="Kauss">' + CUPF.map(function (f) {
-        return '<button type="button" data-cupf="' + f.k + '" aria-pressed="' + (c.cup === f.k) + '"><span class="lg">' + esc(f.l) + '</span><span class="sm">' + esc(f.s) + '</span></button>';
-      }).join('') + '</div></div>';
+      '<span class="sr-only">Komanda</span><select id="team-filter">' + opts + '</select></label></div>';
 
     // Month grid (weeks start on Monday)
     var p = c.month.split('-');
@@ -1358,8 +1353,8 @@
             '<span class="cal-rmid">' + cups.map(function (k) { return '<img class="cal-cup" src="' + MARK[k] + '" alt="">'; }).join('') + '<span>' + esc(dayLabel(dg)) + '</span></span>' +
             '<span class="cal-rright">' + right + '</span></button>';
         }).join('') + '</div></section>';
-    } else if (c.team || c.cup !== 'all') {
-      html += '<div class="empty"><strong>Šajā mēnesī izvēlētajai komandai vai kausam spēļu nav.</strong>Izmanto bultiņas, lai pārietu uz citu mēnesi, vai noņem filtru.</div>';
+    } else if (c.team) {
+      html += '<div class="empty"><strong>Šajā mēnesī izvēlētajai komandai spēļu nav.</strong>Izmanto bultiņas, lai pārietu uz citu mēnesi, vai izvēlies „Visas komandas”.</div>';
     }
 
     $('calendar-view').innerHTML = html;
@@ -2698,7 +2693,8 @@
     if (!parts.length || (parts.length === 1 && (a === 'dobele' || a === 'jelgava'))) {
       state.view = 'home'; state.cup = cupOf(a);
     } else if (parts.length === 1 && a === 'kalendars') {
-      if (state.view !== 'calendar') state.cal.month = null;   // fresh visit: current month
+      // Fresh visit: current month, all games (no team picked).
+      if (state.view !== 'calendar') { state.cal.month = null; state.cal.team = ''; }
       state.view = 'calendar';
     } else if (a === 'speles' && parts.length === 3 && b === SEASON_ID && RAW[parts[2]]) {
       state.view = 'game'; state.gameId = parts[2]; state.cup = RAW[parts[2]].comp;
@@ -2939,8 +2935,6 @@
     if (demo) { state.demo = demo.getAttribute('data-demo'); state.tabs = {}; state.cal.month = null; closeSheet(); save('demo', state.demo); render(); return; }
     var nav = e.target.closest('[data-cal-nav]');
     if (nav) { state.cal.month = addMonth(state.cal.month, +nav.getAttribute('data-cal-nav')); renderCalendar(); return; }
-    var cf = e.target.closest('[data-cupf]');
-    if (cf) { state.cal.cup = cf.getAttribute('data-cupf'); renderCalendar(); return; }
     var day = e.target.closest('[data-day]');
     if (day) { openSheet(day.getAttribute('data-day'), day); return; }
     if (e.target.closest('[data-sheet-close]') || e.target.id === 'sheet-scrim') { closeSheet(); return; }
@@ -3059,8 +3053,7 @@
       return;
     }
     if (e.target.id === 'team-filter') {
-      state.cal.team = e.target.value;
-      save('team', state.cal.team);
+      state.cal.team = e.target.value;   // kept while on the calendar, not between visits
       // Touch / mouse: let go of the list so the phone's picker closes
       // (Safari on iPhone kept it open when the new list got focus).
       // Keyboard: keep focus on the list so arrow keys keep working.

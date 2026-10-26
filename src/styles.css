@@ -2,6 +2,16 @@
    shade with court lines and a jagged "ridge" edge (from the posters) →
    three stacked blocks in a 1120px column → white sponsor band under a
    second ridge. Each cup swaps the colour tokens via [data-cup]. */
+/* Fonts come from this site (assets/fonts, made by tools/prepare_assets.py
+   fonts): one file per weight with every Latvian letter, so the browser never
+   builds Ā or Ē out of pieces and the accents sit where the font draws them. */
+@font-face { font-family: 'Anton'; font-style: normal; font-weight: 400; font-display: swap; src: url(/assets/fonts/anton-400.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 400; font-display: swap; src: url(/assets/fonts/barlow-400.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 500; font-display: swap; src: url(/assets/fonts/barlow-500.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 600; font-display: swap; src: url(/assets/fonts/barlow-600.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 700; font-display: swap; src: url(/assets/fonts/barlow-700.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 600; font-display: swap; src: url(/assets/fonts/barlow-condensed-600.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 700; font-display: swap; src: url(/assets/fonts/barlow-condensed-700.woff2) format('woff2'); }
 :root {
   color-scheme: dark;
   /* Dobele (DBČK): poster blue + trophy yellow */
@@ -811,10 +821,17 @@ a.res:hover .res-go { color: var(--fg); }
 .fx-team { display: flex; align-items: center; gap: 10px; min-width: 0; font-weight: 600; font-size: 1.02rem; }
 .fx-team .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fx-team.is-tbd { color: var(--fg-dim); font-weight: 500; font-style: italic; }
+/* Home page, next round: the full team name on every screen; a long one
+   wraps onto a second line instead of being cut. */
+#block-next .nm-full { display: inline; }
+#block-next .nm-short { display: none; }
+#block-next .fx-team .nm { white-space: normal; overflow: visible; overflow-wrap: break-word; min-width: 0; line-height: 1.2; }
 .fx-home { grid-area: home; }
 .fx-away { grid-area: away; }
 .fx-vs { display: none; }
-@media (min-width: 760px) {
+/* Wide screens: one line per game (home – away side by side). Below 960px the
+   two teams stack, so full names have room on tablets too. */
+@media (min-width: 960px) {
   .fx {
     grid-template-columns: 76px minmax(0, 1fr) 28px minmax(0, 1fr) minmax(0, 150px);
     grid-template-areas: "time home vs away tag";
@@ -1618,13 +1635,6 @@ a.tie.is-final:hover { box-shadow: inset 0 4px 0 var(--accent-fill), 0 0 0 2px v
 }
 .seg button[aria-pressed="true"] { background: var(--accent-fill); color: var(--on-accent); }
 .seg .sm { display: none; }
-/* Calendar cup switch: three boxes of exactly the same width; on phones the
-   cup names wrap onto two lines when needed. */
-.cal-filters .seg { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
-.cal-filters .seg button { min-width: 0; text-align: center; }
-@media (max-width: 559px) {
-  .cal-filters .seg button { padding: 6px 8px; font-size: 0.8rem; letter-spacing: 0.02em; white-space: normal; line-height: 1.1; }
-}
 @media (max-width: 559px) {
   .team-pick { max-width: none; }
   .seg { flex: 1 1 100%; }
@@ -1837,6 +1847,11 @@ body.no-scroll { overflow: hidden; }
   color: var(--title);
 }
 .sheet-body { display: grid; gap: 12px; }
+/* The pop-up is narrow on every screen: logo + short team name, never cut.
+   Places not decided yet ("A grupas 3. vieta") wrap instead of being cut. */
+.sheet .nm-full { display: none; }
+.sheet .nm-short { display: inline; }
+.sheet .fx-team.is-tbd .nm { white-space: normal; overflow: visible; line-height: 1.2; }
 .sheet-cup {
   display: flex;
   align-items: center;

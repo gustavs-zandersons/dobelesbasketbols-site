@@ -170,8 +170,21 @@ def fill_links(page, paths):
     return page
 
 
+def inline_fonts(css):
+    """Previews are a single file: the fonts go into the styles as data URLs."""
+    import base64
+
+    def data_url(m):
+        raw = (ROOT / 'assets' / 'fonts' / m.group(1)).read_bytes()
+        return 'url(data:font/woff2;base64,' + base64.b64encode(raw).decode() + ')'
+    return re.sub(r'url\(/assets/fonts/([\w.-]+\.woff2)\)', data_url, css)
+
+
 def render(preview, real):
     tpl = fill_links((SRC / 'template.html').read_text(), paths=False)
+    if preview:   # no font preloads in a single-file preview (the fonts are inlined)
+        tpl = '\n'.join(line for line in tpl.split('\n') if 'rel="preload"' not in line)
+    css = (SRC / 'styles.css').read_text()
     data, real = season_data(real)
     sheet = json.loads((SRC / 'sheet.json').read_text())
     sponsors = json.loads((SRC / 'sponsors.json').read_text())
@@ -180,7 +193,7 @@ def render(preview, real):
     footer = sheet['settings'].get('footer', {})
     names = data['settings']['cups']
     page = (tpl
-            .replace('{{STYLE}}', (SRC / 'styles.css').read_text())
+            .replace('{{STYLE}}', inline_fonts(css) if preview else css)
             .replace('{{ENGINE}}', (SRC / 'engine.js').read_text())
             .replace('{{POSTER}}', (SRC / 'poster.js').read_text())
             .replace('{{APP}}', (SRC / 'app.js').read_text())
@@ -225,7 +238,7 @@ def site_parts():
            .replace('{{NOTICE}}', ''))
     head, body = tpl.split('<!--BODY-->', 1)
     body = body[:body.index('<script id="season-data"')].rstrip() + '\n'
-    fonts = [line.strip() for line in head.splitlines() if 'fonts.g' in line]
+    fonts = [line.strip() for line in head.splitlines() if '/assets/fonts/' in line]   # font preloads
     site_data = {'season': data, 'poster': {'sponsors': sponsors, 'photos': photos},
                  'sponsors': sponsor_page(sheet['sponsors'], sponsors)}
     files = {

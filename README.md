@@ -109,14 +109,14 @@ tools/
   real-season.js     builds src/season.json from the sheet and basket.lv
   basket_sync.py     reads games, results, box scores and players from basket.lv
   og_images.py       draws the link-preview images (assets/og/), run by hand
-  prepare_assets.py  web copies of sponsor logos and poster photos
+  prepare_assets.py  web copies of sponsor logos, poster photos and the site's fonts
   gen-season.js      regenerates the mock season
   check.js           sanity checks run in CI
   season_sheet.py    builds the season Google Sheet template (.xlsx), prefilled from src/sheet.json
   sheet_sync.py      reads the season sheet into src/sheet.json + logos (Latvian error report)
-assets/              web-optimised logos and poster photos (published)
+assets/              web-optimised logos, poster photos and fonts (published)
 design/sponsors/     original sponsor logo files (not published)
-design/fonts/         Anton and Barlow Condensed (SIL Open Font License) for tools/og_images.py
+design/fonts/        Anton, Barlow and Barlow Condensed originals (SIL Open Font License)
 .github/workflows/   pages.yml: build + deploy · sync.yml: "Atjaunot datus no tabulas"
 ```
 
@@ -147,6 +147,12 @@ The sync workflow commits data to `main`, so pull before working locally.
   `python3 tools/prepare_assets.py photos --for next|results <files…>`; they are
   resized to 2000 px and listed in `src/poster-photos.json` (`use`). The results
   Story format prefers upright photos. Photos are darkened/tinted automatically.
+- **Fonts:** the site serves its own fonts (`assets/fonts/*.woff2`, no Google
+  Fonts): Anton for headings, Barlow for text, Barlow Condensed for labels and
+  the posters. Each weight is one file with every Latvian letter, so the browser
+  never builds Ā or Ē out of pieces (that is what pushed the accents to the right).
+  `python3 tools/prepare_assets.py fonts` re-makes them from `design/fonts/`
+  (needs `pip install fonttools brotli`).
 
 ## Season sheet sync
 

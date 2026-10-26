@@ -1,16 +1,61 @@
 [
  {
-  "src": "assets/posters/dobele-2025-sezona.jpg",
-  "w": 1600,
-  "h": 611,
-  "focus": 0.5,
+  "src": "assets/posters/plakats-01.jpg",
+  "w": 2000,
+  "h": 977,
+  "focus": 0.52,
+  "use": [
+   "next"
+  ]
+ },
+ {
+  "src": "assets/posters/plakats-02.jpg",
+  "w": 2000,
+  "h": 981,
+  "focus": 0.48,
+  "use": [
+   "next"
+  ]
+ },
+ {
+  "src": "assets/posters/plakats-03.jpg",
+  "w": 2000,
+  "h": 986,
+  "focus": 0.41,
+  "use": [
+   "next"
+  ]
+ },
+ {
+  "src": "assets/posters/plakats-04.jpg",
+  "w": 2000,
+  "h": 857,
+  "focus": 0.55,
+  "use": [
+   "next"
+  ]
+ },
+ {
+  "src": "assets/posters/plakats-05.jpg",
+  "w": 2000,
+  "h": 982,
+  "focus": 0.45,
+  "use": [
+   "next"
+  ]
+ },
+ {
+  "src": "assets/posters/plakats-06.jpg",
+  "w": 2000,
+  "h": 979,
+  "focus": 0.42,
   "use": [
    "next"
   ]
  },
  {
   "src": "assets/posters/rezultati-01.jpg",
-  "w": 1333,
+  "w": 1600,
   "h": 2000,
   "focus": 0.42,
   "use": [
@@ -19,18 +64,99 @@
  },
  {
   "src": "assets/posters/rezultati-02.jpg",
-  "w": 1333,
+  "w": 1600,
   "h": 2000,
-  "focus": 0.36,
+  "focus": 0.4,
   "use": [
    "results"
   ]
  },
  {
   "src": "assets/posters/rezultati-03.jpg",
-  "w": 1333,
+  "w": 1600,
+  "h": 2000,
+  "focus": 0.4,
+  "use": [
+   "results"
+  ]
+ },
+ {
+  "src": "assets/posters/rezultati-04.jpg",
+  "w": 1600,
   "h": 2000,
   "focus": 0.45,
+  "use": [
+   "results"
+  ]
+ },
+ {
+  "src": "assets/posters/rezultati-05.jpg",
+  "w": 1600,
+  "h": 2000,
+  "focus": 0.48,
+  "use": [
+   "results"
+  ]
+ },
+ {
+  "src": "assets/posters/rezultati-06.jpg",
+  "w": 1600,
+  "h": 2000,
+  "focus": 0.45,
+  "use": [
+   "results"
+  ]
+ },
+ {
+  "src": "assets/posters/rezultati-07.jpg",
+  "w": 1600,
+  "h": 2000,
+  "focus": 0.42,
+  "use": [
+   "results"
+  ]
+ },
+ {
+  "src": "assets/posters/rezultati-08.jpg",
+  "w": 1600,
+  "h": 2000,
+  "focus": 0.45,
+  "use": [
+   "results"
+  ]
+ },
+ {
+  "src": "assets/posters/rezultati-09.jpg",
+  "w": 1600,
+  "h": 2000,
+  "focus": 0.55,
+  "use": [
+   "results"
+  ]
+ },
+ {
+  "src": "assets/posters/rezultati-10.jpg",
+  "w": 1600,
+  "h": 2000,
+  "focus": 0.42,
+  "use": [
+   "results"
+  ]
+ },
+ {
+  "src": "assets/posters/rezultati-11.jpg",
+  "w": 1600,
+  "h": 2000,
+  "focus": 0.48,
+  "use": [
+   "results"
+  ]
+ },
+ {
+  "src": "assets/posters/rezultati-12.jpg",
+  "w": 1600,
+  "h": 2000,
+  "focus": 0.5,
   "use": [
    "results"
   ]
