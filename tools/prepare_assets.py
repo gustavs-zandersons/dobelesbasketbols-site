@@ -16,6 +16,12 @@
         "next" = next-round posters (photo strip on top), "results" = results
         posters (full photo). The two pools are kept separate.
 
+    python3 tools/prepare_assets.py fonts
+        design/fonts/*.ttf  ->  assets/fonts/*.woff2  (+ their licences)
+        The site serves its own fonts: one file per weight holding every
+        Latvian letter, so accents sit exactly where the font draws them.
+        Needs fontTools and brotli (pip install fonttools brotli).
+
 Logo originals stay in design/teams and design/sponsors (not published). The web copies are
 trimmed to the logo itself, so the site can size every logo to the same visual
 weight. Photos are resized to 2000 px on the long side; the originals are not kept.
@@ -96,12 +102,54 @@ def photos(files, focus, use):
     mpath.write_text(json.dumps(manifest, ensure_ascii=False, indent=1) + '\n')
 
 
+# Web fonts: (original in design/fonts, file in assets/fonts). Weights as used in src/styles.css.
+FONTS = [
+    ('Anton-Regular.ttf', 'anton-400.woff2'),
+    ('Barlow-Regular.ttf', 'barlow-400.woff2'),
+    ('Barlow-Medium.ttf', 'barlow-500.woff2'),
+    ('Barlow-SemiBold.ttf', 'barlow-600.woff2'),
+    ('Barlow-Bold.ttf', 'barlow-700.woff2'),
+    ('BarlowCondensed-SemiBold.ttf', 'barlow-condensed-600.woff2'),
+    ('BarlowCondensed-Bold.ttf', 'barlow-condensed-700.woff2'),
+]
+FONT_LICENCES = ['OFL-Anton.txt', 'OFL-Barlow.txt']
+# Latin, Latin-1, Latin Extended-A (all Latvian letters and their neighbours),
+# spacing and combining accents, punctuation („ ” – — … ›), €, arrows, maths signs.
+FONT_UNICODES = ('U+0000-00FF,U+0100-017F,U+0218-021B,U+02C6-02DD,U+0300-0328,U+2000-206F,'
+                 'U+20AC,U+2122,U+2190-2195,U+2212,U+2248,U+2260,U+2264-2265')
+
+
+def fonts():
+    import shutil
+    from fontTools import subset
+    out_dir = ROOT / 'assets' / 'fonts'
+    out_dir.mkdir(parents=True, exist_ok=True)
+    opts = subset.Options()
+    opts.flavor = 'woff2'
+    opts.layout_features = ['*']          # kerning and accent placement (mark/mkmk) stay in
+    opts.name_IDs = ['*']                 # copyright and licence notices stay in the file
+    opts.name_languages = ['*']
+    opts.notdef_outline = True
+    unicodes = subset.parse_unicodes(FONT_UNICODES)
+    for src, dest in FONTS:
+        font = subset.load_font(str(ROOT / 'design' / 'fonts' / src), opts)
+        sub = subset.Subsetter(opts)
+        sub.populate(unicodes=unicodes)
+        sub.subset(font)
+        subset.save_font(font, str(out_dir / dest), opts)
+        print(f'{dest:28s} {(out_dir / dest).stat().st_size // 1024} KB')
+    for lic in FONT_LICENCES:
+        shutil.copy(ROOT / 'design' / 'fonts' / lic, out_dir / lic)
+
+
 if __name__ == '__main__':
     args = sys.argv[1:]
     if args[:1] == ['teams']:
         teams(args[1:])
     elif args[:1] == ['sponsors']:
         sponsors()
+    elif args[:1] == ['fonts']:
+        fonts()
     elif args[:1] == ['photos']:
         focus, use = 0.4, None
         if '--focus' in args:

@@ -149,12 +149,12 @@ def prerender(out, site, body, fonts, urls):
                 f = out / u.path.lstrip('/')
                 if f.is_file():
                     ctype = {'.css': 'text/css', '.js': 'text/javascript', '.webp': 'image/webp', '.png': 'image/png',
-                             '.jpg': 'image/jpeg', '.svg': 'image/svg+xml'}.get(f.suffix, 'application/octet-stream')
+                             '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.woff2': 'font/woff2'}.get(f.suffix, 'application/octet-stream')
                     return route.fulfill(status=200, body=f.read_bytes(), headers={'content-type': ctype})
                 return route.fulfill(status=404, body='')
             if route.request.url.startswith(site):
                 return route.fulfill(status=200, body=html, headers={'content-type': 'text/html; charset=utf-8'})
-            return route.abort()           # fonts and anything else outside the site
+            return route.abort()           # anything outside the site
         pg.route('**/*', handle)
         pg.goto(site + '/')
         pg.wait_for_function('window.__pageMeta && window.__pageMeta.title')

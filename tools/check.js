@@ -68,6 +68,12 @@ check(sponsors.length > 0, 'sponsor list is empty');
 check(photos.length > 0, 'poster photo pool is empty');
 sponsors.concat(photos).forEach(a => check(fs.existsSync(path.join(root, a.src)), 'missing file ' + a.src));
 check(MULTI ? pageData.includes('"poster":') && scripts.join('').includes('window.Poster') : html.includes('id="poster-data"') && html.includes('window.Poster'), 'poster script and data are in the page');
+// Fonts are served by the site itself (assets/fonts), not by Google Fonts.
+const css = fs.readFileSync(path.join(root, 'src', 'styles.css'), 'utf8');
+const fontFiles = [...css.matchAll(/url\(\/(assets\/fonts\/[\w.-]+)\)/g)].map(m => m[1]);
+check(fontFiles.length >= 7, 'styles.css names the site\'s font files');
+fontFiles.forEach(f => check(fs.existsSync(path.join(root, f)), 'missing font file ' + f));
+check(!/fonts\.(googleapis|gstatic)\.com/.test(html + css), 'no fonts from Google Fonts');
 
 // 5. Sponsors page data (the sheet's "Sponsori" tab, src/sheet.json): every row
 // has a logo, a known level, and links are full https addresses.

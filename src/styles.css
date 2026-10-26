@@ -2,6 +2,16 @@
    shade with court lines and a jagged "ridge" edge (from the posters) →
    three stacked blocks in a 1120px column → white sponsor band under a
    second ridge. Each cup swaps the colour tokens via [data-cup]. */
+/* Fonts come from this site (assets/fonts, made by tools/prepare_assets.py
+   fonts): one file per weight with every Latvian letter, so the browser never
+   builds Ā or Ē out of pieces and the accents sit where the font draws them. */
+@font-face { font-family: 'Anton'; font-style: normal; font-weight: 400; font-display: swap; src: url(/assets/fonts/anton-400.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 400; font-display: swap; src: url(/assets/fonts/barlow-400.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 500; font-display: swap; src: url(/assets/fonts/barlow-500.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 600; font-display: swap; src: url(/assets/fonts/barlow-600.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 700; font-display: swap; src: url(/assets/fonts/barlow-700.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 600; font-display: swap; src: url(/assets/fonts/barlow-condensed-600.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 700; font-display: swap; src: url(/assets/fonts/barlow-condensed-700.woff2) format('woff2'); }
 :root {
   color-scheme: dark;
   /* Dobele (DBČK): poster blue + trophy yellow */

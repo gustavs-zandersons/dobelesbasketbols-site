@@ -15,7 +15,7 @@
   'use strict';
 
   // DIN Condensed (built into iPhones and Macs); elsewhere Barlow Condensed,
-  // a free DIN-style face with all Latvian letters, loaded from Google Fonts.
+  // a free DIN-style face with all Latvian letters, served by the site (assets/fonts).
   var FONT = '"DIN Condensed", "Barlow Condensed", "Arial Narrow", sans-serif';
 
   // Sizes in poster pixels. The story format keeps everything inside a
