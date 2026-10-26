@@ -110,5 +110,13 @@
   "w": 400,
   "h": 114,
   "scale": 1.0
+ },
+ {
+  "id": "speka-stacija",
+  "name": "Spēka stacija",
+  "src": "assets/sponsors/speka-stacija.webp",
+  "w": 259,
+  "h": 200,
+  "scale": 1.0
  }
 ]

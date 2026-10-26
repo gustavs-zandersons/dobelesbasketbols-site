@@ -307,6 +307,17 @@
    "facebook": "https://www.facebook.com/kebabmix.dobele/",
    "instagram": "https://www.instagram.com/kebabmix.dobele/",
    "tiktok": ""
+  },
+  {
+   "id": "speka-stacija",
+   "name": "Spēka stacija",
+   "level": "Atbalstītājs",
+   "order": 15,
+   "description": "Spēka stacija ir kompakta bet daudzpusīga fitnesa studija Dobelē, Skolas ielā 4A, kur vari trenēties patstāvīgi vai pieredzējuša trenera vadībā. Piedāvājam personīgos treniņus, individuālus treniņu plānus un jauniešu treniņus mazās grupās, nodrošinot personīgu pieeju gan iesācējiem, gan sportotājiem ar pieredzi.",
+   "website": "",
+   "facebook": "",
+   "instagram": "https://www.instagram.com/spekastacija/",
+   "tiktok": ""
   }
  ],
  "calendar": [
