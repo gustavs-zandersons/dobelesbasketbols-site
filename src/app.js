@@ -2656,9 +2656,10 @@
   // now; photos go to assets/about/<file> (square, at least 400 px) — until then
   // a round placeholder.
   var ABOUT = {
-    mission: 'Mūsu mērķis ir ienest amatieru basketbolā to, ko redzam profesionāļu spēlēs: kvalitatīvu tiesāšanu, spēļu tiešraides, sīvu konkurenci laukumā un aktīvu turnīra dzīvi sociālajos tīklos. ' +
-      'To visu darām aiz tīra entuziasma un mīlestības pret basketbolu. ' +
-      'Mūsu mājas ir Dobele, taču gribam laukumā pulcēt arī komandas no citiem novadiem, lai pēc lekcijām, darba un garas nedēļas kopā spēlētu spēli, ko mīlam.',
+    mission: 'Mūsu mērķis ir ienest amatieru basketbolā to, ko redzam arī profesionāļu spēlēs: godīgu un kvalitatīvu tiesāšanu, spēļu tiešraides, sīvu konkurenci laukumā un aktīvu turnīra dzīvi sociālajos tīklos. ' +
+      'To visu darām aiz tīra entuziasma un aizrautības ar basketbolu. ' +
+      'Mūsu mājas ir Dobele, taču esam pārliecināti, ka basketbolam nav robežu. ' +
+      'Tāpēc vēlamies amatieru komandām un spēlētājiem no dažādām Latvijas pilsētām un novadiem dot iespēju sacensties, noskaidrot labākos šajā skaistajā spēlē un pēc garas darba vai studiju nedēļas aktīvi un jēgpilni pavadīt laiku.',
     organizers: [
       { name: 'Gustavs Zandersons', role: 'Turnīra organizators', photo: 'assets/about/gustavs-zandersons.jpg', quote: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore.' },
       { name: 'Artūrs Turiks', role: 'Turnīra organizators', photo: 'assets/about/arturs-turiks.jpg', quote: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam, quis nostrud exercitation.' }
