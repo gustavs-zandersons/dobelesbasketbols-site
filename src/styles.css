@@ -2225,16 +2225,16 @@ body.no-scroll { overflow: hidden; }
 /* ---------- Sponsori page ---------- */
 /* ---------- Par mums ---------- */
 .ab-view { display: grid; gap: 48px; padding-block: 20px 72px; }
-.ab-text { display: grid; gap: 14px; max-width: 62ch; font-size: 1.1rem; line-height: 1.6; color: var(--fg-muted); margin-top: -12px; }
-.ab-text p:first-child { color: var(--fg); font-size: 1.22rem; line-height: 1.5; }
+/* The mission: one paragraph, one style, the full width of the page. */
+.ab-mission { font-size: 1.12rem; line-height: 1.65; color: var(--fg); }
 .ab-sub { color: var(--fg-muted); max-width: 62ch; margin: -4px 0 24px; }
-/* Any number of people: rows centred on phones (a last single person sits in
-   the middle), aligned under the section title on wide screens. */
+/* Any number of people, in rows centred on the page (a last single person
+   sits in the middle). */
 .ab-people { display: flex; flex-wrap: wrap; justify-content: center; gap: 28px 16px; }
 .ab-people > .ab-person { width: 140px; }
-@media (min-width: 900px) { .ab-people { justify-content: flex-start; } .ab-people > .ab-person { width: 160px; } }
-/* The two organizers: side by side, each with a quote. */
-.ab-people--lg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 760px; gap: 32px 20px; }
+@media (min-width: 900px) { .ab-people { gap: 28px 32px; } .ab-people > .ab-person { width: 160px; } }
+/* The two organizers: side by side in the middle of the page, each with a quote. */
+.ab-people--lg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 760px; width: 100%; margin-inline: auto; gap: 32px 20px; }
 .ab-people--lg > .ab-person { width: auto; }
 .ab-person { margin: 0; display: grid; justify-items: center; align-content: start; gap: 14px; text-align: center; }
 .ab-photo {
@@ -2254,6 +2254,7 @@ body.no-scroll { overflow: hidden; }
 .ab-person figcaption { display: grid; gap: 3px; justify-items: center; }
 .ab-name { font-family: var(--font-cond); font-weight: 700; font-size: 1.2rem; letter-spacing: 0.02em; text-transform: uppercase; color: var(--fg); line-height: 1.15; }
 .ab-people--lg .ab-name { font-size: 1.45rem; }
+@media (max-width: 559px) { .ab-people--lg .ab-name { font-size: 1.08rem; } }
 .ab-role { font-family: var(--font-cond); font-weight: 600; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
 .ab-quote {
   display: block; margin-top: 10px; max-width: 34ch;
@@ -2262,7 +2263,7 @@ body.no-scroll { overflow: hidden; }
 }
 @media (max-width: 559px) { .ab-quote { font-size: 0.92rem; } }
 /* Achievements: one card per season, newest first. */
-.ab-awards { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; max-width: 760px; }
+.ab-awards { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
 @media (min-width: 600px) { .ab-awards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .ab-award {
   display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "ico year" "ico title";

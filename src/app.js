@@ -2656,14 +2656,12 @@
   // now; photos go to assets/about/<file> (square, at least 400 px) — until then
   // a round placeholder.
   var ABOUT = {
-    intro: [
-      'Mūsu mērķis ir ienest amatieru basketbolā to, ko redzam profesionāļu spēlēs: kvalitatīvu tiesāšanu, spēļu tiešraides, sīvu konkurenci laukumā un aktīvu turnīra dzīvi sociālajos tīklos.',
-      'To visu darām aiz tīra entuziasma un mīlestības pret basketbolu.',
-      'Mūsu mājas ir Dobele, taču gribam laukumā pulcēt arī komandas no citiem novadiem, lai pēc lekcijām, darba un garas nedēļas kopā spēlētu spēli, ko mīlam.'
-    ],
+    mission: 'Mūsu mērķis ir ienest amatieru basketbolā to, ko redzam profesionāļu spēlēs: kvalitatīvu tiesāšanu, spēļu tiešraides, sīvu konkurenci laukumā un aktīvu turnīra dzīvi sociālajos tīklos. ' +
+      'To visu darām aiz tīra entuziasma un mīlestības pret basketbolu. ' +
+      'Mūsu mājas ir Dobele, taču gribam laukumā pulcēt arī komandas no citiem novadiem, lai pēc lekcijām, darba un garas nedēļas kopā spēlētu spēli, ko mīlam.',
     organizers: [
-      { name: 'Vārds Uzvārds', role: 'Turnīra organizators', photo: '', quote: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore.' },
-      { name: 'Vārds Uzvārds', role: 'Turnīra organizators', photo: '', quote: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam, quis nostrud exercitation.' }
+      { name: 'Gustavs Zandersons', role: 'Turnīra organizators', photo: 'assets/about/gustavs-zandersons.jpg', quote: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore.' },
+      { name: 'Artūrs Turiks', role: 'Turnīra organizators', photo: 'assets/about/arturs-turiks.jpg', quote: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam, quis nostrud exercitation.' }
     ],
     awards: [
       { year: '2024', title: 'Dobeles novada populārākais amatieru sporta turnīrs' },
@@ -2689,7 +2687,8 @@
   }
   function renderAbout() {
     var html = '<div class="page-head"><p class="eyebrow">Dobeles basketbols</p><h1 class="page-title">Par mums</h1></div>' +
-      '<div class="ab-text">' + ABOUT.intro.map(function (t) { return '<p>' + esc(t) + '</p>'; }).join('') + '</div>' +
+      '<section class="ab-sec" aria-labelledby="ab-mission"><h2 class="g-title" id="ab-mission">Mūsu misija</h2>' +
+      '<p class="ab-mission">' + esc(ABOUT.mission) + '</p></section>' +
       // The two organizers: photo, name, title and a quote (no section title).
       '<section class="ab-people ab-people--lg" aria-label="Turnīra organizatori">' + ABOUT.organizers.map(aboutPerson).join('') + '</section>' +
       '<section class="ab-sec" aria-labelledby="ab-awards"><h2 class="g-title" id="ab-awards">Sasniegumi</h2>' +
