@@ -3119,7 +3119,7 @@
     el.setAttribute('role', 'region');
     el.setAttribute('aria-label', 'Sīkdatnes');
     el.innerHTML = '<div class="wrap consent-inner">' +
-      '<p class="consent-text">Izmantojam Google Analytics sīkdatnes, lai redzētu, cik apmeklētāju ir mājaslapā un kuras lapas viņi skatās. Tās saglabāsim tikai tad, ja piekritīsi.</p>' +
+      '<p class="consent-text">Mēs izmantojam Google Analytics sīkdatnes, lai veidotu statistiku par tīmekļvietnes apmeklējumu. Tās saglabāsim tikai tad, ja piekritīsiet.</p>' +
       '<div class="consent-btns"><button type="button" class="btn" data-consent="denied">Atteikties</button>' +
       '<button type="button" class="btn btn--fill" data-consent="granted">Piekrist</button></div></div>';
     document.body.appendChild(el);
