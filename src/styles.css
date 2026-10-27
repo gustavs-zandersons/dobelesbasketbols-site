@@ -1285,7 +1285,7 @@ a.tie.is-final:hover { box-shadow: inset 0 4px 0 var(--accent-fill), 0 0 0 2px v
   position: fixed; z-index: 45;
   right: calc(14px + env(safe-area-inset-right, 0px));
   bottom: calc(14px + env(safe-area-inset-bottom, 0px));
-  width: 34px; height: 34px; padding: 0;
+  width: 30px; height: 30px; padding: 0;
   display: grid; place-items: center;
   border-radius: 50%; border: 1px solid var(--line-strong);
   background: var(--bg-head); color: var(--accent);
@@ -1294,8 +1294,8 @@ a.tie.is-final:hover { box-shadow: inset 0 4px 0 var(--accent-fill), 0 0 0 2px v
   transition: transform 0.15s ease;
 }
 /* Small on screen, but still easy to tap: the tappable area reaches 44 px. */
-.cookie-btn::before { content: ""; position: absolute; inset: -5px; border-radius: 50%; }
-.cookie-btn svg { width: 19px; height: 19px; }
+.cookie-btn::before { content: ""; position: absolute; inset: -7px; border-radius: 50%; }
+.cookie-btn svg { width: 17px; height: 17px; }
 @media (max-width: 767px) {
   .cookie-btn {
     right: calc(10px + env(safe-area-inset-right, 0px));
