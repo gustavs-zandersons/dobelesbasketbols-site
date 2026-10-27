@@ -2832,9 +2832,11 @@
   }
 
   // ---------- Render ----------
+  var trackPage = function () {};        // replaced by the statistics section below
   function render() {
     renderView();
     try { applyMeta(); } catch (e) { if (window.__PRERENDER) throw e; }
+    trackPage();
   }
   function renderView() {
     ctx = window.Engine.create(DATA, SHOW_DEMO ? (DEMO[state.demo] || DEMO.group) : LIVE ? liveToday() : FIXED_TODAY);
@@ -3067,6 +3069,88 @@
   document.addEventListener('keydown', function () { usingKeyboard = true; }, true);
   document.addEventListener('pointerdown', function () { usingKeyboard = false; }, true);
   document.addEventListener('touchstart', function () { usingKeyboard = false; }, { capture: true, passive: true });
+
+  // ---------- Visitor statistics (Google Analytics), only with consent ----------
+  // Google Analytics loads only on the live site and only after the visitor
+  // presses "Piekrist" — before that nothing is sent to Google and no cookies
+  // are set. The choice is kept in this browser; "Sīkdatnes" in the footer
+  // opens the banner again (and "Atteikties" removes the cookies).
+  var GA_ID = 'G-G9W635957K';
+  var GA_ON = ['dobelesbasketbols.lv', 'www.dobelesbasketbols.lv'].indexOf(window.location.hostname) >= 0 && !window.__PRERENDER;
+  var gaLoaded = false, gaLastPath = null;
+  function loadAnalytics() {
+    if (!GA_ON || gaLoaded) return;
+    gaLoaded = true;
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    window.gtag('consent', 'default', { analytics_storage: 'granted', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
+    window.gtag('js', new Date());
+    // Page views are sent by trackPage(): the site changes pages without reloading.
+    window.gtag('config', GA_ID, { send_page_view: false });
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+    document.head.appendChild(s);
+  }
+  // One page view per address (called after every render; re-renders of the same page don't count).
+  trackPage = function () {
+    if (!gaLoaded) return;
+    var p = window.location.pathname;
+    if (p === gaLastPath) return;
+    gaLastPath = p;
+    window.gtag('event', 'page_view', { page_location: window.location.href, page_path: p, page_title: document.title });
+  };
+  function stopAnalytics() {
+    if (gaLoaded) window.gtag('consent', 'update', { analytics_storage: 'denied' });
+    document.cookie.split(';').forEach(function (c) {           // remove _ga and _ga_<id>
+      var name = c.split('=')[0].trim();
+      if (!/^_ga(_|$)/.test(name)) return;
+      var host = window.location.hostname, base = host.replace(/^www\./, '');
+      ['', '; domain=' + host, '; domain=.' + base].forEach(function (d) {
+        document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/' + d;
+      });
+    });
+  }
+  function showConsent() {
+    if (window.__PRERENDER || $('consent')) return;
+    var el = document.createElement('div');
+    el.className = 'consent';
+    el.id = 'consent';
+    el.setAttribute('role', 'region');
+    el.setAttribute('aria-label', 'Sīkdatnes');
+    el.innerHTML = '<div class="wrap consent-inner">' +
+      '<p class="consent-text">Izmantojam Google Analytics sīkdatnes, lai redzētu, cik apmeklētāju ir mājaslapā un kuras lapas viņi skatās. Tās saglabāsim tikai tad, ja piekritīsi.</p>' +
+      '<div class="consent-btns"><button type="button" class="btn" data-consent="denied">Atteikties</button>' +
+      '<button type="button" class="btn btn--fill" data-consent="granted">Piekrist</button></div></div>';
+    document.body.appendChild(el);
+    consentRoom();
+    window.addEventListener('resize', consentRoom);
+  }
+  // Room under the page while the banner is open, so it never covers the footer.
+  function consentRoom() {
+    var el = $('consent');
+    document.body.style.paddingBottom = el ? el.offsetHeight + 'px' : '';
+  }
+  function setConsent(v) {
+    save('consent', v);
+    var el = $('consent');
+    if (el) el.remove();
+    window.removeEventListener('resize', consentRoom);
+    consentRoom();
+    if (v === 'granted') { loadAnalytics(); trackPage(); } else stopAnalytics();
+  }
+  document.addEventListener('click', function (e) {
+    var c = e.target.closest('[data-consent]');
+    if (c) { setConsent(c.getAttribute('data-consent')); return; }
+    if (e.target.closest('[data-consent-open]')) {
+      showConsent();
+      var b = document.querySelector('#consent [data-consent="granted"]');
+      if (b) b.focus();
+    }
+  });
+  var consent = load('consent');                      // 'granted' | 'denied' | null (not asked yet)
+  if (consent === 'granted') loadAnalytics();
+  else if (consent !== 'denied') showConsent();
 
   if (!SHOW_DEMO) {
     document.querySelector('.demo').hidden = true;
