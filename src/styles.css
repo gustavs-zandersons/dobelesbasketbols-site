@@ -1260,12 +1260,6 @@ a.tie.is-final:hover { box-shadow: inset 0 4px 0 var(--accent-fill), 0 0 0 2px v
   font-size: 0.86rem;
   color: var(--ink-muted);
 }
-.foot-info { display: grid; gap: 2px; justify-items: start; }
-.foot-link {
-  min-height: 32px; padding: 0; border: 0; background: none; cursor: pointer;
-  font: inherit; color: var(--ink-muted); text-decoration: underline; text-underline-offset: 3px;
-}
-.foot-link:hover { color: var(--ink); }
 .socials { display: flex; gap: 10px; }
 
 /* Cookie banner (Google Analytics only with consent): fixed at the bottom
@@ -1285,6 +1279,23 @@ a.tie.is-final:hover { box-shadow: inset 0 4px 0 var(--accent-fill), 0 0 0 2px v
   .consent-btns { flex: 1 1 100%; }
   .consent-btns .btn { flex: 1; min-width: 0; }
 }
+/* Small round cookie button in the bottom-right corner (after a choice):
+   opens the banner again to change the choice. */
+.cookie-btn {
+  position: fixed; z-index: 45;
+  right: calc(14px + env(safe-area-inset-right, 0px));
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  width: 44px; height: 44px; padding: 0;
+  display: grid; place-items: center;
+  border-radius: 50%; border: 1px solid var(--line-strong);
+  background: var(--bg-head); color: var(--accent);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.cookie-btn svg { width: 24px; height: 24px; }
+.cookie-btn:hover { transform: translateY(-2px); }
+@media (prefers-reduced-motion: reduce) { .cookie-btn { transition: none; } .cookie-btn:hover { transform: none; } }
 .social {
   width: 44px; height: 44px;
   border-radius: 50%;
@@ -1581,7 +1592,6 @@ a.tie.is-final:hover { box-shadow: inset 0 4px 0 var(--accent-fill), 0 0 0 2px v
 /* ---------- Footer on phones ---------- */
 @media (max-width: 767px) {
   .foot { flex-direction: column; justify-content: center; text-align: center; }
-  .foot-info { justify-items: center; }
   .socials { justify-content: center; }
 }
 /* ---------- Calendar page ---------- */
