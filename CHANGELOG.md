@@ -1,5 +1,20 @@
 # Changelog
 
+## Round 15 — released 27 Oct 2026: Google Analytics with a cookie banner
+
+- **Google Analytics** (`G-G9W635957K`) on dobelesbasketbols.lv, only after
+  the visitor agrees. Banner text: "Mēs izmantojam Google Analytics sīkdatnes,
+  lai veidotu statistiku par tīmekļvietnes apmeklējumu. Tās saglabāsim tikai
+  tad, ja piekritīsiet." Buttons "Atteikties" / "Piekrist", the same size.
+- Before "Piekrist" nothing is sent to Google and no cookies are set. The
+  choice is kept in the browser. **"Sīkdatnes"** in the footer opens the
+  banner again; "Atteikties" switches tracking off and deletes the `_ga` cookies.
+- Analytics only (ads storage denied). One page view per address, sent by the
+  site itself after the page title is set — Google's own "page changes based
+  on browser history events" must be off in the stream's enhanced measurement.
+- Not loaded in previews, local builds or the pre-renderer; `check.js` makes
+  sure no page is saved with the Google tag or the banner in it.
+
 ## Round 14 — released 27 Oct 2026: new sponsor Spēka Stacija
 
 - **Spēka Stacija** (fitnesa studija, Dobele) joins the sponsors as
