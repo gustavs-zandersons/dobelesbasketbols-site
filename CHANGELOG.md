@@ -1,5 +1,11 @@
 # Changelog
 
+## Round 17 — released 27 Oct 2026: smaller cookie button
+
+- The cookie button is 30 px (was 44 px) on every screen, with a smaller icon;
+  the tappable area still reaches 44 px. On phones it sits lower: 8 px from the
+  bottom and 10 px from the right edge (computers: 14 px).
+
 ## Round 16 — released 27 Oct 2026: floating cookie button
 
 - **Cookie settings:** a small round button (44 px) with a cookie icon in the
