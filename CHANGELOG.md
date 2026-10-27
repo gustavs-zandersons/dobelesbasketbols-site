@@ -1,5 +1,14 @@
 # Changelog
 
+## Round 16 — released 27 Oct 2026: floating cookie button
+
+- **Cookie settings:** a small round button (44 px) with a cookie icon in the
+  bottom-right corner replaces the "Sīkdatnes" footer link. It appears once the
+  visitor has chosen ("Piekrist" or "Atteikties"), opens the cookie banner again
+  to change the choice, hides while the banner is open, and comes back after the
+  new choice (keyboard focus returns to it). Label "Sīkdatņu iestatījumi".
+- `check.js`: the button is never saved in a pre-rendered page.
+
 ## Round 15 — released 27 Oct 2026: Google Analytics with a cookie banner
 
 - **Google Analytics** (`G-G9W635957K`) on dobelesbasketbols.lv, only after

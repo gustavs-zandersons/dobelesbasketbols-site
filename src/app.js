@@ -3074,7 +3074,7 @@
   // Google Analytics loads only on the live site and only after the visitor
   // presses "Piekrist" — before that nothing is sent to Google and no cookies
   // are set. The choice is kept in this browser; after it, a small round cookie
-  // button in the bottom-left corner opens the banner again ("Atteikties"
+  // button in the bottom-right corner opens the banner again ("Atteikties"
   // removes the cookies).
   var GA_ID = 'G-G9W635957K';
   var GA_ON = ['dobelesbasketbols.lv', 'www.dobelesbasketbols.lv'].indexOf(window.location.hostname) >= 0 && !window.__PRERENDER;

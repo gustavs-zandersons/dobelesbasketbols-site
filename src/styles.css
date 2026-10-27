@@ -1279,11 +1279,11 @@ a.tie.is-final:hover { box-shadow: inset 0 4px 0 var(--accent-fill), 0 0 0 2px v
   .consent-btns { flex: 1 1 100%; }
   .consent-btns .btn { flex: 1; min-width: 0; }
 }
-/* Small round cookie button in the bottom-left corner (after a choice):
+/* Small round cookie button in the bottom-right corner (after a choice):
    opens the banner again to change the choice. */
 .cookie-btn {
   position: fixed; z-index: 45;
-  left: calc(14px + env(safe-area-inset-left, 0px));
+  right: calc(14px + env(safe-area-inset-right, 0px));
   bottom: calc(14px + env(safe-area-inset-bottom, 0px));
   width: 44px; height: 44px; padding: 0;
   display: grid; place-items: center;
