@@ -1260,7 +1260,31 @@ a.tie.is-final:hover { box-shadow: inset 0 4px 0 var(--accent-fill), 0 0 0 2px v
   font-size: 0.86rem;
   color: var(--ink-muted);
 }
+.foot-info { display: grid; gap: 2px; justify-items: start; }
+.foot-link {
+  min-height: 32px; padding: 0; border: 0; background: none; cursor: pointer;
+  font: inherit; color: var(--ink-muted); text-decoration: underline; text-underline-offset: 3px;
+}
+.foot-link:hover { color: var(--ink); }
 .socials { display: flex; gap: 10px; }
+
+/* Cookie banner (Google Analytics only with consent): fixed at the bottom
+   until the visitor chooses; both answers equally easy to press. */
+.consent {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 52;
+  background: var(--bg-head); color: var(--fg);
+  border-top: 1px solid var(--line-strong);
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.35);
+  padding-block: 14px calc(14px + env(safe-area-inset-bottom, 0px));
+}
+.consent-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; }
+.consent-text { flex: 1 1 420px; min-width: 0; font-size: 0.95rem; line-height: 1.45; color: var(--fg-muted); }
+.consent-btns { display: flex; gap: 10px; flex: 0 0 auto; }
+.consent-btns .btn { min-width: 128px; }
+@media (max-width: 559px) {
+  .consent-btns { flex: 1 1 100%; }
+  .consent-btns .btn { flex: 1; min-width: 0; }
+}
 .social {
   width: 44px; height: 44px;
   border-radius: 50%;
@@ -1557,6 +1581,7 @@ a.tie.is-final:hover { box-shadow: inset 0 4px 0 var(--accent-fill), 0 0 0 2px v
 /* ---------- Footer on phones ---------- */
 @media (max-width: 767px) {
   .foot { flex-direction: column; justify-content: center; text-align: center; }
+  .foot-info { justify-items: center; }
   .socials { justify-content: center; }
 }
 /* ---------- Calendar page ---------- */
