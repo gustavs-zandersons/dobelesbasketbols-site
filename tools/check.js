@@ -161,7 +161,7 @@ if (MULTI) {
     check(desc && desc.length > 50, p + ': description');
     check(t.includes('property="og:title"') && t.includes('property="og:image"') && t.includes('property="og:description"'), p + ': link-preview tags');
     // Google Analytics loads only after consent (app.js), never from the saved page.
-    check(!t.includes('googletagmanager.com') && !t.includes('id="consent"'), p + ': no Google tag or cookie banner saved in the page');
+    check(!t.includes('googletagmanager.com') && !t.includes('id="consent"') && !t.includes('id="cookie-btn"'), p + ': no Google tag, cookie banner or cookie button saved in the page');
     check(/<h1[\s>]/.test(t.replace(/<section class="hero"[\s\S]*?<\/section>/, '')) || p === '/' || p === '/jelgava/', p + ': a heading in the page content');
     if (robots === 'index, follow') {
       check(canon && canon.startsWith(SITE + '/'), p + ': canonical address');

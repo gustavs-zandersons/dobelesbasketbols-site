@@ -3073,8 +3073,9 @@
   // ---------- Visitor statistics (Google Analytics), only with consent ----------
   // Google Analytics loads only on the live site and only after the visitor
   // presses "Piekrist" — before that nothing is sent to Google and no cookies
-  // are set. The choice is kept in this browser; "Sīkdatnes" in the footer
-  // opens the banner again (and "Atteikties" removes the cookies).
+  // are set. The choice is kept in this browser; after it, a small round cookie
+  // button in the bottom-left corner opens the banner again ("Atteikties"
+  // removes the cookies).
   var GA_ID = 'G-G9W635957K';
   var GA_ON = ['dobelesbasketbols.lv', 'www.dobelesbasketbols.lv'].indexOf(window.location.hostname) >= 0 && !window.__PRERENDER;
   var gaLoaded = false, gaLastPath = null;
@@ -3123,8 +3124,26 @@
       '<div class="consent-btns"><button type="button" class="btn" data-consent="denied">Atteikties</button>' +
       '<button type="button" class="btn btn--fill" data-consent="granted">Piekrist</button></div></div>';
     document.body.appendChild(el);
+    var btn = $('cookie-btn');
+    if (btn) btn.remove();                            // the banner replaces the button while open
     consentRoom();
     window.addEventListener('resize', consentRoom);
+  }
+  var COOKIE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">' +
+    '<path d="M12 3a9 9 0 1 0 9 9 3 3 0 0 1-3.5-3.5A3 3 0 0 1 12 3z"/>' +
+    '<g fill="currentColor" stroke="none"><circle cx="8.3" cy="9.6" r="1.25"/><circle cx="8.9" cy="15.4" r="1.25"/><circle cx="13.9" cy="13.4" r="1.25"/><circle cx="14.6" cy="18" r="1"/></g></svg>';
+  function showCookieBtn() {
+    if (window.__PRERENDER || $('cookie-btn') || $('consent')) return;
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.id = 'cookie-btn';
+    b.className = 'cookie-btn';
+    b.setAttribute('data-consent-open', '');
+    b.setAttribute('aria-label', 'Sīkdatņu iestatījumi');
+    b.title = 'Sīkdatņu iestatījumi';
+    b.innerHTML = COOKIE_ICON;
+    document.body.appendChild(b);
+    return b;
   }
   // Room under the page while the banner is open, so it never covers the footer.
   function consentRoom() {
@@ -3138,11 +3157,16 @@
     window.removeEventListener('resize', consentRoom);
     consentRoom();
     if (v === 'granted') { loadAnalytics(); trackPage(); } else stopAnalytics();
+    var btn = showCookieBtn();
+    if (btn && reopened) btn.focus();                 // keyboard users land back where they started
+    reopened = false;
   }
+  var reopened = false;
   document.addEventListener('click', function (e) {
     var c = e.target.closest('[data-consent]');
     if (c) { setConsent(c.getAttribute('data-consent')); return; }
     if (e.target.closest('[data-consent-open]')) {
+      reopened = true;
       showConsent();
       var b = document.querySelector('#consent [data-consent="granted"]');
       if (b) b.focus();
@@ -3150,7 +3174,7 @@
   });
   var consent = load('consent');                      // 'granted' | 'denied' | null (not asked yet)
   if (consent === 'granted') loadAnalytics();
-  else if (consent !== 'denied') showConsent();
+  if (consent === 'granted' || consent === 'denied') showCookieBtn(); else showConsent();
 
   if (!SHOW_DEMO) {
     document.querySelector('.demo').hidden = true;
