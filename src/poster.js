@@ -542,6 +542,21 @@
     });
   }
 
+  // A crest sized by area, not by its longest side, so a wide logo (Skandijs)
+  // looks as big as a round or tall one.
+  function thumbCrest(g, t, cx, cy, s) {
+    var img = t && t.img;
+    if (!img) { drawCrest(g, t, cx, cy, s); return; }
+    var r = (img.naturalWidth || img.width) / (img.naturalHeight || img.height), area = s * s * 0.9;
+    var w = Math.sqrt(area * r), h = Math.sqrt(area / r);
+    if (w > s * 1.4) { w = s * 1.4; h = w / r; }
+    if (h > s * 1.1) { h = s * 1.1; w = h * r; }
+    g.save();
+    g.shadowColor = 'rgba(0, 0, 0, 0.45)'; g.shadowBlur = 18; g.shadowOffsetY = 4;
+    g.drawImage(img, cx - w / 2, cy - h / 2, w, h);
+    g.restore();
+  }
+
   function renderThumb(spec) {
     var S = THUMB, W = S.w, H = S.h, k = S.scale;
     var c = document.createElement('canvas');
@@ -606,8 +621,8 @@
     // between the bottom of TIEŠRAIDE and the top of the sponsors label.
     var labelTop = S.label.y - capHeight(g, S.label.px) / 2;
     var crestY = (base + labelTop) / 2;
-    drawCrest(g, spec.home || {}, cx - S.crest.dx, crestY, S.crest.size);
-    drawCrest(g, spec.away || {}, cx + S.crest.dx, crestY, S.crest.size);
+    thumbCrest(g, spec.home || {}, cx - S.crest.dx, crestY, S.crest.size);
+    thumbCrest(g, spec.away || {}, cx + S.crest.dx, crestY, S.crest.size);
     var B = S.between;
     text(g, B.word, cx, crestY, fit(g, B.word, B.px, 2 * S.crest.dx - S.crest.size - 24, 24), B.color);
 

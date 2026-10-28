@@ -20,6 +20,13 @@
   ATBALSTA:" with the sponsor logos straight on the dark background (kept clear
   of YouTube's bottom-right badge). A sponsor logo made for dark backgrounds goes
   in `assets/youtube/sponsors/<id>.webp`; until then the footer logo is used.
+- **Team logos from the originals (whole site):** Buki, Doks, Īle, Jaunpils,
+  Skandijs, Sprīdītis, Valauto and Vilki now have their original files in
+  `design/teams/` (1000–3000 px; were 160 px copies from last season). The site's
+  copies (`assets/teams/`, 256 px) are remade from them, so logos are sharp
+  everywhere (pages, posters). `prepare_assets.py youtube` makes 600 px copies for
+  the thumbnails (`assets/youtube/teams/`); crests there are sized by area, so a
+  wide logo looks as big as a round one.
 - **Season sheet script:** `apps-script/youtube.gs` (+ `appsscript.json`, install
   steps in `apps-script/README.md`). Creates or updates one scheduled stream per
   game for the next 7 days, sets the thumbnail and playlist, writes the link into
