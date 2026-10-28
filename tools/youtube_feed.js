@@ -26,7 +26,8 @@
   var PLAYLISTS = { dbck: 'Dobeles Champion Cup 2026-2027', jssc: 'Jelgava Challenger Cup 2026-2027' };
   var HASHTAGS = { dbck: '#DobelesBasketbols #basketbols #ČempionuKauss', jssc: '#DobelesBasketbols #basketbols #IzaicinājumaKauss' };
   var CUP_PATH = { dbck: 'dobele', jssc: 'jelgava' };
-  var CUP_LOGO = { dbck: 'assets/dbck-logo.webp', jssc: 'assets/jssc-logo.webp' };
+  var PANEL = { dbck: 'assets/youtube/dbck-vertikals.webp', jssc: 'assets/youtube/jssc-vertikals.webp' };
+  var BG = 'assets/youtube/fons.jpg';
 
   var state = null;
 
@@ -92,13 +93,6 @@
     var year = String(D.settings.season || D.season).slice(0, 4);
     var games = [], thumbs = {};
 
-    // Same photo for every game on a day, the next one for the next game day.
-    var pool = ((window.SITE_DATA.poster || {}).photos || []).filter(function (p) { return (p.use || ['next']).indexOf('next') >= 0; });
-    var days = [];
-    D.rounds.forEach(function (r) { if (days.indexOf(r.date) < 0) days.push(r.date); });
-    days.sort();
-    function photoFor(date) { return pool.length ? pool[Math.max(0, days.indexOf(date)) % pool.length] : null; }
-
     // A third semifinal game is needed only when the series stands 1–1 after two games.
     function needed(g) {
       if (!g.ifNeeded) return true;
@@ -149,17 +143,10 @@
         item.description = lines.map(clean).join('\n');
         if (bytes(item.description) > DESC_MAX_BYTES) throw new Error(g.id + ': description over 5000 bytes');
         item.thumb = site + '/youtube/' + g.id + '.jpg';
-        var photo = photoFor(g.date);
         thumbs[g.id] = {
-          cup: g.comp, seed: g.comp + g.date,
-          logoSrc: CUP_LOGO[g.comp],
-          stage: stage.thumb,
-          weekday: WEEKDAYS[day.getDay()], date: ymd[2] + '.' + ymd[1] + '.' + ymd[0],
-          time: g.time, hall: venue.name,
-          cupName: (D.settings.cups[g.comp] || {}).name || cups.desc,
+          cup: g.comp, panelSrc: PANEL[g.comp],
           home: { src: H.logo || '', initials: initials(H.short), color: H.color, name: H.short },
-          away: { src: A.logo || '', initials: initials(A.short), color: A.color, name: A.short },
-          photoSrc: photo ? photo.src : '', photoFocus: photo ? photo.focus : null, photoFocusX: photo ? photo.focusX : null
+          away: { src: A.logo || '', initials: initials(A.short), color: A.color, name: A.short }
         };
       }
       games.push(item);
@@ -174,15 +161,17 @@
   function thumb(id) {
     var s = state && state.thumbs[id];
     if (!s) return Promise.resolve(null);
-    var srcs = [s.logoSrc, s.home.src, s.away.src, s.photoSrc].filter(Boolean);
-    return window.Poster.prepare(srcs).then(function (imgs) {
+    var sponsors = ((window.SITE_DATA.poster || {}).sponsors || []);
+    var srcs = [BG, s.panelSrc, s.home.src, s.away.src].concat(sponsors.map(function (x) { return x.src; })).filter(Boolean);
+    var anton = document.fonts && document.fonts.load ? document.fonts.load('400 150px "Anton"', 'TIEŠRAIDE').catch(function () {}) : null;
+    return Promise.all([anton, window.Poster.prepare(srcs)]).then(function (res) {
+      var imgs = res[1];
       var img = function (src) { var i = srcs.indexOf(src); return src && i >= 0 ? imgs[i] : null; };
       var spec = {
-        cup: s.cup, seed: s.seed, logo: img(s.logoSrc), stage: s.stage, weekday: s.weekday, date: s.date,
-        time: s.time, hall: s.hall, cupName: s.cupName,
+        cup: s.cup, bg: img(BG), panel: img(s.panelSrc),
         home: Object.assign({}, s.home, { img: img(s.home.src) }),
         away: Object.assign({}, s.away, { img: img(s.away.src) }),
-        photo: s.photoSrc && img(s.photoSrc) ? { img: img(s.photoSrc), focus: s.photoFocus, focusX: s.photoFocusX } : null
+        sponsors: sponsors.map(function (x) { return { img: img(x.src), w: x.w, h: x.h, scale: x.scale }; })
       };
       return window.Poster.renderThumb(spec).toDataURL('image/jpeg', 0.9);
     });

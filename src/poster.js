@@ -488,73 +488,118 @@
   }
 
   // ---------- YouTube thumbnail (1280×720, one game) ----------
-  // Same look as the round posters: darkened action photo with the cup tint,
-  // cup logo, stage in a pill, home crest · time box · away crest with the
-  // names below, then the jagged cup-coloured band with the cup name and hall.
-  // YouTube puts its LIVE / duration badges in the bottom-right corner, so
-  // nothing important sits there.
+  // Last season's "TIEŠRAIDE" card, reworked with the organisers (28 Oct 2026):
+  // dark concrete background, the cup's vertical logo panel on the left,
+  // TIEŠRAIDE as the title, the two team crests with VS between them and the
+  // short names below, sponsors at the bottom on a white card (the site's
+  // sponsor logos are made for white). YouTube puts its badges in the
+  // bottom-right corner; the second sponsor row is shorter, so it stays clear.
   //
-  // spec = { cup, seed, logo: img, stage, weekday, date, time, hall, cupName,
-  //          home: { img | initials, color, name }, away: {…}, photo }
-  var THUMB = { w: 1280, h: 720, crestX: 300, crestY: 292, crest: 250, nameY: 466, name: 60, nameW: 420,
-                box: [214, 94], boxY: 262, timePx: 72, dayY: 356, dayPx: 32, dateY: 400, datePx: 44,
-                stageY: 78, stagePx: 36, logo: [104, 96, 150], band: 556, bandAmp: 34, cupY: 616, cupPx: 46, hallY: 670, hallPx: 32 };
+  // spec = { cup, bg: img, panel: img, home: { img | initials, color, name },
+  //          away: {…}, sponsors: [{ img, w, h, scale }], label }
+  var THUMB = {
+    w: 1280, h: 720,
+    panel: { x: 56, y: 52, h: 616 },              // the vertical logo, 1:2
+    zone: [404, 1236],                            // everything right of the panel
+    title: { y: 126, px: 146, color: '#8A8A8A' },
+    crest: { y: 318, size: 226, dx: 232 },
+    vs: { px: 92, color: '#FFFFFF' },
+    name: { y: 470, px: 40 },
+    label: { y: 526, px: 26 },
+    card: { y: 546, h: 150, pad: 14, r: 12 },
+    logos: { rows: [8, 7], area: 2700, max: [118, 48], gap: 20 }
+  };
+  var VS_COLOR = { dbck: '#E9B716', jssc: '#FFFFFF' };
+
+  function logoRows(g, list, x0, x1, top, bottom, L) {
+    if (!list.length) return;
+    var rows = [], i = 0;
+    L.rows.forEach(function (n) { if (i < list.length) { rows.push(list.slice(i, i + n)); i += n; } });
+    if (i < list.length) rows[rows.length - 1] = rows[rows.length - 1].concat(list.slice(i));
+    var F = { logoArea: L.area, logoMax: L.max };
+    var avail = x1 - x0, k = 1, gapY = L.gap * 0.5;
+    for (var tries = 0; tries < 40; tries++) {
+      var tooWide = rows.some(function (row) {
+        var sum = row.reduce(function (a, l) { return a + logoBox(l, F, k).w; }, 0);
+        return sum + L.gap * k * (row.length - 1) > avail;
+      });
+      var hTot = rows.reduce(function (a, row) { return a + Math.max.apply(null, row.map(function (l) { return logoBox(l, F, k).h; })); }, 0) + gapY * (rows.length - 1);
+      if (!tooWide && hTot <= bottom - top) break;
+      k *= 0.95;
+    }
+    var heights = rows.map(function (row) { return Math.max.apply(null, row.map(function (l) { return logoBox(l, F, k).h; })); });
+    var total = heights.reduce(function (a, b) { return a + b; }, 0) + gapY * (rows.length - 1);
+    var y = top + (bottom - top - total) / 2;
+    rows.forEach(function (row, ri) {
+      var boxes = row.map(function (l) { return logoBox(l, F, k); });
+      var sum = boxes.reduce(function (a, b) { return a + b.w; }, 0);
+      var gap = Math.min(L.gap * 1.8, (avail - sum) / Math.max(1, row.length - 1));
+      var x = (x0 + x1 - (sum + gap * (row.length - 1))) / 2;
+      row.forEach(function (l, j) {
+        var b = boxes[j];
+        if (l.img) g.drawImage(l.img, x, y + (heights[ri] - b.h) / 2, b.w, b.h);
+        x += b.w + gap;
+      });
+      y += heights[ri] + gapY;
+    });
+  }
+
   function renderThumb(spec) {
-    var S = THUMB, W = S.w, H = S.h, T = THEMES[spec.cup] || THEMES.dbck;
+    var S = THUMB, W = S.w, H = S.h;
     var c = document.createElement('canvas');
     c.width = W; c.height = H;
     var g = c.getContext('2d');
-    var rnd = rng(spec.seed || spec.date);
 
-    if (spec.photo && spec.photo.img) drawCover(g, spec.photo, W, H);
-    else { g.fillStyle = '#1B1A14'; g.fillRect(0, 0, W, H); }
-    tint(g, spec.cup, W, H);
-    ridge(g, W, S.band, S.bandAmp, H, T.panel, rnd);
+    // Background: dark concrete.
+    if (spec.bg) drawCover(g, { img: spec.bg, focus: 0.5 }, W, H);
+    else { g.fillStyle = '#1E1E1E'; g.fillRect(0, 0, W, H); }
 
-    // Cup logo, top left.
-    if (spec.logo) drawContain(g, spec.logo, S.logo[0], S.logo[1], S.logo[2], true);
-
-    // Stage in a pill, top centre.
-    var stage = up(spec.stage);
-    if (stage) {
-      var maxPill = W - 2 * (S.logo[0] + S.logo[2] / 2 + 24);
-      var px = fit(g, stage, S.stagePx, maxPill - S.stagePx * 1.4, 20);
-      var tw = width(g, stage, px) + px * 1.4, th = Math.round(px * 1.6);
-      g.fillStyle = PILL[spec.cup] ? PILL[spec.cup][0] : PILL.dbck[0];
-      roundRect(g, W / 2 - tw / 2, S.stageY - th / 2, tw, th, th / 2);
-      text(g, stage, W / 2, S.stageY, px, PILL[spec.cup] ? PILL[spec.cup][1] : PILL.dbck[1]);
+    // The cup's vertical logo on the left.
+    if (spec.panel) {
+      var ph = S.panel.h, pw = ph * (spec.panel.naturalWidth || spec.panel.width) / (spec.panel.naturalHeight || spec.panel.height);
+      g.save();
+      g.shadowColor = 'rgba(0, 0, 0, 0.55)'; g.shadowBlur = 24; g.shadowOffsetY = 6;
+      g.drawImage(spec.panel, S.panel.x, S.panel.y, pw, ph);
+      g.restore();
     }
+    var x0 = S.zone[0], x1 = S.zone[1], cx = (x0 + x1) / 2;
 
-    // Teams: crest with the name below, home left, away right.
-    [[spec.home, S.crestX], [spec.away, W - S.crestX]].forEach(function (side) {
+    // TIEŠRAIDE: big grey letters with the concrete showing through.
+    var title = 'TIEŠRAIDE', tf = '"Anton", "Barlow Condensed", sans-serif';
+    g.font = S.title.px + 'px ' + tf;
+    var tPx = Math.min(S.title.px, Math.floor(S.title.px * (x1 - x0) / g.measureText(title).width));
+    var off = document.createElement('canvas');
+    off.width = W; off.height = H;
+    var o = off.getContext('2d');
+    o.font = tPx + 'px ' + tf;
+    o.textAlign = 'center'; o.textBaseline = 'middle';
+    o.fillStyle = S.title.color;
+    o.fillText(title, cx, S.title.y);
+    if (spec.bg) {
+      o.globalCompositeOperation = 'source-atop';
+      o.globalAlpha = 0.35;
+      drawCover(o, { img: spec.bg, focus: 0.5 }, W, H);
+    }
+    g.drawImage(off, 0, 0);
+
+    // Teams: crest, short name below; VS between.
+    [[spec.home, cx - S.crest.dx], [spec.away, cx + S.crest.dx]].forEach(function (side) {
       var t = side[0] || {}, x = side[1];
-      drawCrest(g, t, x, S.crestY, S.crest);
+      drawCrest(g, t, x, S.crest.y, S.crest.size);
       var name = up(t.name);
-      var one = fit(g, name, S.name, S.nameW, 1);
-      if (one >= S.name * 0.75 || twoLines(g, name, S.name).length < 2) {
-        text(g, name, x, S.nameY, Math.max(one, 24), '#FFFFFF');
-      } else {
-        var lines = twoLines(g, name, S.name);
-        var px2 = Math.min.apply(null, lines.map(function (l) { return fit(g, l, S.name * 0.8, S.nameW, 24); }));
-        drawTeam(g, { lines: lines, px: px2 }, x, S.nameY + px2 * 0.2, 'center', '#FFFFFF');
-      }
+      if (name) text(g, name, x, S.name.y, fit(g, name, S.name.px, S.crest.dx * 1.6, 22), '#FFFFFF');
     });
+    text(g, 'VS', cx, S.crest.y, S.vs.px, VS_COLOR[spec.cup] || S.vs.color);
 
-    // Centre: tip-off time in the cup's box, the day and date below.
-    var bw = S.box[0], bh = S.box[1];
-    g.save();
-    g.shadowColor = 'rgba(0, 0, 0, 0.4)'; g.shadowBlur = 16; g.shadowOffsetY = 4;
-    g.fillStyle = T.box;
-    roundRect(g, W / 2 - bw / 2, S.boxY - bh / 2, bw, bh, 14);
-    g.restore();
-    text(g, spec.time || '', W / 2, S.boxY, fit(g, spec.time || '', S.timePx, bw - 28, 30), T.boxText);
-    if (spec.weekday) text(g, up(spec.weekday), W / 2, S.dayY, fit(g, up(spec.weekday), S.dayPx, 380, 18), 'rgba(255, 255, 255, 0.85)');
-    if (spec.date) text(g, up(spec.date), W / 2, S.dateY, fit(g, up(spec.date), S.datePx, 380, 20), '#FFFFFF');
-
-    // Band: cup name and hall (kept narrow, clear of YouTube's corner badges).
-    var cup = up(spec.cupName), hall = up(spec.hall), bandW = 860;
-    if (cup) text(g, cup, W / 2, S.cupY, fit(g, cup, S.cupPx, bandW, 22), T.head);
-    if (hall) text(g, hall, W / 2, S.hallY, fit(g, hall, S.hallPx, bandW, 18), T.head);
+    // Sponsors: label, then the logos on a white card.
+    var sp = spec.sponsors || [];
+    if (sp.length) {
+      var label = up(spec.label || 'Mūs atbalsta:');
+      text(g, label, x0, S.label.y, S.label.px, '#FFFFFF', 'left');
+      g.fillStyle = '#FFFFFF';
+      roundRect(g, x0, S.card.y, x1 - x0, S.card.h, S.card.r);
+      logoRows(g, sp, x0 + S.card.pad, x1 - S.card.pad, S.card.y + S.card.pad, S.card.y + S.card.h - S.card.pad, S.logos);
+    }
     return c;
   }
 
