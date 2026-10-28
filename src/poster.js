@@ -499,7 +499,7 @@
   // spec = { cup, bg: img, panel: img, home: { img | initials, color },
   //          away: {…}, sponsors: [{ img, w, h, scale }], label }
   var THUMB = {
-    w: 1280, h: 720,
+    w: 1280, h: 720, scale: 1.5,                 // laid out at 1280×720, saved at 1920×1080 (sharper on big screens)
     panel: { x: 56, y: 52, h: 616 },              // the vertical logo, 1:2
     zone: [404, 1236],                            // everything right of the panel
     title: { cap: 128, stretch: 1.15, spacing: 0.035, color: '#8A8A8A' },
@@ -543,10 +543,13 @@
   }
 
   function renderThumb(spec) {
-    var S = THUMB, W = S.w, H = S.h;
+    var S = THUMB, W = S.w, H = S.h, k = S.scale;
     var c = document.createElement('canvas');
-    c.width = W; c.height = H;
+    c.width = W * k; c.height = H * k;
     var g = c.getContext('2d');
+    g.scale(k, k);
+    g.imageSmoothingEnabled = true;
+    g.imageSmoothingQuality = 'high';               // logos scaled down stay smooth, not jagged
 
     // Background: dark concrete.
     if (spec.bg) drawCover(g, { img: spec.bg, focus: 0.5 }, W, H);
@@ -579,8 +582,10 @@
     var base = S.panel.y + topOfS;                      // baseline
     var gap = px * capPer * T.spacing, startX = cx - titleWidth(px) / 2;
     var off = document.createElement('canvas');
-    off.width = W; off.height = H;
+    off.width = W * k; off.height = H * k;
     var o = off.getContext('2d');
+    o.scale(k, k);
+    o.imageSmoothingQuality = 'high';
     o.font = px + 'px ' + tf;
     o.textBaseline = 'alphabetic'; o.textAlign = 'left';
     o.fillStyle = T.color;
@@ -595,7 +600,7 @@
       o.globalAlpha = 0.35;
       drawCover(o, { img: spec.bg, focus: 0.5 }, W, H);
     }
-    g.drawImage(off, 0, 0);
+    g.drawImage(off, 0, 0, W, H);
 
     // Teams: the two crests with PRET between them, centred in the space
     // between the bottom of TIEŠRAIDE and the top of the sponsors label.

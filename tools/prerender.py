@@ -130,7 +130,8 @@ def youtube_feed(pg, out, site, social):
     import hashlib
     pg.add_script_tag(content=(Path(__file__).parent / 'youtube_feed.js').read_text())
     dark = sorted(f.stem for f in (out / 'assets' / 'youtube' / 'sponsors').glob('*.webp'))   # sponsor logos for dark backgrounds
-    feed = pg.evaluate('(o) => window.YouTubeFeed.feed(o)', {'site': site, 'links': social, 'darkLogos': dark})
+    big = sorted(f.stem for f in (out / 'assets' / 'youtube' / 'teams').glob('*.webp'))         # large team logos
+    feed = pg.evaluate('(o) => window.YouTubeFeed.feed(o)', {'site': site, 'links': social, 'darkLogos': dark, 'bigTeams': big})
     d = out / 'youtube'
     d.mkdir(parents=True, exist_ok=True)
     n = 0

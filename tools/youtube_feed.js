@@ -145,14 +145,14 @@
         item.thumb = site + '/youtube/' + g.id + '.jpg';
         thumbs[g.id] = {
           cup: g.comp, panelSrc: PANEL[g.comp],
-          home: { src: H.logo || '', initials: initials(H.short), color: H.color, name: H.short },
-          away: { src: A.logo || '', initials: initials(A.short), color: A.color, name: A.short }
+          home: { id: H.id, src: H.logo || '', initials: initials(H.short), color: H.color, name: H.short },
+          away: { id: A.id, src: A.logo || '', initials: initials(A.short), color: A.color, name: A.short }
         };
       }
       games.push(item);
     });
     games.sort(function (x, y) { return x.start < y.start ? -1 : x.start > y.start ? 1 : 0; });
-    state = { thumbs: thumbs, darkLogos: opts.darkLogos || [] };
+    state = { thumbs: thumbs, darkLogos: opts.darkLogos || [], bigTeams: opts.bigTeams || [] };
     return { version: 1, generated: new Date().toISOString(), season: D.settings.season || D.season,
              site: site, games: games };
   }
@@ -165,6 +165,10 @@
     // (assets/youtube/sponsors/<id>.webp) once there is one.
     var sponsors = ((window.SITE_DATA.poster || {}).sponsors || []).map(function (x) {
       return state.darkLogos.indexOf(x.id) >= 0 ? Object.assign({}, x, { src: 'assets/youtube/sponsors/' + x.id + '.webp', own: true }) : x;
+    });
+    // Team logos: the large copy made for YouTube when there is one (assets/youtube/teams).
+    ['home', 'away'].forEach(function (k) {
+      if (state.bigTeams.indexOf(s[k].id) >= 0) s[k] = Object.assign({}, s[k], { src: 'assets/youtube/teams/' + s[k].id + '.webp' });
     });
     var srcs = [BG, s.panelSrc, s.home.src, s.away.src].concat(sponsors.map(function (x) { return x.src; })).filter(Boolean);
     var anton = document.fonts && document.fonts.load ? document.fonts.load('400 150px "Anton"', 'TIEŠRAIDE').catch(function () {}) : null;
@@ -180,7 +184,7 @@
           return { img: im, w: x.own && im ? im.naturalWidth : x.w, h: x.own && im ? im.naturalHeight : x.h, scale: x.scale };
         })
       };
-      return window.Poster.renderThumb(spec).toDataURL('image/jpeg', 0.9);
+      return window.Poster.renderThumb(spec).toDataURL('image/jpeg', 0.92);
     });
   }
 
