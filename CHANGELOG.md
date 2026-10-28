@@ -11,9 +11,15 @@
   "Ja vajag" game is needed. Built by `tools/youtube_feed.js` inside the
   pre-render browser, so it matches the site.
 - **Thumbnails:** `dist/youtube/<game id>.jpg`, 1280×720, for every game whose
-  teams are known — `Poster.renderThumb` in `src/poster.js`: the round posters'
-  photo + cup tint, cup logo, stage pill, crests and short names, tip-off time box
-  with day and date, cup-coloured band with the cup name and hall.
+  teams are known — `Poster.renderThumb` in `src/poster.js`, last season's
+  "TIEŠRAIDE" card reworked with the organisers: dark concrete background
+  (`assets/youtube/fons.jpg`), the cup's vertical logo on the left
+  (`assets/youtube/<cup>-vertikals.webp`, originals in `design/youtube/`),
+  TIEŠRAIDE in wide spaced grey letters with the top of the Š level with the
+  panel, both crests with a white "PRET" between them (no names), and "MŪS
+  ATBALSTA:" with the sponsor logos straight on the dark background (kept clear
+  of YouTube's bottom-right badge). A sponsor logo made for dark backgrounds goes
+  in `assets/youtube/sponsors/<id>.webp`; until then the footer logo is used.
 - **Season sheet script:** `apps-script/youtube.gs` (+ `appsscript.json`, install
   steps in `apps-script/README.md`). Creates or updates one scheduled stream per
   game for the next 7 days, sets the thumbnail and playlist, writes the link into

@@ -152,7 +152,7 @@
       games.push(item);
     });
     games.sort(function (x, y) { return x.start < y.start ? -1 : x.start > y.start ? 1 : 0; });
-    state = { thumbs: thumbs };
+    state = { thumbs: thumbs, darkLogos: opts.darkLogos || [] };
     return { version: 1, generated: new Date().toISOString(), season: D.settings.season || D.season,
              site: site, games: games };
   }
@@ -161,7 +161,11 @@
   function thumb(id) {
     var s = state && state.thumbs[id];
     if (!s) return Promise.resolve(null);
-    var sponsors = ((window.SITE_DATA.poster || {}).sponsors || []);
+    // Sponsors: the footer's logos, or a version made for dark backgrounds
+    // (assets/youtube/sponsors/<id>.webp) once there is one.
+    var sponsors = ((window.SITE_DATA.poster || {}).sponsors || []).map(function (x) {
+      return state.darkLogos.indexOf(x.id) >= 0 ? Object.assign({}, x, { src: 'assets/youtube/sponsors/' + x.id + '.webp', own: true }) : x;
+    });
     var srcs = [BG, s.panelSrc, s.home.src, s.away.src].concat(sponsors.map(function (x) { return x.src; })).filter(Boolean);
     var anton = document.fonts && document.fonts.load ? document.fonts.load('400 150px "Anton"', 'TIEŠRAIDE').catch(function () {}) : null;
     return Promise.all([anton, window.Poster.prepare(srcs)]).then(function (res) {
@@ -171,7 +175,10 @@
         cup: s.cup, bg: img(BG), panel: img(s.panelSrc),
         home: Object.assign({}, s.home, { img: img(s.home.src) }),
         away: Object.assign({}, s.away, { img: img(s.away.src) }),
-        sponsors: sponsors.map(function (x) { return { img: img(x.src), w: x.w, h: x.h, scale: x.scale }; })
+        sponsors: sponsors.map(function (x) {
+          var im = img(x.src);
+          return { img: im, w: x.own && im ? im.naturalWidth : x.w, h: x.own && im ? im.naturalHeight : x.h, scale: x.scale };
+        })
       };
       return window.Poster.renderThumb(spec).toDataURL('image/jpeg', 0.9);
     });

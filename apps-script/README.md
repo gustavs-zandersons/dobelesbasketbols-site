@@ -9,7 +9,8 @@ game, from the site's feed:
   are known and whether the game is needed. Built by `tools/youtube_feed.js` during
   the site build (`tools/prerender.py`), so it uses the same data and engine as the site.
 - `https://dobelesbasketbols.lv/youtube/<game id>.jpg` — 1280×720 thumbnail, drawn by
-  `Poster.renderThumb` in `src/poster.js` (the round posters' look).
+  `Poster.renderThumb` in `src/poster.js` (last season's TIEŠRAIDE card, reworked).
+  Sponsor logos for the dark background: `assets/youtube/sponsors/<id>.webp`.
 
 The feed updates whenever the site updates (Atjaunot datus no tabulas). Titles,
 descriptions, thumbnails and playlist names are changed in this repo, never in the sheet's script.

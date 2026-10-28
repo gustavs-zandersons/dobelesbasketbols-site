@@ -490,26 +490,24 @@
   // ---------- YouTube thumbnail (1280×720, one game) ----------
   // Last season's "TIEŠRAIDE" card, reworked with the organisers (28 Oct 2026):
   // dark concrete background, the cup's vertical logo panel on the left,
-  // TIEŠRAIDE as the title, the two team crests with VS between them and the
-  // short names below, sponsors at the bottom on a white card (the site's
-  // sponsor logos are made for white). YouTube puts its badges in the
+  // TIEŠRAIDE as the title (the top of the Š level with the top of the panel,
+  // letters widened and spaced like last season's), the two team crests with
+  // "PRET" between them (white for both cups, no names), sponsors straight on
+  // the dark background at the bottom. YouTube puts its badges in the
   // bottom-right corner; the second sponsor row is shorter, so it stays clear.
   //
-  // spec = { cup, bg: img, panel: img, home: { img | initials, color, name },
+  // spec = { cup, bg: img, panel: img, home: { img | initials, color },
   //          away: {…}, sponsors: [{ img, w, h, scale }], label }
   var THUMB = {
     w: 1280, h: 720,
     panel: { x: 56, y: 52, h: 616 },              // the vertical logo, 1:2
     zone: [404, 1236],                            // everything right of the panel
-    title: { y: 126, px: 146, color: '#8A8A8A' },
-    crest: { y: 318, size: 226, dx: 232 },
-    vs: { px: 92, color: '#FFFFFF' },
-    name: { y: 470, px: 40 },
-    label: { y: 526, px: 26 },
-    card: { y: 546, h: 150, pad: 14, r: 12 },
-    logos: { rows: [8, 7], area: 2700, max: [118, 48], gap: 20 }
+    title: { cap: 128, stretch: 1.15, spacing: 0.07, color: '#8A8A8A' },
+    crest: { y: 346, size: 232, dx: 236 },
+    between: { word: 'PRET', px: 76, color: '#FFFFFF' },
+    label: { y: 522, px: 26 },
+    logos: { top: 540, bottom: 704, right: 1196, rows: [8, 7], area: 3600, max: [140, 60], gap: 24 }   // right: clear of YouTube's corner badge
   };
-  var VS_COLOR = { dbck: '#E9B716', jssc: '#FFFFFF' };
 
   function logoRows(g, list, x0, x1, top, bottom, L) {
     if (!list.length) return;
@@ -564,17 +562,34 @@
     }
     var x0 = S.zone[0], x1 = S.zone[1], cx = (x0 + x1) / 2;
 
-    // TIEŠRAIDE: big grey letters with the concrete showing through.
-    var title = 'TIEŠRAIDE', tf = '"Anton", "Barlow Condensed", sans-serif';
-    g.font = S.title.px + 'px ' + tf;
-    var tPx = Math.min(S.title.px, Math.floor(S.title.px * (x1 - x0) / g.measureText(title).width));
+    // TIEŠRAIDE: wide, spaced grey letters with the concrete showing through.
+    // The top of the Š sits level with the top of the cup panel.
+    var title = 'TIEŠRAIDE', tf = '"Anton", "Barlow Condensed", sans-serif', T = S.title;
+    g.font = '100px ' + tf;
+    var capPer = g.measureText('T').actualBoundingBoxAscent / 100 || 0.73;
+    var px = T.cap / capPer, sx = T.stretch;
+    function titleWidth(p) {
+      g.font = p + 'px ' + tf;
+      var w = g.measureText(title).width + p * capPer * T.spacing * (title.length - 1);
+      return w * sx;
+    }
+    if (titleWidth(px) > x1 - x0) px = px * (x1 - x0) / titleWidth(px);
+    g.font = px + 'px ' + tf;
+    var topOfS = g.measureText('Š').actualBoundingBoxAscent;
+    var base = S.panel.y + topOfS;                      // baseline
+    var gap = px * capPer * T.spacing, startX = cx - titleWidth(px) / 2;
     var off = document.createElement('canvas');
     off.width = W; off.height = H;
     var o = off.getContext('2d');
-    o.font = tPx + 'px ' + tf;
-    o.textAlign = 'center'; o.textBaseline = 'middle';
-    o.fillStyle = S.title.color;
-    o.fillText(title, cx, S.title.y);
+    o.font = px + 'px ' + tf;
+    o.textBaseline = 'alphabetic'; o.textAlign = 'left';
+    o.fillStyle = T.color;
+    o.save();
+    o.translate(startX, base);
+    o.scale(sx, 1);
+    var x = 0;
+    Array.from(title).forEach(function (ch) { o.fillText(ch, x, 0); x += o.measureText(ch).width + gap; });
+    o.restore();
     if (spec.bg) {
       o.globalCompositeOperation = 'source-atop';
       o.globalAlpha = 0.35;
@@ -582,23 +597,17 @@
     }
     g.drawImage(off, 0, 0);
 
-    // Teams: crest, short name below; VS between.
-    [[spec.home, cx - S.crest.dx], [spec.away, cx + S.crest.dx]].forEach(function (side) {
-      var t = side[0] || {}, x = side[1];
-      drawCrest(g, t, x, S.crest.y, S.crest.size);
-      var name = up(t.name);
-      if (name) text(g, name, x, S.name.y, fit(g, name, S.name.px, S.crest.dx * 1.6, 22), '#FFFFFF');
-    });
-    text(g, 'VS', cx, S.crest.y, S.vs.px, VS_COLOR[spec.cup] || S.vs.color);
+    // Teams: the two crests with PRET between them.
+    drawCrest(g, spec.home || {}, cx - S.crest.dx, S.crest.y, S.crest.size);
+    drawCrest(g, spec.away || {}, cx + S.crest.dx, S.crest.y, S.crest.size);
+    var B = S.between;
+    text(g, B.word, cx, S.crest.y, fit(g, B.word, B.px, 2 * S.crest.dx - S.crest.size - 24, 30), B.color);
 
-    // Sponsors: label, then the logos on a white card.
+    // Sponsors straight on the background.
     var sp = spec.sponsors || [];
     if (sp.length) {
-      var label = up(spec.label || 'Mūs atbalsta:');
-      text(g, label, x0, S.label.y, S.label.px, '#FFFFFF', 'left');
-      g.fillStyle = '#FFFFFF';
-      roundRect(g, x0, S.card.y, x1 - x0, S.card.h, S.card.r);
-      logoRows(g, sp, x0 + S.card.pad, x1 - S.card.pad, S.card.y + S.card.pad, S.card.y + S.card.h - S.card.pad, S.logos);
+      text(g, up(spec.label || 'Mūs atbalsta:'), x0, S.label.y, S.label.px, '#FFFFFF', 'left');
+      logoRows(g, sp, x0, S.logos.right, S.logos.top, S.logos.bottom, S.logos);
     }
     return c;
   }
