@@ -487,6 +487,77 @@
     return c;
   }
 
+  // ---------- YouTube thumbnail (1280×720, one game) ----------
+  // Same look as the round posters: darkened action photo with the cup tint,
+  // cup logo, stage in a pill, home crest · time box · away crest with the
+  // names below, then the jagged cup-coloured band with the cup name and hall.
+  // YouTube puts its LIVE / duration badges in the bottom-right corner, so
+  // nothing important sits there.
+  //
+  // spec = { cup, seed, logo: img, stage, weekday, date, time, hall, cupName,
+  //          home: { img | initials, color, name }, away: {…}, photo }
+  var THUMB = { w: 1280, h: 720, crestX: 300, crestY: 292, crest: 250, nameY: 466, name: 60, nameW: 420,
+                box: [214, 94], boxY: 262, timePx: 72, dayY: 356, dayPx: 32, dateY: 400, datePx: 44,
+                stageY: 78, stagePx: 36, logo: [104, 96, 150], band: 556, bandAmp: 34, cupY: 616, cupPx: 46, hallY: 670, hallPx: 32 };
+  function renderThumb(spec) {
+    var S = THUMB, W = S.w, H = S.h, T = THEMES[spec.cup] || THEMES.dbck;
+    var c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    var g = c.getContext('2d');
+    var rnd = rng(spec.seed || spec.date);
+
+    if (spec.photo && spec.photo.img) drawCover(g, spec.photo, W, H);
+    else { g.fillStyle = '#1B1A14'; g.fillRect(0, 0, W, H); }
+    tint(g, spec.cup, W, H);
+    ridge(g, W, S.band, S.bandAmp, H, T.panel, rnd);
+
+    // Cup logo, top left.
+    if (spec.logo) drawContain(g, spec.logo, S.logo[0], S.logo[1], S.logo[2], true);
+
+    // Stage in a pill, top centre.
+    var stage = up(spec.stage);
+    if (stage) {
+      var maxPill = W - 2 * (S.logo[0] + S.logo[2] / 2 + 24);
+      var px = fit(g, stage, S.stagePx, maxPill - S.stagePx * 1.4, 20);
+      var tw = width(g, stage, px) + px * 1.4, th = Math.round(px * 1.6);
+      g.fillStyle = PILL[spec.cup] ? PILL[spec.cup][0] : PILL.dbck[0];
+      roundRect(g, W / 2 - tw / 2, S.stageY - th / 2, tw, th, th / 2);
+      text(g, stage, W / 2, S.stageY, px, PILL[spec.cup] ? PILL[spec.cup][1] : PILL.dbck[1]);
+    }
+
+    // Teams: crest with the name below, home left, away right.
+    [[spec.home, S.crestX], [spec.away, W - S.crestX]].forEach(function (side) {
+      var t = side[0] || {}, x = side[1];
+      drawCrest(g, t, x, S.crestY, S.crest);
+      var name = up(t.name);
+      var one = fit(g, name, S.name, S.nameW, 1);
+      if (one >= S.name * 0.75 || twoLines(g, name, S.name).length < 2) {
+        text(g, name, x, S.nameY, Math.max(one, 24), '#FFFFFF');
+      } else {
+        var lines = twoLines(g, name, S.name);
+        var px2 = Math.min.apply(null, lines.map(function (l) { return fit(g, l, S.name * 0.8, S.nameW, 24); }));
+        drawTeam(g, { lines: lines, px: px2 }, x, S.nameY + px2 * 0.2, 'center', '#FFFFFF');
+      }
+    });
+
+    // Centre: tip-off time in the cup's box, the day and date below.
+    var bw = S.box[0], bh = S.box[1];
+    g.save();
+    g.shadowColor = 'rgba(0, 0, 0, 0.4)'; g.shadowBlur = 16; g.shadowOffsetY = 4;
+    g.fillStyle = T.box;
+    roundRect(g, W / 2 - bw / 2, S.boxY - bh / 2, bw, bh, 14);
+    g.restore();
+    text(g, spec.time || '', W / 2, S.boxY, fit(g, spec.time || '', S.timePx, bw - 28, 30), T.boxText);
+    if (spec.weekday) text(g, up(spec.weekday), W / 2, S.dayY, fit(g, up(spec.weekday), S.dayPx, 380, 18), 'rgba(255, 255, 255, 0.85)');
+    if (spec.date) text(g, up(spec.date), W / 2, S.dateY, fit(g, up(spec.date), S.datePx, 380, 20), '#FFFFFF');
+
+    // Band: cup name and hall (kept narrow, clear of YouTube's corner badges).
+    var cup = up(spec.cupName), hall = up(spec.hall), bandW = 860;
+    if (cup) text(g, cup, W / 2, S.cupY, fit(g, cup, S.cupPx, bandW, 22), T.head);
+    if (hall) text(g, hall, W / 2, S.hallY, fit(g, hall, S.hallPx, bandW, 18), T.head);
+    return c;
+  }
+
   // ---------- loading ----------
   var cache = {};
   function loadImage(src) {
@@ -510,5 +581,5 @@
       .then(function (res) { return res.slice(1); });
   }
 
-  window.Poster = { render: render, renderResults: renderResults, prepare: prepare, FORMATS: FORMATS };
+  window.Poster = { render: render, renderResults: renderResults, renderThumb: renderThumb, prepare: prepare, FORMATS: FORMATS };
 })();

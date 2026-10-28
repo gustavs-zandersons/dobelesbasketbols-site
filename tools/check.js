@@ -179,5 +179,32 @@ if (MULTI) {
   check(nf.includes('content="noindex'), '404.html is kept out of search results');
 }
 
+// 9. YouTube feed (dist/youtube/speles.json) for the season sheet's Apps Script:
+// YouTube's limits (title 1–100 characters, description ≤ 5000 bytes, no < or >),
+// a start time per game, and a thumbnail under 2 MB for every game whose teams are known.
+const YT = path.join(DIST, 'youtube', 'speles.json');
+let ytGames = 0;
+if (MULTI) {
+  check(fs.existsSync(YT), 'dist/youtube/speles.json exists');
+  if (fs.existsSync(YT)) {
+    const feed = JSON.parse(fs.readFileSync(YT, 'utf8'));
+    const ids = new Set();
+    (feed.games || []).forEach(g => {
+      ytGames++;
+      check(!ids.has(g.id), 'youtube: game listed once: ' + g.id); ids.add(g.id);
+      check(!isNaN(Date.parse(g.start)), 'youtube ' + g.id + ': start time');
+      if (!g.teamsKnown) { check(!g.title && !g.thumb, 'youtube ' + g.id + ': no title or thumbnail before the teams are known'); return; }
+      const len = Array.from(g.title || '').length;
+      check(len >= 1 && len <= 100, 'youtube ' + g.id + ': title length ' + len + ' (YouTube allows 1–100): ' + g.title);
+      check(!/[<>]/.test(g.title + g.description), 'youtube ' + g.id + ': no < or > in title or description');
+      check(Buffer.byteLength(g.description || '', 'utf8') <= 5000, 'youtube ' + g.id + ': description within 5000 bytes');
+      check(/ \| \d{4}\. gada /.test(g.title), 'youtube ' + g.id + ': title follows "teams | year. gada cup - stage": ' + g.title);
+      const f = path.join(DIST, 'youtube', g.id + '.jpg');
+      check(fs.existsSync(f) && fs.statSync(f).size < 2 * 1024 * 1024, 'youtube ' + g.id + ': thumbnail exists and is under 2 MB');
+      check(/^[0-9a-f]{12}$/.test(g.thumbVersion || ''), 'youtube ' + g.id + ': thumbnail version');
+    });
+  }
+}
+
 if (failures) { console.error(failures + ' check(s) failed'); process.exit(1); }
 console.log('All checks passed (demo ' + data.games.length + ' games' + (realGames ? ', real season ' + realGames + ' games' : '') + (pageCount ? ', ' + pageCount + ' pages' : '') + ').');

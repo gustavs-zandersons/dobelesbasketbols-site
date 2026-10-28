@@ -264,7 +264,8 @@ def build_pages(out):
         (out / rel).write_text(text)
         urls[key] = '/' + rel
     import prerender                       # tools/prerender.py (Playwright)
-    n = prerender.prerender(out, SITE_URL, body, fonts, urls)
+    social = json.loads((SRC / 'sheet.json').read_text())['settings'].get('footer', {}).get('links', {})
+    n = prerender.prerender(out, SITE_URL, body, fonts, urls, social)
     print('pre-rendered', n, 'pages')
     return True
 
