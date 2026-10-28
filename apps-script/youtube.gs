@@ -40,6 +40,8 @@ var CONFIG = {
   // Leave empty: OBS picks its own stream key when the game is selected.
   // If OBS can't go live on a stream made by this script, put the name of the
   // stream key used in YouTube Studio here (e.g. "Default stream key").
+  // Streams start and stop with OBS (auto-start and auto-stop on): YouTube goes
+  // live when OBS starts sending to the selected game and ends when OBS stops.
   STREAM_KEY_NAME: '',
   WEEKLY_HOUR: 9
 };
@@ -186,7 +188,7 @@ function handleGame_(g, entry, inWindow, sheet, props, report) {
     bc = YouTube.LiveBroadcasts.insert({
       snippet: { title: g.title, description: g.description, scheduledStartTime: g.start },
       status: { privacyStatus: CONFIG.PRIVACY, selfDeclaredMadeForKids: false },
-      contentDetails: { enableAutoStart: false, enableAutoStop: true, enableDvr: true, recordFromStart: true }
+      contentDetails: { enableAutoStart: true, enableAutoStop: true, enableDvr: true, recordFromStart: true }
     }, 'snippet,status,contentDetails');
     entry = { b: bc.id };
     props.setProperty('yt:' + g.id, JSON.stringify(entry));   // saved at once: a later error never leads to a duplicate
@@ -308,7 +310,7 @@ function menuTestStream() {
   var bc = YouTube.LiveBroadcasts.insert({
     snippet: { title: title, description: 'Testa straume. Tiks izdzēsta.\n\n' + g.description, scheduledStartTime: start },
     status: { privacyStatus: 'unlisted', selfDeclaredMadeForKids: false },
-    contentDetails: { enableAutoStart: false, enableAutoStop: true, enableDvr: true, recordFromStart: true }
+    contentDetails: { enableAutoStart: true, enableAutoStop: true, enableDvr: true, recordFromStart: true }
   }, 'snippet,status,contentDetails');
   bindStream_(bc.id);
   setThumbnail_(g, bc.id, {});

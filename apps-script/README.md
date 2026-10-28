@@ -31,8 +31,9 @@ For every game in the next 7 days (and every later game that already has a strea
 | A link typed into YouTube saite by hand | That stream is taken over instead of creating a new one |
 
 Stream settings (agreed with the organisers, 28 Oct 2026): **public** from the Monday
-run of the game's week; **scheduled start = tip-off**; **auto-start off** (only the
-operator starts it, in OBS or YouTube), **auto-stop on** (ends when OBS stops sending);
+run of the game's week; **scheduled start = tip-off**; **auto-start and auto-stop on**:
+it goes live when the operator starts streaming to that game in OBS and ends when OBS
+stops — never on its own (in OBS's Manage Broadcast, leave both boxes ticked);
 normal latency; rewind (DVR) on; live chat on (channel default); the replay stays on
 the channel at the same link; **not made for kids**; category **Sports**, language
 Latvian; tags `basketbols` + `Dobele` or `Jelgava` (by cup).
