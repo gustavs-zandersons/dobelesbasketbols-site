@@ -1,5 +1,11 @@
 # Changelog
 
+## Round 19 — released 28 Oct 2026: Garage Barber logo readable on white
+
+- Garage Barber's logo keeps its white disc and transparent outside, but the
+  text, garage, chair and barber poles are now black, so it shows on the white
+  sponsor strip and sponsor pop-up. Same path, no sheet change.
+
 ## Round 18 — released 28 Oct 2026: new Garage Barber logo
 
 - Garage Barber's logo replaced with the white version they sent, at the same
