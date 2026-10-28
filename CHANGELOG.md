@@ -10,16 +10,15 @@
   whether both teams are known (slot codes resolved by the engine) and whether a
   "Ja vajag" game is needed. Built by `tools/youtube_feed.js` inside the
   pre-render browser, so it matches the site.
-- **Thumbnails:** `dist/youtube/<game id>.jpg`, 1280×720, for every game whose
-  teams are known — `Poster.renderThumb` in `src/poster.js`, last season's
-  "TIEŠRAIDE" card reworked with the organisers: dark concrete background
-  (`assets/youtube/fons.jpg`), the cup's vertical logo on the left
+- **Thumbnails:** `dist/youtube/<game id>.jpg`, 1920×1080 (laid out at 1280×720),
+  for every game whose teams are known — `Poster.renderThumb` in `src/poster.js`,
+  last season's "TIEŠRAIDE" card reworked with the organisers: dark concrete
+  background (`assets/youtube/fons.jpg`), the cup's vertical logo on the left
   (`assets/youtube/<cup>-vertikals.webp`, originals in `design/youtube/`),
-  TIEŠRAIDE in wide spaced grey letters with the top of the Š level with the
-  panel, both crests with a white "PRET" between them (no names), and "MŪS
-  ATBALSTA:" with the sponsor logos straight on the dark background (kept clear
-  of YouTube's bottom-right badge). A sponsor logo made for dark backgrounds goes
-  in `assets/youtube/sponsors/<id>.webp`; until then the footer logo is used.
+  TIEŠRAIDE in wide grey letters with the top of the Š level with the panel,
+  both crests (sized by area) with a white "PRET" between them, and the sponsors
+  on the posters' jagged white band at the bottom, clear of YouTube's
+  bottom-right badge.
 - **Team logos from the originals (whole site):** Buki, Doks, Īle, Jaunpils,
   Skandijs, Sprīdītis, Valauto and Vilki now have their original files in
   `design/teams/` (1000–3000 px; were 160 px copies from last season). The site's

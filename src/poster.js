@@ -492,21 +492,21 @@
   // dark concrete background, the cup's vertical logo panel on the left,
   // TIEŠRAIDE as the title (the top of the Š level with the top of the panel,
   // letters widened and spaced like last season's), the two team crests with
-  // "PRET" between them (white for both cups, no names), sponsors straight on
-  // the dark background at the bottom. YouTube puts its badges in the
-  // bottom-right corner; the second sponsor row is shorter, so it stays clear.
+  // "PRET" between them (white for both cups, no names), and the sponsors on
+  // the posters' jagged white band at the bottom. YouTube puts its badges in
+  // the bottom-right corner, so the logos stop short of it.
   //
   // spec = { cup, bg: img, panel: img, home: { img | initials, color },
-  //          away: {…}, sponsors: [{ img, w, h, scale }], label }
+  //          away: {…}, sponsors: [{ img, w, h, scale }] }
   var THUMB = {
     w: 1280, h: 720, scale: 1.5,                 // laid out at 1280×720, saved at 1920×1080 (sharper on big screens)
-    panel: { x: 56, y: 52, h: 616 },              // the vertical logo, 1:2
-    zone: [404, 1236],                            // everything right of the panel
-    title: { cap: 128, stretch: 1.15, spacing: 0.035, color: '#8A8A8A' },
-    crest: { size: 200, dx: 220 },               // centred between the title and the sponsors label
-    between: { word: 'PRET', px: 52, color: '#FFFFFF' },
-    label: { y: 522, px: 26 },
-    logos: { top: 540, bottom: 704, right: 1196, rows: [8, 7], area: 3600, max: [140, 60], gap: 24 }   // right: clear of YouTube's corner badge
+    panel: { x: 52, y: 44, h: 464 },              // the vertical logo, 1:2
+    zone: [332, 1240],                            // everything right of the panel
+    title: { cap: 120, stretch: 1.15, spacing: 0.035, color: '#8A8A8A' },
+    crest: { size: 196, dx: 230 },               // centred between the title and the white band
+    between: { word: 'PRET', px: 50, color: '#FFFFFF' },
+    band: { y: 562, amp: 30 },                    // the posters' jagged white sponsor band
+    logos: { top: 584, bottom: 710, left: 110, right: 1170, rows: [8, 7], area: 4600, max: [150, 64], gap: 26 }   // centred; right: clear of YouTube's corner badge
   };
 
   function logoRows(g, list, x0, x1, top, bottom, L) {
@@ -618,20 +618,17 @@
     g.drawImage(off, 0, 0, W, H);
 
     // Teams: the two crests with PRET between them, centred in the space
-    // between the bottom of TIEŠRAIDE and the top of the sponsors label.
-    var labelTop = S.label.y - capHeight(g, S.label.px) / 2;
-    var crestY = (base + labelTop) / 2;
+    // between the bottom of TIEŠRAIDE and the top of the white band.
+    var bandTop = S.band.y - S.band.amp * 1.2;
+    var crestY = (base + bandTop) / 2;
     thumbCrest(g, spec.home || {}, cx - S.crest.dx, crestY, S.crest.size);
     thumbCrest(g, spec.away || {}, cx + S.crest.dx, crestY, S.crest.size);
     var B = S.between;
     text(g, B.word, cx, crestY, fit(g, B.word, B.px, 2 * S.crest.dx - S.crest.size - 24, 24), B.color);
 
-    // Sponsors straight on the background.
-    var sp = spec.sponsors || [];
-    if (sp.length) {
-      text(g, up(spec.label || 'Mūs atbalsta:'), x0, S.label.y, S.label.px, '#FFFFFF', 'left');
-      logoRows(g, sp, x0, S.logos.right, S.logos.top, S.logos.bottom, S.logos);
-    }
+    // Sponsors on the jagged white band, as on the posters and the site's footer.
+    ridge(g, W, S.band.y, S.band.amp, H, '#FFFFFF', rng('youtube-' + spec.cup));
+    logoRows(g, spec.sponsors || [], S.logos.left, S.logos.right, S.logos.top, S.logos.bottom, S.logos);
     return c;
   }
 

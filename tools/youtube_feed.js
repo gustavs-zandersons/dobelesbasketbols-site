@@ -152,7 +152,7 @@
       games.push(item);
     });
     games.sort(function (x, y) { return x.start < y.start ? -1 : x.start > y.start ? 1 : 0; });
-    state = { thumbs: thumbs, darkLogos: opts.darkLogos || [], bigTeams: opts.bigTeams || [] };
+    state = { thumbs: thumbs, bigTeams: opts.bigTeams || [] };
     return { version: 1, generated: new Date().toISOString(), season: D.settings.season || D.season,
              site: site, games: games };
   }
@@ -161,11 +161,8 @@
   function thumb(id) {
     var s = state && state.thumbs[id];
     if (!s) return Promise.resolve(null);
-    // Sponsors: the footer's logos, or a version made for dark backgrounds
-    // (assets/youtube/sponsors/<id>.webp) once there is one.
-    var sponsors = ((window.SITE_DATA.poster || {}).sponsors || []).map(function (x) {
-      return state.darkLogos.indexOf(x.id) >= 0 ? Object.assign({}, x, { src: 'assets/youtube/sponsors/' + x.id + '.webp', own: true }) : x;
-    });
+    // Sponsors: the same logos as the footer and the posters (on the white band).
+    var sponsors = (window.SITE_DATA.poster || {}).sponsors || [];
     // Team logos: the large copy made for YouTube when there is one (assets/youtube/teams).
     ['home', 'away'].forEach(function (k) {
       if (state.bigTeams.indexOf(s[k].id) >= 0) s[k] = Object.assign({}, s[k], { src: 'assets/youtube/teams/' + s[k].id + '.webp' });
@@ -179,10 +176,7 @@
         cup: s.cup, bg: img(BG), panel: img(s.panelSrc),
         home: Object.assign({}, s.home, { img: img(s.home.src) }),
         away: Object.assign({}, s.away, { img: img(s.away.src) }),
-        sponsors: sponsors.map(function (x) {
-          var im = img(x.src);
-          return { img: im, w: x.own && im ? im.naturalWidth : x.w, h: x.own && im ? im.naturalHeight : x.h, scale: x.scale };
-        })
+        sponsors: sponsors.map(function (x) { return { img: img(x.src), w: x.w, h: x.h, scale: x.scale }; })
       };
       return window.Poster.renderThumb(spec).toDataURL('image/jpeg', 0.92);
     });
