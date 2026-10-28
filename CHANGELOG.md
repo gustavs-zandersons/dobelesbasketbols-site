@@ -1,5 +1,40 @@
 # Changelog
 
+## Round 20 — YouTube streams (feed + thumbnails + sheet script)
+
+- **YouTube feed:** every build writes `dist/youtube/speles.json` — each game not
+  played yet with its start time (UTC), YouTube title and description (rules agreed
+  28 Oct: `home short - away short | 2026. gada <cup> - <stage>`, game number for
+  two-game ties and best-of-3 only while ≤ 100 characters; Jelgava cup as "JSSC
+  Izaicinājuma kauss"; "Dobeles čempionu kauss" if still too long), playlist,
+  whether both teams are known (slot codes resolved by the engine) and whether a
+  "Ja vajag" game is needed. Built by `tools/youtube_feed.js` inside the
+  pre-render browser, so it matches the site.
+- **Thumbnails:** `dist/youtube/<game id>.jpg`, 1920×1080 (laid out at 1280×720),
+  for every game whose teams are known — `Poster.renderThumb` in `src/poster.js`,
+  last season's "TIEŠRAIDE" card reworked with the organisers: dark concrete
+  background (`assets/youtube/fons.jpg`), the cup's vertical logo on the left
+  (`assets/youtube/<cup>-vertikals.webp`, originals in `design/youtube/`),
+  TIEŠRAIDE in wide grey letters with the top of the Š level with the panel,
+  both crests (sized by area) with a white "PRET" between them, and the sponsors
+  on the posters' jagged white band at the bottom, clear of YouTube's
+  bottom-right badge.
+- **Team logos from the originals (whole site):** Buki, Doks, Īle, Jaunpils,
+  Skandijs, Sprīdītis, Valauto and Vilki now have their original files in
+  `design/teams/` (1000–3000 px; were 160 px copies from last season). The site's
+  copies (`assets/teams/`, 256 px) are remade from them, so logos are sharp
+  everywhere (pages, posters). `prepare_assets.py youtube` makes 600 px copies for
+  the thumbnails (`assets/youtube/teams/`); crests there are sized by area, so a
+  wide logo looks as big as a round one.
+- **Season sheet script:** `apps-script/youtube.gs` (+ `appsscript.json`, install
+  steps in `apps-script/README.md`). Creates or updates one scheduled stream per
+  game for the next 7 days, sets the thumbnail and playlist, writes the link into
+  Kalendārs → "YouTube saite", emails a report; menu "YouTube" in the sheet;
+  Mondays 09:00 once switched on. The importer ignores the extra column.
+- `check.js`: YouTube limits for every feed entry (title 1–100 characters,
+  description ≤ 5000 bytes, no < or >) and a thumbnail under 2 MB for every game
+  with known teams.
+
 ## Round 19 — released 28 Oct 2026: Garage Barber logo readable on white
 
 - Garage Barber's logo keeps its white disc and transparent outside, but the

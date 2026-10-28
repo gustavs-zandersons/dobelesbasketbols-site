@@ -34,6 +34,10 @@ and shareable:
 | Game page with box score (once played) | `/speles/2026-27/dbck-gr-01/` (season + the sheet's game ID) |
 | Sponsori | `/dobele/sponsori/` |
 
+For YouTube (not pages): `/youtube/speles.json` — the feed the season sheet's
+Apps Script reads to create one scheduled stream per game — and
+`/youtube/<game id>.jpg`, each game's 1280×720 thumbnail. See `apps-script/README.md`.
+
 The same paths under `/jelgava/` for the Challenge Cup. Old `#…` links
 (`#dobele-komanda-buki`, `#kalendars`, `#spele-…`) forward to the new addresses.
 

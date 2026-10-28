@@ -487,6 +487,151 @@
     return c;
   }
 
+  // ---------- YouTube thumbnail (1280×720, one game) ----------
+  // Last season's "TIEŠRAIDE" card, reworked with the organisers (28 Oct 2026):
+  // dark concrete background, the cup's vertical logo panel on the left,
+  // TIEŠRAIDE as the title (the top of the Š level with the top of the panel,
+  // letters widened and spaced like last season's), the two team crests with
+  // "PRET" between them (white for both cups, no names), and the sponsors on
+  // the posters' jagged white band at the bottom. YouTube puts its badges in
+  // the bottom-right corner, so the logos stop short of it.
+  //
+  // spec = { cup, bg: img, panel: img, home: { img | initials, color },
+  //          away: {…}, sponsors: [{ img, w, h, scale }] }
+  var THUMB = {
+    w: 1280, h: 720, scale: 1.5,                 // laid out at 1280×720, saved at 1920×1080 (sharper on big screens)
+    panel: { x: 52, y: 44, h: 464 },              // the vertical logo, 1:2
+    zone: [332, 1240],                            // everything right of the panel
+    title: { cap: 120, stretch: 1.15, spacing: 0.035, color: '#8A8A8A' },
+    crest: { size: 196, dx: 230 },               // centred between the title and the white band
+    between: { word: 'PRET', px: 50, color: '#FFFFFF' },
+    band: { y: 562, amp: 30 },                    // the posters' jagged white sponsor band
+    logos: { top: 584, bottom: 710, left: 110, right: 1170, rows: [8, 7], area: 4600, max: [150, 64], gap: 26 }   // centred; right: clear of YouTube's corner badge
+  };
+
+  function logoRows(g, list, x0, x1, top, bottom, L) {
+    if (!list.length) return;
+    var rows = [], i = 0;
+    L.rows.forEach(function (n) { if (i < list.length) { rows.push(list.slice(i, i + n)); i += n; } });
+    if (i < list.length) rows[rows.length - 1] = rows[rows.length - 1].concat(list.slice(i));
+    var F = { logoArea: L.area, logoMax: L.max };
+    var avail = x1 - x0, k = 1, gapY = L.gap * 0.5;
+    for (var tries = 0; tries < 40; tries++) {
+      var tooWide = rows.some(function (row) {
+        var sum = row.reduce(function (a, l) { return a + logoBox(l, F, k).w; }, 0);
+        return sum + L.gap * k * (row.length - 1) > avail;
+      });
+      var hTot = rows.reduce(function (a, row) { return a + Math.max.apply(null, row.map(function (l) { return logoBox(l, F, k).h; })); }, 0) + gapY * (rows.length - 1);
+      if (!tooWide && hTot <= bottom - top) break;
+      k *= 0.95;
+    }
+    var heights = rows.map(function (row) { return Math.max.apply(null, row.map(function (l) { return logoBox(l, F, k).h; })); });
+    var total = heights.reduce(function (a, b) { return a + b; }, 0) + gapY * (rows.length - 1);
+    var y = top + (bottom - top - total) / 2;
+    rows.forEach(function (row, ri) {
+      var boxes = row.map(function (l) { return logoBox(l, F, k); });
+      var sum = boxes.reduce(function (a, b) { return a + b.w; }, 0);
+      var gap = Math.min(L.gap * 1.8, (avail - sum) / Math.max(1, row.length - 1));
+      var x = (x0 + x1 - (sum + gap * (row.length - 1))) / 2;
+      row.forEach(function (l, j) {
+        var b = boxes[j];
+        if (l.img) g.drawImage(l.img, x, y + (heights[ri] - b.h) / 2, b.w, b.h);
+        x += b.w + gap;
+      });
+      y += heights[ri] + gapY;
+    });
+  }
+
+  // A crest sized by area, not by its longest side, so a wide logo (Skandijs)
+  // looks as big as a round or tall one.
+  function thumbCrest(g, t, cx, cy, s) {
+    var img = t && t.img;
+    if (!img) { drawCrest(g, t, cx, cy, s); return; }
+    var r = (img.naturalWidth || img.width) / (img.naturalHeight || img.height), area = s * s * 0.9;
+    var w = Math.sqrt(area * r), h = Math.sqrt(area / r);
+    if (w > s * 1.4) { w = s * 1.4; h = w / r; }
+    if (h > s * 1.1) { h = s * 1.1; w = h * r; }
+    g.save();
+    g.shadowColor = 'rgba(0, 0, 0, 0.45)'; g.shadowBlur = 18; g.shadowOffsetY = 4;
+    g.drawImage(img, cx - w / 2, cy - h / 2, w, h);
+    g.restore();
+  }
+
+  function renderThumb(spec) {
+    var S = THUMB, W = S.w, H = S.h, k = S.scale;
+    var c = document.createElement('canvas');
+    c.width = W * k; c.height = H * k;
+    var g = c.getContext('2d');
+    g.scale(k, k);
+    g.imageSmoothingEnabled = true;
+    g.imageSmoothingQuality = 'high';               // logos scaled down stay smooth, not jagged
+
+    // Background: dark concrete.
+    if (spec.bg) drawCover(g, { img: spec.bg, focus: 0.5 }, W, H);
+    else { g.fillStyle = '#1E1E1E'; g.fillRect(0, 0, W, H); }
+
+    // The cup's vertical logo on the left.
+    if (spec.panel) {
+      var ph = S.panel.h, pw = ph * (spec.panel.naturalWidth || spec.panel.width) / (spec.panel.naturalHeight || spec.panel.height);
+      g.save();
+      g.shadowColor = 'rgba(0, 0, 0, 0.55)'; g.shadowBlur = 24; g.shadowOffsetY = 6;
+      g.drawImage(spec.panel, S.panel.x, S.panel.y, pw, ph);
+      g.restore();
+    }
+    var x0 = S.zone[0], x1 = S.zone[1], cx = (x0 + x1) / 2;
+
+    // TIEŠRAIDE: wide, spaced grey letters with the concrete showing through.
+    // The top of the Š sits level with the top of the cup panel.
+    var title = 'TIEŠRAIDE', tf = '"Anton", "Barlow Condensed", sans-serif', T = S.title;
+    g.font = '100px ' + tf;
+    var capPer = g.measureText('T').actualBoundingBoxAscent / 100 || 0.73;
+    var px = T.cap / capPer, sx = T.stretch;
+    function titleWidth(p) {
+      g.font = p + 'px ' + tf;
+      var w = g.measureText(title).width + p * capPer * T.spacing * (title.length - 1);
+      return w * sx;
+    }
+    if (titleWidth(px) > x1 - x0) px = px * (x1 - x0) / titleWidth(px);
+    g.font = px + 'px ' + tf;
+    var topOfS = g.measureText('Š').actualBoundingBoxAscent;
+    var base = S.panel.y + topOfS;                      // baseline
+    var gap = px * capPer * T.spacing, startX = cx - titleWidth(px) / 2;
+    var off = document.createElement('canvas');
+    off.width = W * k; off.height = H * k;
+    var o = off.getContext('2d');
+    o.scale(k, k);
+    o.imageSmoothingQuality = 'high';
+    o.font = px + 'px ' + tf;
+    o.textBaseline = 'alphabetic'; o.textAlign = 'left';
+    o.fillStyle = T.color;
+    o.save();
+    o.translate(startX, base);
+    o.scale(sx, 1);
+    var x = 0;
+    Array.from(title).forEach(function (ch) { o.fillText(ch, x, 0); x += o.measureText(ch).width + gap; });
+    o.restore();
+    if (spec.bg) {
+      o.globalCompositeOperation = 'source-atop';
+      o.globalAlpha = 0.35;
+      drawCover(o, { img: spec.bg, focus: 0.5 }, W, H);
+    }
+    g.drawImage(off, 0, 0, W, H);
+
+    // Teams: the two crests with PRET between them, centred in the space
+    // between the bottom of TIEŠRAIDE and the top of the white band.
+    var bandTop = S.band.y - S.band.amp * 1.2;
+    var crestY = (base + bandTop) / 2;
+    thumbCrest(g, spec.home || {}, cx - S.crest.dx, crestY, S.crest.size);
+    thumbCrest(g, spec.away || {}, cx + S.crest.dx, crestY, S.crest.size);
+    var B = S.between;
+    text(g, B.word, cx, crestY, fit(g, B.word, B.px, 2 * S.crest.dx - S.crest.size - 24, 24), B.color);
+
+    // Sponsors on the jagged white band, as on the posters and the site's footer.
+    ridge(g, W, S.band.y, S.band.amp, H, '#FFFFFF', rng('youtube-' + spec.cup));
+    logoRows(g, spec.sponsors || [], S.logos.left, S.logos.right, S.logos.top, S.logos.bottom, S.logos);
+    return c;
+  }
+
   // ---------- loading ----------
   var cache = {};
   function loadImage(src) {
@@ -510,5 +655,5 @@
       .then(function (res) { return res.slice(1); });
   }
 
-  window.Poster = { render: render, renderResults: renderResults, prepare: prepare, FORMATS: FORMATS };
+  window.Poster = { render: render, renderResults: renderResults, renderThumb: renderThumb, prepare: prepare, FORMATS: FORMATS };
 })();

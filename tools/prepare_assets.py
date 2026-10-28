@@ -1,5 +1,7 @@
 """Prepare web copies of team and sponsor logos and poster photos.
 
+    python3 tools/prepare_assets.py youtube
+        design/teams/<id>.png  ->  assets/youtube/teams/<id>.webp  (large logos for YouTube thumbnails)
     python3 tools/prepare_assets.py teams [<id> ...]
         design/teams/<id>.png (or .jpg/.webp)  ->  assets/teams/<id>.webp
         Trimmed to the logo, fitted into a 256 px square (same as logos that
@@ -60,6 +62,22 @@ def teams(ids):
         dest = ROOT / 'assets' / 'teams' / f'{tid}.webp'
         dest.write_bytes(webp)
         print(f'{tid:12s} {w}x{h}  {len(webp) // 1024} KB' + ('' if transparent else '  (no transparent background)'))
+
+
+def youtube_teams():
+    """Large team logos for the YouTube thumbnails (assets/youtube/teams/<id>.webp,
+    trimmed, 600 px on the long side) from the originals in design/teams. The site's
+    own copies are small (some only 160 px), which looks soft on a 1920×1080 thumbnail."""
+    out_dir = ROOT / 'assets' / 'youtube' / 'teams'
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for f in sorted((ROOT / 'design' / 'teams').iterdir()):
+        if f.suffix.lower() not in ('.png', '.jpg', '.jpeg', '.webp'):
+            continue
+        im = trim(ImageOps.exif_transpose(Image.open(f)).convert('RGBA'))
+        im.thumbnail((600, 600), Image.LANCZOS)
+        dest = out_dir / f'{f.stem}.webp'
+        im.save(dest, 'WEBP', quality=92, method=6)
+        print(f'{f.stem:12s} {im.width}x{im.height}  {dest.stat().st_size // 1024} KB')
 
 
 def sponsors():
@@ -144,7 +162,9 @@ def fonts():
 
 if __name__ == '__main__':
     args = sys.argv[1:]
-    if args[:1] == ['teams']:
+    if args[:1] == ['youtube']:
+        youtube_teams()
+    elif args[:1] == ['teams']:
         teams(args[1:])
     elif args[:1] == ['sponsors']:
         sponsors()
