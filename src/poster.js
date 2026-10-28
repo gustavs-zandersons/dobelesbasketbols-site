@@ -502,9 +502,9 @@
     w: 1280, h: 720,
     panel: { x: 56, y: 52, h: 616 },              // the vertical logo, 1:2
     zone: [404, 1236],                            // everything right of the panel
-    title: { cap: 128, stretch: 1.15, spacing: 0.07, color: '#8A8A8A' },
-    crest: { y: 346, size: 232, dx: 236 },
-    between: { word: 'PRET', px: 76, color: '#FFFFFF' },
+    title: { cap: 128, stretch: 1.15, spacing: 0.035, color: '#8A8A8A' },
+    crest: { size: 200, dx: 220 },               // centred between the title and the sponsors label
+    between: { word: 'PRET', px: 52, color: '#FFFFFF' },
     label: { y: 522, px: 26 },
     logos: { top: 540, bottom: 704, right: 1196, rows: [8, 7], area: 3600, max: [140, 60], gap: 24 }   // right: clear of YouTube's corner badge
   };
@@ -597,11 +597,14 @@
     }
     g.drawImage(off, 0, 0);
 
-    // Teams: the two crests with PRET between them.
-    drawCrest(g, spec.home || {}, cx - S.crest.dx, S.crest.y, S.crest.size);
-    drawCrest(g, spec.away || {}, cx + S.crest.dx, S.crest.y, S.crest.size);
+    // Teams: the two crests with PRET between them, centred in the space
+    // between the bottom of TIEŠRAIDE and the top of the sponsors label.
+    var labelTop = S.label.y - capHeight(g, S.label.px) / 2;
+    var crestY = (base + labelTop) / 2;
+    drawCrest(g, spec.home || {}, cx - S.crest.dx, crestY, S.crest.size);
+    drawCrest(g, spec.away || {}, cx + S.crest.dx, crestY, S.crest.size);
     var B = S.between;
-    text(g, B.word, cx, S.crest.y, fit(g, B.word, B.px, 2 * S.crest.dx - S.crest.size - 24, 30), B.color);
+    text(g, B.word, cx, crestY, fit(g, B.word, B.px, 2 * S.crest.dx - S.crest.size - 24, 24), B.color);
 
     // Sponsors straight on the background.
     var sp = spec.sponsors || [];
