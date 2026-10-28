@@ -13,7 +13,7 @@
    the sheet never needs editing for that.
 
    Title rules (decided 28 Oct 2026):
-     <home short> - <away short> | <year>. gada <cup> - <stage>[, <n>. spēle]
+     <home short> - <away short> | 2026./2027. gada <cup> - <stage>[, <n>. spēle]
      · Dobele cup: "Dobeles basketbola čempionu kauss"; Jelgava cup: "JSSC Izaicinājuma kauss"
      · stage, not the round; the game number only for two-game ties and best-of-3
        series, and only while the title stays within YouTube's 100 characters
@@ -37,13 +37,14 @@
   function initials(s) { return String(s).replace(/[^A-Za-zĀ-ž]/g, '').slice(0, 2).toUpperCase(); }
 
   // Cup names: title (short form for YouTube's limit), description, thumbnail band.
-  function cupNames(comp, year) {
+  // `years` is the season as in the rules: "2026./2027. gada" (changed 29 Oct 2026, was "2026. gada").
+  function cupNames(comp, years) {
     if (comp === 'jssc') {
-      return { title: [year + '. gada JSSC Izaicinājuma kauss'],
-               desc: year + '. gada Jelgavas Sporta servisa centra Izaicinājuma kauss' };
+      return { title: [years + ' JSSC Izaicinājuma kauss'],
+               desc: years + ' Jelgavas Sporta servisa centra Izaicinājuma kauss' };
     }
-    return { title: [year + '. gada Dobeles basketbola čempionu kauss', year + '. gada Dobeles čempionu kauss'],
-             desc: year + '. gada Dobeles basketbola čempionu kauss' };
+    return { title: [years + ' Dobeles basketbola čempionu kauss', years + ' Dobeles čempionu kauss'],
+             desc: years + ' Dobeles basketbola čempionu kauss' };
   }
 
   // Stage words. title: lower case as agreed; thumb: the pill on the thumbnail.
@@ -90,7 +91,8 @@
     var ctx = window.Engine.create(D, today);
     var team = function (id) { return ctx.team(id); };
     var seasonId = String(D.settings.season || D.season).replace('/', '-');
-    var year = String(D.settings.season || D.season).slice(0, 4);
+    var y1 = +String(D.settings.season || D.season).slice(0, 4);
+    var years = y1 + './' + (y1 + 1) + '. gada';
     var games = [], thumbs = {};
 
     // A third semifinal game is needed only when the series stands 1–1 after two games.
@@ -106,7 +108,7 @@
       var h = ctx.resolve(g.comp, g.home).team, a = ctx.resolve(g.comp, g.away).team;
       var H = h && team(h), A = a && team(a);
       var known = !!(H && A);
-      var stage = stageOf(g, team), cups = cupNames(g.comp, year);
+      var stage = stageOf(g, team), cups = cupNames(g.comp, years);
       var venue = ctx.venue(g.venue) || { name: '' };
       var start = new Date(g.date + 'T' + (g.time || '00:00') + ':00');   // the page runs in Europe/Riga
       var day = new Date(g.date + 'T12:00:00');

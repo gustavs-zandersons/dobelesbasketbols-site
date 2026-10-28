@@ -198,7 +198,7 @@ if (MULTI) {
       check(len >= 1 && len <= 100, 'youtube ' + g.id + ': title length ' + len + ' (YouTube allows 1–100): ' + g.title);
       check(!/[<>]/.test(g.title + g.description), 'youtube ' + g.id + ': no < or > in title or description');
       check(Buffer.byteLength(g.description || '', 'utf8') <= 5000, 'youtube ' + g.id + ': description within 5000 bytes');
-      check(/ \| \d{4}\. gada /.test(g.title), 'youtube ' + g.id + ': title follows "teams | year. gada cup - stage": ' + g.title);
+      check(/ \| \d{4}\.\/\d{4}\. gada /.test(g.title), 'youtube ' + g.id + ': title follows "teams | 2026./2027. gada cup - stage": ' + g.title);
       const f = path.join(DIST, 'youtube', g.id + '.jpg');
       check(fs.existsSync(f) && fs.statSync(f).size < 2 * 1024 * 1024, 'youtube ' + g.id + ': thumbnail exists and is under 2 MB');
       check(/^[0-9a-f]{12}$/.test(g.thumbVersion || ''), 'youtube ' + g.id + ': thumbnail version');

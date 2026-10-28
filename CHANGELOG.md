@@ -1,5 +1,13 @@
 # Changelog
 
+## Round 21 — season years in YouTube titles
+
+- YouTube titles and descriptions name the season as in the rules: "2026./2027. gada
+  Dobeles basketbola čempionu kauss" / "2026./2027. gada JSSC Izaicinājuma kauss"
+  (was "2026. gada"). Longest real title 89 characters; all stages still fit within
+  YouTube's 100 with the game number. Streams already created are updated on the
+  sheet script's next run (no manual edits).
+
 ## Round 20 — YouTube streams (feed + thumbnails + sheet script)
 
 - **YouTube feed:** every build writes `dist/youtube/speles.json` — each game not
