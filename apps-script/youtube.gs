@@ -231,10 +231,9 @@ function getBroadcast_(id) {
 }
 
 // Category (Sports), language and tags live on the video, not the broadcast.
+// Tags (agreed 28 Oct): "basketbols" plus the cup's town.
 function setVideoDetails_(videoId, g) {
-  var tags = ['basketbols', 'Dobele', 'DobelesBasketbols', g.comp === 'jssc' ? 'Izaicinājuma kauss' : 'Čempionu kauss'];
-  if (g.home) tags.push(g.home);
-  if (g.away) tags.push(g.away);
+  var tags = ['basketbols', g.comp === 'jssc' ? 'Jelgava' : 'Dobele'];
   YouTube.Videos.update({
     id: videoId,
     snippet: { title: g.title, description: g.description, categoryId: CONFIG.CATEGORY_ID,

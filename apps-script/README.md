@@ -21,7 +21,7 @@ For every game in the next 7 days (and every later game that already has a strea
 
 | Situation | Action |
 |---|---|
-| Both teams known, no stream yet | Creates a scheduled public stream: title, description, start time, not made for kids, auto-start off, auto-stop on, DVR on; Sports category, Latvian; thumbnail; playlist (created if missing); link into Kalendārs → **YouTube saite** |
+| Both teams known, no stream yet | Creates a scheduled stream with the settings below; thumbnail; playlist (created if missing); link into Kalendārs → **YouTube saite** |
 | Stream exists, something changed on the site | Updates title, description, start time and/or thumbnail |
 | Stream live or finished | Never touched |
 | Teams not known yet | Skipped, listed in the report |
@@ -29,6 +29,13 @@ For every game in the next 7 days (and every later game that already has a strea
 | Game past, stream never started (no-show) | Stream deleted, link cleared |
 | Future stream whose game left the calendar | Only reported ("Jāpārbauda") — deleting is for a person |
 | A link typed into YouTube saite by hand | That stream is taken over instead of creating a new one |
+
+Stream settings (agreed with the organisers, 28 Oct 2026): **public** from the Monday
+run of the game's week; **scheduled start = tip-off**; **auto-start off** (only the
+operator starts it, in OBS or YouTube), **auto-stop on** (ends when OBS stops sending);
+normal latency; rewind (DVR) on; live chat on (channel default); the replay stays on
+the channel at the same link; **not made for kids**; category **Sports**, language
+Latvian; tags `basketbols` + `Dobele` or `Jelgava` (by cup).
 
 Running it again is always safe: games are matched by Spēles ID (kept in the
 script's properties), so nothing is duplicated. A report goes to the email of the
