@@ -1,5 +1,12 @@
 # Changelog
 
+## Round 18 — released 28 Oct 2026: new Garage Barber logo
+
+- Garage Barber's logo replaced with the white version they sent, at the same
+  path (`assets/sponsors/garage-barber.webp`), so the sheet needs no change.
+  Note: it is white on transparent, so on the white sponsor strip and sponsor
+  pop-up it does not show.
+
 ## Round 17 — released 27 Oct 2026: smaller cookie button
 
 - The cookie button is 30 px (was 44 px) on every screen, with a smaller icon;
