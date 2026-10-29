@@ -657,7 +657,7 @@
 
   // ---------- OBS pre-game overlay (1920×1080, transparent PNG) ----------
   // The organisers' "Pregame overlay" (Photoshop, 2025/26), shown in OBS over
-  // the camera from going live until tip-off: the whole frame darkened to 90 %
+  // the camera from going live until tip-off: the whole frame darkened to 60 %
   // (the court shows faintly through), the cup's vertical logo on the left,
   // TIEŠRAIDE small in the top-right corner, both team logos with PRET between
   // them, "SPĒLE SĀKSIES PĒC:" with room below for OBS's own countdown, and —
@@ -668,7 +668,7 @@
   //          sponsors: [{ img, w, h, scale }] }
   var OVERLAY = {
     w: 1920, h: 1080,
-    shade: 'rgba(2, 2, 2, 0.9)',                  // Photoshop: #020202 at 90 % opacity
+    shade: 'rgba(2, 2, 2, 0.6)',                  // #020202 as in Photoshop, at 60 % (organisers, 29 Oct; Photoshop had 90 %)
     panel: { x: 52, y: 66, h: 706 },
     centre: 1073,                                 // middle of the area right of the panel
     live: { right: 1829, top: 66, cap: 64, color: '#6C6C6B' },

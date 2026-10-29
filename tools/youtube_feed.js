@@ -145,6 +145,8 @@
         item.description = lines.map(clean).join('\n');
         if (bytes(item.description) > DESC_MAX_BYTES) throw new Error(g.id + ': description over 5000 bytes');
         item.thumb = site + '/youtube/' + g.id + '.jpg';
+        item.homeShort = H.short; item.awayShort = A.short;
+        item.stage = stage.desc; item.venue = venue.name;
         thumbs[g.id] = {
           cup: g.comp, panelSrc: PANEL[g.comp],
           home: { id: H.id, src: H.logo || '', initials: initials(H.short), color: H.color, name: H.short },
@@ -159,30 +161,50 @@
              site: site, games: games };
   }
 
-  // One thumbnail as a JPEG data URL (prerender.py saves it).
-  function thumb(id) {
+  // Everything a game's images need, loaded once: cup panel, team logos (the
+  // large copies made for YouTube, assets/youtube/teams, when there are), the
+  // sponsors (same logos as the footer — they sit on the white band) and, for the
+  // thumbnail, the concrete background.
+  function load(id, extra) {
     var s = state && state.thumbs[id];
     if (!s) return Promise.resolve(null);
-    // Sponsors: the same logos as the footer and the posters (on the white band).
     var sponsors = (window.SITE_DATA.poster || {}).sponsors || [];
-    // Team logos: the large copy made for YouTube when there is one (assets/youtube/teams).
-    ['home', 'away'].forEach(function (k) {
-      if (state.bigTeams.indexOf(s[k].id) >= 0) s[k] = Object.assign({}, s[k], { src: 'assets/youtube/teams/' + s[k].id + '.webp' });
-    });
-    var srcs = [BG, s.panelSrc, s.home.src, s.away.src].concat(sponsors.map(function (x) { return x.src; })).filter(Boolean);
-    var anton = document.fonts && document.fonts.load ? document.fonts.load('400 150px "Anton"', 'TIEŠRAIDE').catch(function () {}) : null;
+    var side = function (k) {
+      return state.bigTeams.indexOf(s[k].id) >= 0 ? Object.assign({}, s[k], { src: 'assets/youtube/teams/' + s[k].id + '.webp' }) : s[k];
+    };
+    var home = side('home'), away = side('away');
+    var srcs = (extra || []).concat([s.panelSrc, home.src, away.src], sponsors.map(function (x) { return x.src; })).filter(Boolean);
+    var anton = document.fonts && document.fonts.load
+      ? document.fonts.load('400 150px "Anton"', 'TIEŠRAIDE PRET SPĒLE SĀKSIES PĒC:').catch(function () {}) : null;
     return Promise.all([anton, window.Poster.prepare(srcs)]).then(function (res) {
       var imgs = res[1];
       var img = function (src) { var i = srcs.indexOf(src); return src && i >= 0 ? imgs[i] : null; };
-      var spec = {
-        cup: s.cup, bg: img(BG), panel: img(s.panelSrc),
-        home: Object.assign({}, s.home, { img: img(s.home.src) }),
-        away: Object.assign({}, s.away, { img: img(s.away.src) }),
-        sponsors: sponsors.map(function (x) { return { img: img(x.src), w: x.w, h: x.h, scale: x.scale }; })
+      return {
+        img: img,
+        spec: {
+          cup: s.cup, panel: img(s.panelSrc),
+          home: Object.assign({}, home, { img: img(home.src) }),
+          away: Object.assign({}, away, { img: img(away.src) }),
+          sponsors: sponsors.map(function (x) { return { img: img(x.src), w: x.w, h: x.h, scale: x.scale }; })
+        }
       };
-      return window.Poster.renderThumb(spec).toDataURL('image/jpeg', 0.92);
     });
   }
 
-  window.YouTubeFeed = { feed: feed, thumb: thumb };
+  // The YouTube thumbnail as a JPEG data URL (prerender.py saves it).
+  function thumb(id) {
+    return load(id, [BG]).then(function (r) {
+      if (!r) return null;
+      return window.Poster.renderThumb(Object.assign(r.spec, { bg: r.img(BG) })).toDataURL('image/jpeg', 0.92);
+    });
+  }
+
+  // The OBS pre-game overlay as a transparent PNG data URL (dist/obs/<id>.png).
+  function overlay(id) {
+    return load(id).then(function (r) {
+      return r ? window.Poster.renderOverlay(r.spec).toDataURL('image/png') : null;
+    });
+  }
+
+  window.YouTubeFeed = { feed: feed, thumb: thumb, overlay: overlay };
 })();

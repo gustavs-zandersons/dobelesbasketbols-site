@@ -36,7 +36,10 @@ and shareable:
 
 For YouTube (not pages): `/youtube/speles.json` — the feed the season sheet's
 Apps Script reads to create one scheduled stream per game — and
-`/youtube/<game id>.jpg`, each game's 1280×720 thumbnail. See `apps-script/README.md`.
+`/youtube/<game id>.jpg`, each game's thumbnail. See `apps-script/README.md`.
+For the OBS operator (link shared by the organisers, not in the menu or search):
+`/obs/` — the coming game day's pre-game overlays (`/obs/<game id>.png`) and a ZIP
+per game day (`tools/obs_page.py`).
 
 The same paths under `/jelgava/` for the Challenge Cup. Old `#…` links
 (`#dobele-komanda-buki`, `#kalendars`, `#spele-…`) forward to the new addresses.

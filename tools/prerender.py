@@ -147,6 +147,19 @@ def youtube_feed(pg, out, site, social):
     (d / 'speles.json').write_text(json.dumps(feed, ensure_ascii=False, indent=1) + '\n')
     print(f'youtube: {len(feed["games"])} games in the feed, {n} thumbnails')
 
+    # OBS pre-game overlays + the operator's page (tools/obs_page.py).
+    import obs_page
+    made = {}
+    for g in feed['games']:
+        if not g.get('thumb'):
+            continue
+        url = pg.evaluate('(id) => window.YouTubeFeed.overlay(id)', g['id'])
+        if not url or not url.startswith('data:image/png;base64,'):
+            raise SystemExit(f'obs: no overlay for {g["id"]}')
+        made[g['id']] = base64.b64decode(url.split(',', 1)[1])
+    games, days = obs_page.build(out, feed['games'], made)
+    print(f'obs: {games} overlays on {days} game days')
+
 
 def prerender(out, site, body, fonts, urls, social=None):
     out = Path(out)
