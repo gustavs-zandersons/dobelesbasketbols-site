@@ -1,5 +1,8 @@
 """The OBS operator's page: dist/obs/index.html (called by tools/prerender.py).
 
+Also the half-time screens, one per cup (dist/obs/partraukums-<cup>.png), always
+listed at the bottom of the page.
+
 Not in the menu, the sitemap or search results — the organisers share the link
 (https://dobelesbasketbols.lv/obs/) with whoever runs OBS. It lists the coming
 game day's pre-game overlays (dist/obs/<game id>.png, drawn by
@@ -89,9 +92,12 @@ JS = """
 """
 
 
-def build(out, games, made):
-    """games: the feed's games; made: {game id: PNG bytes}. Writes the page,
-    the PNGs and one ZIP per game day."""
+BREAKS = {'dbck': ('dobele', 'Dobeles basketbola čempionu kauss'), 'jssc': ('jelgava', 'JSSC Izaicinājuma kauss')}
+
+
+def build(out, games, made, breaks=None):
+    """games: the feed's games; made: {game id: PNG bytes}; breaks: {cup: PNG bytes}
+    (half-time screens). Writes the page, the PNGs and one ZIP per game day."""
     d = Path(out) / 'obs'
     d.mkdir(parents=True, exist_ok=True)
     listed = [g for g in games if g['id'] in made]
@@ -125,6 +131,21 @@ def build(out, games, made):
             f'<a class="btn ghost" href="/obs/{day}.zip" download="obs-{day}.zip">Lejupielādēt visas (ZIP)</a>'
             '</div>'
             '<div class="grid">' + ''.join(cards) + '</div></section>')
+    half = []
+    for cup, png in (breaks or {}).items():
+        key, name = BREAKS[cup]
+        (d / f'partraukums-{key}.png').write_bytes(png)
+        half.append(
+            '<article class="card">'
+            f'<div class="shot"><img src="/obs/partraukums-{key}.png" alt="Pārtraukums — {escape(name)}" loading="lazy" width="1920" height="1080"></div>'
+            '<div class="info">'
+            f'<div class="teams">{escape(name)}</div>'
+            '<div class="stage">Pārtraukuma ekrāns — visām šī kausa spēlēm</div>'
+            f'<a class="btn" href="/obs/partraukums-{key}.png" download="partraukums-{key}.png">Lejupielādēt PNG</a>'
+            '</div></article>')
+    half_html = ('<section class="always">'
+                 '<div class="bar"><h2>Pārtraukums<small>Viens ekrāns katram kausam, visām spēlēm — nemainās</small></h2></div>'
+                 '<div class="grid">' + ''.join(half) + '</div></section>') if half else ''
     html = (
         '<!doctype html>\n<html lang="lv">\n<head>\n<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
@@ -135,10 +156,12 @@ def build(out, games, made):
         '<h1>OBS pirmsspēles ekrāni</h1>\n'
         '<p class="lead">Ekrāns, ko rāda no tiešraides sākuma līdz spēles sākumam: komandas un sponsori. '
         'Lejupielādē attēlu un pievieno OBS kā attēla avotu (Image) virs kameras — tā fons ir daļēji caurspīdīgs. '
-        'Laiku līdz spēles sākumam rāda OBS taimeris zem uzraksta „Spēle sāksies pēc:”.</p>\n'
+        'Laiku līdz spēles sākumam rāda OBS taimeris zem uzraksta „Spēle sāksies pēc:”. '
+        'Pārtraukuma ekrāni abiem kausiem — lapas apakšā.</p>\n'
         + '\n'.join(sections) +
         '\n<p class="empty" id="empty" hidden>Tuvākajā laikā nav spēļu, kurām abas komandas jau zināmas.</p>\n'
         '<div class="foot"><a class="btn ghost" id="all" href="#" hidden>Rādīt visas nākamās spēles</a></div>\n'
-        f'</main>\n<script>{JS}</script>\n</body>\n</html>\n')
+        + half_html +
+        f'\n</main>\n<script>{JS}</script>\n</body>\n</html>\n')
     (d / 'index.html').write_text(html)
     return len(listed), len(by_day)

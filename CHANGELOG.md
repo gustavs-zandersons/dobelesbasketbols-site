@@ -1,5 +1,16 @@
 # Changelog
 
+## Round 23 — OBS half-time screens
+
+- `Poster.renderBreak`: last season's "PĀRTRAUKUMS" screen, one per cup —
+  frame darkened like the pre-game overlay (60 %), the cup's round logo top left,
+  PĀRTRAUKUMS top right (positions from last season's image), and the same
+  sponsor band as the pre-game overlay (shared `sponsorBand`, so switching
+  screens in OBS doesn't make the band jump).
+- `/obs/` lists both at the bottom ("Pārtraukums", always there):
+  `/obs/partraukums-dobele.png`, `/obs/partraukums-jelgava.png`. Rebuilt with
+  every site update, so a sponsor change reaches them too.
+
 ## Round 22 — OBS pre-game overlays + the operator's page; new Jelgava vertical logo
 
 - **Overlay:** `Poster.renderOverlay` (src/poster.js) — the organisers' Photoshop

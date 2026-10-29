@@ -157,8 +157,14 @@ def youtube_feed(pg, out, site, social):
         if not url or not url.startswith('data:image/png;base64,'):
             raise SystemExit(f'obs: no overlay for {g["id"]}')
         made[g['id']] = base64.b64decode(url.split(',', 1)[1])
-    games, days = obs_page.build(out, feed['games'], made)
-    print(f'obs: {games} overlays on {days} game days')
+    breaks = {}
+    for cup in ('dbck', 'jssc'):
+        url = pg.evaluate('(c) => window.YouTubeFeed.halftime(c)', cup)
+        if not url or not url.startswith('data:image/png;base64,'):
+            raise SystemExit(f'obs: no half-time screen for {cup}')
+        breaks[cup] = base64.b64decode(url.split(',', 1)[1])
+    games, days = obs_page.build(out, feed['games'], made, breaks)
+    print(f'obs: {games} overlays on {days} game days, {len(breaks)} half-time screens')
 
 
 def prerender(out, site, body, fonts, urls, social=None):

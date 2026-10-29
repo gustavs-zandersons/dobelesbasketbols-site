@@ -214,6 +214,7 @@ if (MULTI) {
   if (fs.existsSync(OBS)) {
     const t = fs.readFileSync(OBS, 'utf8');
     check(t.includes('content="noindex, nofollow"'), '/obs/ is kept out of search results');
+    ['dobele', 'jelgava'].forEach(k => check(t.includes('/obs/partraukums-' + k + '.png') && fs.existsSync(path.join(DIST, 'obs', 'partraukums-' + k + '.png')), '/obs/ has the half-time screen for ' + k));
     check(!fs.readFileSync(path.join(DIST, 'sitemap.xml'), 'utf8').includes('/obs/'), '/obs/ is not in the sitemap');
     [...t.matchAll(/(?:href|src)="\/(obs\/[^"]+)"/g)].forEach(m => check(fs.existsSync(path.join(DIST, m[1])), '/obs/ links to ' + m[1]));
     if (fs.existsSync(YT)) {

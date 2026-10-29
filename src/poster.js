@@ -725,11 +725,49 @@
     // "The game starts in:" — OBS's countdown sits below it.
     capText(g, S.starts.text, cx, S.starts.base, S.starts.cap, S.starts.color[spec.cup] || '#FFFFFF');
 
-    // Sponsors on the jagged white band, as on the thumbnails.
-    ridge(g, W, S.band.y, S.band.amp, H, '#FFFFFF', rng('overlay-' + spec.cup));
-    logoRows(g, spec.sponsors || [], S.logos.left, S.logos.right, S.logos.top, S.logos.bottom, S.logos);
+    sponsorBand(g, spec);
     return c;
   }
 
-  window.Poster = { render: render, renderResults: renderResults, renderThumb: renderThumb, renderOverlay: renderOverlay, prepare: prepare, FORMATS: FORMATS };
+  // Sponsors on the jagged white band, as on the thumbnails. The same band (same
+  // edge, same logo rows) on every OBS screen, so switching screens doesn't jump.
+  function sponsorBand(g, spec) {
+    var S = OVERLAY;
+    ridge(g, S.w, S.band.y, S.band.amp, S.h, '#FFFFFF', rng('overlay-' + spec.cup));
+    logoRows(g, spec.sponsors || [], S.logos.left, S.logos.right, S.logos.top, S.logos.bottom, S.logos);
+  }
+
+  // ---------- OBS half-time screen (1920×1080, transparent PNG) ----------
+  // Last season's "PĀRTRAUKUMS" screen: the frame darkened like the pre-game
+  // overlay, the cup's round logo top left (Photoshop: 48–266 × 32–250),
+  // PĀRTRAUKUMS top right (1371–1856 × 66–141, macron included) and the same
+  // sponsor band as the pre-game overlay. One per cup, not per game.
+  //
+  // spec = { cup, logo: img, sponsors: [{ img, w, h, scale }], word }
+  var BREAK = { logo: { x: 48, y: 32, size: 218 }, title: { right: 1856, top: 66, base: 141, color: '#6C6C6B' } };
+
+  function renderBreak(spec) {
+    var S = OVERLAY, B = BREAK, W = S.w, H = S.h;
+    var c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    var g = c.getContext('2d');
+    g.imageSmoothingEnabled = true;
+    g.imageSmoothingQuality = 'high';
+    g.fillStyle = spec.shade || S.shade;
+    g.fillRect(0, 0, W, H);
+    if (spec.logo) drawContain(g, spec.logo, B.logo.x + B.logo.size / 2, B.logo.y + B.logo.size / 2, B.logo.size, false);
+    // PĀRTRAUKUMS: sized so the macron's top and the baseline land where they were.
+    var word = spec.word || 'PĀRTRAUKUMS';
+    g.font = '100px ' + ANTON;
+    var rise = g.measureText(word).actualBoundingBoxAscent / 100 || 0.9;
+    g.font = ((B.title.base - B.title.top) / rise) + 'px ' + ANTON;
+    g.fillStyle = B.title.color;
+    g.textAlign = 'right';
+    g.textBaseline = 'alphabetic';
+    g.fillText(word, B.title.right, B.title.base);
+    sponsorBand(g, spec);
+    return c;
+  }
+
+  window.Poster = { render: render, renderResults: renderResults, renderThumb: renderThumb, renderOverlay: renderOverlay, renderBreak: renderBreak, prepare: prepare, FORMATS: FORMATS };
 })();
