@@ -206,5 +206,20 @@
     });
   }
 
-  window.YouTubeFeed = { feed: feed, thumb: thumb, overlay: overlay };
+  // The OBS half-time screen for a cup (one per cup): transparent PNG data URL.
+  var ROUND_LOGO = { dbck: 'assets/dbck-logo.webp', jssc: 'assets/jssc-logo.webp' };
+  function halftime(cup) {
+    var sponsors = (window.SITE_DATA.poster || {}).sponsors || [];
+    var srcs = [ROUND_LOGO[cup]].concat(sponsors.map(function (x) { return x.src; }));
+    var anton = document.fonts && document.fonts.load ? document.fonts.load('400 80px "Anton"', 'PĀRTRAUKUMS').catch(function () {}) : null;
+    return Promise.all([anton, window.Poster.prepare(srcs)]).then(function (res) {
+      var imgs = res[1];
+      return window.Poster.renderBreak({
+        cup: cup, logo: imgs[0],
+        sponsors: sponsors.map(function (x, k) { return { img: imgs[k + 1], w: x.w, h: x.h, scale: x.scale }; })
+      }).toDataURL('image/png');
+    });
+  }
+
+  window.YouTubeFeed = { feed: feed, thumb: thumb, overlay: overlay, halftime: halftime };
 })();
