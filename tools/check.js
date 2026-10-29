@@ -140,7 +140,7 @@ if (MULTI) {
   (function walk(dir) {
     fs.readdirSync(dir, { withFileTypes: true }).forEach(e => {
       const f = path.join(dir, e.name);
-      if (e.isDirectory() && e.name !== 'assets') walk(f);
+      if (e.isDirectory() && e.name !== 'assets' && !(dir === DIST && e.name === 'obs')) walk(f);   // /obs/ is the operator's own page (section 10)
       else if (e.name === 'index.html') pages.push('/' + path.relative(DIST, dir).split(path.sep).filter(Boolean).map(x => x + '/').join(''));
     });
   })(DIST);
@@ -203,6 +203,29 @@ if (MULTI) {
       check(fs.existsSync(f) && fs.statSync(f).size < 2 * 1024 * 1024, 'youtube ' + g.id + ': thumbnail exists and is under 2 MB');
       check(/^[0-9a-f]{12}$/.test(g.thumbVersion || ''), 'youtube ' + g.id + ': thumbnail version');
     });
+  }
+}
+
+// 10. The OBS operator's page (/obs/): kept out of search results, one overlay
+// (1920×1080 PNG) per game whose teams are known, every link and ZIP present.
+if (MULTI) {
+  const OBS = path.join(DIST, 'obs', 'index.html');
+  check(fs.existsSync(OBS), 'dist/obs/index.html exists');
+  if (fs.existsSync(OBS)) {
+    const t = fs.readFileSync(OBS, 'utf8');
+    check(t.includes('content="noindex, nofollow"'), '/obs/ is kept out of search results');
+    check(!fs.readFileSync(path.join(DIST, 'sitemap.xml'), 'utf8').includes('/obs/'), '/obs/ is not in the sitemap');
+    [...t.matchAll(/(?:href|src)="\/(obs\/[^"]+)"/g)].forEach(m => check(fs.existsSync(path.join(DIST, m[1])), '/obs/ links to ' + m[1]));
+    if (fs.existsSync(YT)) {
+      JSON.parse(fs.readFileSync(YT, 'utf8')).games.filter(g => g.teamsKnown).forEach(g => {
+        const f = path.join(DIST, 'obs', g.id + '.png');
+        check(fs.existsSync(f), 'obs: overlay for ' + g.id);
+        if (fs.existsSync(f)) {
+          const b = fs.readFileSync(f);
+          check(b.readUInt32BE(16) === 1920 && b.readUInt32BE(20) === 1080 && b[25] === 6, 'obs: ' + g.id + ' is a 1920×1080 PNG with transparency');
+        }
+      });
+    }
   }
 }
 

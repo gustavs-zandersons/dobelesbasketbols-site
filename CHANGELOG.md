@@ -1,5 +1,25 @@
 # Changelog
 
+## Round 22 — OBS pre-game overlays + the operator's page; new Jelgava vertical logo
+
+- **Overlay:** `Poster.renderOverlay` (src/poster.js) — the organisers' Photoshop
+  "Pregame overlay" (positions, sizes, colours read from the PSD): 1920×1080 PNG,
+  the frame darkened with #020202 at 60 % (Photoshop had 90 %; organisers chose
+  60 % on 29 Oct) so the camera shows through, the cup's vertical logo, TIEŠRAIDE
+  top right, team logos with PRET, "SPĒLE SĀKSIES PĒC:" (yellow / white for
+  Jelgava) with room for OBS's own countdown, sponsors on the thumbnails' jagged
+  white band. Anton stands in for Impact.
+- **Operator's page `/obs/`** (tools/obs_page.py): not in the menu, sitemap or
+  search (noindex). Shows the coming game day (picked in the browser by date,
+  plus any other game day within 6 days) with each game's overlay, a PNG
+  download (`2026-11-01_11-00_lietus-spriditis.png`) and a ZIP per game day;
+  "Rādīt visas nākamās spēles" shows the rest. Overlays and ZIPs are made by
+  every build for each upcoming game whose teams are known (`dist/obs/`).
+- **Jelgava vertical logo** replaced (round court emblem; original in
+  `design/youtube/jssc-vertikals.png`) — used by thumbnails and overlays.
+- `check.js`: /obs/ kept out of search and the sitemap, its links exist, one
+  1920×1080 transparent PNG per game with known teams.
+
 ## Round 21 — season years in YouTube titles
 
 - YouTube titles and descriptions name the season as in the rules: "2026./2027. gada
