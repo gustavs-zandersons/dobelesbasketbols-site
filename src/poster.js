@@ -701,7 +701,7 @@
     g.imageSmoothingQuality = 'high';
 
     // The whole frame darkened; the camera shows faintly through.
-    g.fillStyle = S.shade;
+    g.fillStyle = spec.shade || S.shade;
     g.fillRect(0, 0, W, H);
 
     if (spec.panel) {
