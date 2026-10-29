@@ -655,5 +655,81 @@
       .then(function (res) { return res.slice(1); });
   }
 
-  window.Poster = { render: render, renderResults: renderResults, renderThumb: renderThumb, prepare: prepare, FORMATS: FORMATS };
+  // ---------- OBS pre-game overlay (1920×1080, transparent PNG) ----------
+  // The organisers' "Pregame overlay" (Photoshop, 2025/26), shown in OBS over
+  // the camera from going live until tip-off: the whole frame darkened to 90 %
+  // (the court shows faintly through), the cup's vertical logo on the left,
+  // TIEŠRAIDE small in the top-right corner, both team logos with PRET between
+  // them, "SPĒLE SĀKSIES PĒC:" with room below for OBS's own countdown, and —
+  // new for 2026/27 — the sponsors on the jagged white band of the thumbnails.
+  // Positions and sizes are the Photoshop file's (Impact there, Anton here).
+  //
+  // spec = { cup, panel: img, home: { img | initials, color }, away: {…},
+  //          sponsors: [{ img, w, h, scale }] }
+  var OVERLAY = {
+    w: 1920, h: 1080,
+    shade: 'rgba(2, 2, 2, 0.9)',                  // Photoshop: #020202 at 90 % opacity
+    panel: { x: 52, y: 66, h: 706 },
+    centre: 1073,                                 // middle of the area right of the panel
+    live: { right: 1829, top: 66, cap: 64, color: '#6C6C6B' },
+    crest: { y: 400, size: 330, dx: 368 },
+    between: { word: 'PRET', cap: 64, color: '#FFFFFF' },
+    starts: { text: 'SPĒLE SĀKSIES PĒC:', base: 668, cap: 46, color: { dbck: '#E9B716', jssc: '#FFFFFF' } },
+    // countdown: OBS's timer goes here (Photoshop layer "0:10:55", 956–1190 × 724–790)
+    band: { y: 884, amp: 40 },
+    logos: { top: 910, bottom: 1066, left: 130, right: 1790, rows: [8, 7], area: 11600, max: [250, 100], gap: 44 }
+  };
+  var ANTON = '"Anton", "Barlow Condensed", sans-serif';
+
+  function capText(g, t, x, base, cap, color, align) {
+    g.font = '100px ' + ANTON;
+    var per = g.measureText('H').actualBoundingBoxAscent / 100 || 0.73;
+    g.font = (cap / per) + 'px ' + ANTON;
+    g.fillStyle = color;
+    g.textAlign = align || 'center';
+    g.textBaseline = 'alphabetic';
+    g.fillText(t, x, base);
+    return cap / per;
+  }
+
+  function renderOverlay(spec) {
+    var S = OVERLAY, W = S.w, H = S.h;
+    var c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    var g = c.getContext('2d');
+    g.imageSmoothingEnabled = true;
+    g.imageSmoothingQuality = 'high';
+
+    // The whole frame darkened; the camera shows faintly through.
+    g.fillStyle = S.shade;
+    g.fillRect(0, 0, W, H);
+
+    if (spec.panel) {
+      var ph = S.panel.h, pw = ph * (spec.panel.naturalWidth || spec.panel.width) / (spec.panel.naturalHeight || spec.panel.height);
+      g.drawImage(spec.panel, S.panel.x, S.panel.y, pw, ph);
+    }
+
+    // TIEŠRAIDE, top right: the top of the Š level with the top of the panel.
+    g.font = '100px ' + ANTON;
+    var per = g.measureText('H').actualBoundingBoxAscent / 100 || 0.73;
+    g.font = (S.live.cap / per) + 'px ' + ANTON;
+    var topOfS = g.measureText('Š').actualBoundingBoxAscent;
+    capText(g, 'TIEŠRAIDE', S.live.right, S.live.top + topOfS, S.live.cap, S.live.color, 'right');
+
+    // Teams with PRET between them.
+    var cx = S.centre, cy = S.crest.y;
+    thumbCrest(g, spec.home || {}, cx - S.crest.dx, cy, S.crest.size);
+    thumbCrest(g, spec.away || {}, cx + S.crest.dx, cy, S.crest.size);
+    capText(g, S.between.word, cx, cy + S.between.cap / 2, S.between.cap, S.between.color);
+
+    // "The game starts in:" — OBS's countdown sits below it.
+    capText(g, S.starts.text, cx, S.starts.base, S.starts.cap, S.starts.color[spec.cup] || '#FFFFFF');
+
+    // Sponsors on the jagged white band, as on the thumbnails.
+    ridge(g, W, S.band.y, S.band.amp, H, '#FFFFFF', rng('overlay-' + spec.cup));
+    logoRows(g, spec.sponsors || [], S.logos.left, S.logos.right, S.logos.top, S.logos.bottom, S.logos);
+    return c;
+  }
+
+  window.Poster = { render: render, renderResults: renderResults, renderThumb: renderThumb, renderOverlay: renderOverlay, prepare: prepare, FORMATS: FORMATS };
 })();
