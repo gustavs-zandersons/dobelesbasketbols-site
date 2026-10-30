@@ -40,9 +40,13 @@ var CONFIG = {
   // Leave empty: OBS picks its own stream key when the game is selected.
   // If OBS can't go live on a stream made by this script, put the name of the
   // stream key used in YouTube Studio here (e.g. "Default stream key").
-  // Streams start and stop with OBS (auto-start and auto-stop on): YouTube goes
-  // live when OBS starts sending to the selected game and ends when OBS stops.
   STREAM_KEY_NAME: '',
+  // Auto-start OFF (organisers, 30 Oct 2026): when OBS starts sending, the stream
+  // waits in preview until the operator clicks "Start broadcast" (in OBS) or
+  // "Go live" (YouTube Studio). Auto-stop ON: it ends when OBS stops streaming.
+  // Existing upcoming streams are switched to these values on the next run.
+  AUTO_START: false,
+  AUTO_STOP: true,
   WEEKLY_HOUR: 9
 };
 
@@ -188,7 +192,7 @@ function handleGame_(g, entry, inWindow, sheet, props, report) {
     bc = YouTube.LiveBroadcasts.insert({
       snippet: { title: g.title, description: g.description, scheduledStartTime: g.start },
       status: { privacyStatus: CONFIG.PRIVACY, selfDeclaredMadeForKids: false },
-      contentDetails: { enableAutoStart: true, enableAutoStop: true, enableDvr: true, recordFromStart: true }
+      contentDetails: { enableAutoStart: CONFIG.AUTO_START, enableAutoStop: CONFIG.AUTO_STOP, enableDvr: true, recordFromStart: true }
     }, 'snippet,status,contentDetails');
     entry = { b: bc.id };
     props.setProperty('yt:' + g.id, JSON.stringify(entry));   // saved at once: a later error never leads to a duplicate
@@ -213,6 +217,7 @@ function handleGame_(g, entry, inWindow, sheet, props, report) {
     YouTube.LiveBroadcasts.update({ id: bc.id, snippet: { title: g.title, description: g.description, scheduledStartTime: g.start } }, 'snippet');
     setVideoDetails_(bc.id, g);
   }
+  if (setStartStop_(bc)) changed.push('automātiskā sākšana/beigšana');
   if (!entry.p) {
     addToPlaylist_(g.playlist, bc.id);
     entry.p = true;
@@ -226,6 +231,30 @@ function handleGame_(g, entry, inWindow, sheet, props, report) {
 }
 
 // ---------- YouTube ----------
+
+// Auto-start / auto-stop as in CONFIG, on a stream that hasn't gone live yet.
+// An update of contentDetails resets every field it doesn't name, so the
+// stream's current values are sent back with only the two switches changed.
+function setStartStop_(bc) {
+  var cd = bc.contentDetails || {};
+  if (cd.enableAutoStart === CONFIG.AUTO_START && cd.enableAutoStop === CONFIG.AUTO_STOP) return false;
+  var mon = cd.monitorStream || {};
+  var next = {
+    enableAutoStart: CONFIG.AUTO_START,
+    enableAutoStop: CONFIG.AUTO_STOP,
+    enableDvr: cd.enableDvr !== false,
+    enableEmbed: cd.enableEmbed !== false,
+    recordFromStart: cd.recordFromStart !== false,
+    monitorStream: {
+      enableMonitorStream: mon.enableMonitorStream !== false,
+      broadcastStreamDelayMs: mon.broadcastStreamDelayMs || 0
+    }
+  };
+  if (cd.latencyPreference) next.latencyPreference = cd.latencyPreference;
+  if (cd.closedCaptionsType) next.closedCaptionsType = cd.closedCaptionsType;
+  YouTube.LiveBroadcasts.update({ id: bc.id, contentDetails: next }, 'contentDetails');
+  return true;
+}
 
 function getBroadcast_(id) {
   var r = YouTube.LiveBroadcasts.list('id,snippet,status,contentDetails', { id: id });
@@ -310,7 +339,7 @@ function menuTestStream() {
   var bc = YouTube.LiveBroadcasts.insert({
     snippet: { title: title, description: 'Testa straume. Tiks izdzēsta.\n\n' + g.description, scheduledStartTime: start },
     status: { privacyStatus: 'unlisted', selfDeclaredMadeForKids: false },
-    contentDetails: { enableAutoStart: true, enableAutoStop: true, enableDvr: true, recordFromStart: true }
+    contentDetails: { enableAutoStart: CONFIG.AUTO_START, enableAutoStop: CONFIG.AUTO_STOP, enableDvr: true, recordFromStart: true }
   }, 'snippet,status,contentDetails');
   bindStream_(bc.id);
   setThumbnail_(g, bc.id, {});
