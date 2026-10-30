@@ -42,8 +42,9 @@ var CONFIG = {
   // stream key used in YouTube Studio here (e.g. "Default stream key").
   STREAM_KEY_NAME: '',
   // Auto-start OFF (organisers, 30 Oct 2026): when OBS starts sending, the stream
-  // waits in preview until the operator clicks "Start broadcast" (in OBS) or
-  // "Go live" (YouTube Studio). Auto-stop ON: it ends when OBS stops streaming.
+  // waits in preview until the operator clicks "Go Live" (in OBS or YouTube
+  // Studio). Auto-stop ON: it ends when OBS stops streaming. In OBS's YouTube
+  // Broadcast Setup leave "Enable Auto-start" unticked, "Enable Auto-stop" ticked.
   // Existing upcoming streams are switched to these values on the next run.
   AUTO_START: false,
   AUTO_STOP: true,

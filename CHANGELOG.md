@@ -1,5 +1,14 @@
 # Changelog
 
+## Round 24 — YouTube streams: auto-start off
+
+- Sheet script (`apps-script/youtube.gs`): new streams are created with
+  **auto-start off** (auto-stop stays on), as the organisers asked on 30 Oct —
+  OBS streaming puts the stream in preview, the operator clicks **Go Live**.
+  Upcoming streams that already exist are switched on the next run (their other
+  settings — DVR, latency, embedding — are sent back unchanged). Live or finished
+  streams are never touched. Settings in `CONFIG.AUTO_START` / `AUTO_STOP`.
+
 ## Round 23 — OBS half-time screens
 
 - `Poster.renderBreak`: last season's "PĀRTRAUKUMS" screen, one per cup —
