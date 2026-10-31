@@ -14,9 +14,11 @@ name: Atjaunot datus no tabulas
 # (Settings -> Secrets and variables -> Actions).
 on:
   workflow_dispatch:
-  # Turned on once the season starts:
-  # schedule:
-  #   - cron: '0 */3 * * *'
+  # Automatic runs (GitHub's clock is UTC; Latvia is UTC+2 in winter, UTC+3 in
+  # summer). GitHub may start a scheduled run a few minutes late.
+  schedule:
+    - cron: '0 */3 * * *'          # every 3 hours, every day
+    - cron: '*/30 9-19 * * 0'      # Sundays (game days) every 30 min, 11:00–21:30 Riga winter time
 
 permissions:
   contents: write
