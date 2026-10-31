@@ -17,8 +17,9 @@ on:
   # Automatic runs (GitHub's clock is UTC; Latvia is UTC+2 in winter, UTC+3 in
   # summer). GitHub may start a scheduled run a few minutes late.
   schedule:
-    - cron: '0 */3 * * *'          # every 3 hours, every day
-    - cron: '*/30 9-19 * * 0'      # Sundays (game days) every 30 min, 11:00–21:30 Riga winter time
+    - cron: '0 10 * * 1-6'         # Monday–Saturday once, 12:00 Riga winter time
+    - cron: '*/15 7-15 * * 0'      # Sundays (game days) every 15 min, 09:00–17:45 Riga winter time
+    - cron: '0 16 * * 0'           # ... and the last one at 18:00
 
 permissions:
   contents: write
