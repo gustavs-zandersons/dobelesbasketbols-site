@@ -1096,6 +1096,7 @@
    "venue": "dobele",
    "home": "lietus",
    "away": "spriditis",
+   "yt": "https://www.youtube.com/watch?v=sLOgFQZfZLY",
    "round": "R1",
    "bl": "2475f42f-ce62-11f1-b78b-e9430a8fe50d"
   },
@@ -1108,6 +1109,7 @@
    "venue": "dobele",
    "home": "doks",
    "away": "broceni",
+   "yt": "https://www.youtube.com/watch?v=BOSF40rPvrA",
    "round": "R1",
    "bl": "cb266399-d055-11f1-963e-093e8a9088b0"
   },
@@ -1120,6 +1122,7 @@
    "venue": "dobele",
    "home": "jaunpils",
    "away": "skandijs",
+   "yt": "https://www.youtube.com/watch?v=7HAIGR69Ur8",
    "round": "R1",
    "bl": "e7bdc1d1-d055-11f1-a507-c5a31a8e5c72"
   },
@@ -1132,6 +1135,7 @@
    "venue": "dobele",
    "home": "bjss-u19",
    "away": "valauto",
+   "yt": "https://www.youtube.com/watch?v=cCVofPG2igw",
    "round": "R1",
    "bl": "019126bf-d056-11f1-821b-6b21f3c61da8"
   },
