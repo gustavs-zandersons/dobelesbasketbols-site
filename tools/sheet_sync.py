@@ -98,6 +98,7 @@ CAL_COLS = [
     ('tie', ('Pāris',), False), ('n', ('Spēle Nr.',), False), ('date', ('Datums',), True), ('time', ('Laiks',), True),
     ('hall', ('Zāle',), True), ('home', ('Mājinieki',), True), ('away', ('Viesi',), True), ('status', ('Statuss',), False),
     ('basket', ('basket.lv saite',), False), ('note', ('Piezīme',), False),
+    ('yt', ('YouTube saite',), False),   # filled by the sheet script (apps-script/youtube.gs)
 ]
 MVP_COLS = [('cup', ('Kauss',), True), ('date', ('Kārtas datums',), True), ('player', ('Spēlētājs',), True),
             ('team', ('Komanda',), True), ('game', ('Spēles ID',), False), ('note', ('Piezīme',), False)]
@@ -105,6 +106,7 @@ MONTH_COLS = [('cup', ('Kauss',), True), ('month', ('Mēnesis',), True), ('playe
               ('team', ('Komanda',), True), ('note', ('Piezīme',), False)]
 DEC_COLS = [('game', ('Spēles ID',), True), ('kind', ('Veids',), True), ('value', ('Vērtība',), False),
             ('date', ('Lēmuma datums',), False), ('by', ('Kas pieņēma',), False), ('note', ('Piezīme',), False)]
+YT_RE = re.compile(r'^https://(www\.|m\.)?(youtube\.com|youtu\.be)/\S+$')
 CUP_CODES = {'DBČK': 'dbck', 'JSSC': 'jssc'}
 CUP_LABELS = {v: k for k, v in CUP_CODES.items()}
 KG = 'Playoff kvalifikācijas grupa'
@@ -523,9 +525,13 @@ def read_calendar(wb, rep, team_ids, hall_ids, season_years):
         link = v.get('basket', '')
         if link and not allowed_link(link):
             rep.err(tab, r, f'{gid}: basket.lv saitei jāsākas ar https://.')
+        yt = v.get('yt', '')
+        if yt and not YT_RE.match(yt):
+            rep.warn(tab, r, f'{gid}: YouTube saite „{yt}” nav YouTube video saite (https://www.youtube.com/… vai https://youtu.be/…) — mājaslapā to nerāda.')
+            yt = ''
         out.append({'id': gid, 'cup': cup, 'stage': stage, 'round': rnd, 'tie': tie, 'n': n, 'date': d, 'time': t,
                     'hall': hall, 'home': sides[0], 'away': sides[1], 'status': status, 'basket': link,
-                    'note': v.get('note', '')})
+                    'note': v.get('note', ''), 'yt': yt})
     return out
 
 
