@@ -1,5 +1,11 @@
 # Changelog
 
+## Round 26 — new update times
+
+- Automatic "Atjaunot datus no tabulas" runs: Monday–Saturday once at 12:00,
+  Sundays every 15 minutes from 09:00 to 18:00 (Riga winter time; GitHub's
+  schedule is in UTC, so in summer time each run is an hour later).
+
 ## Round 25 — automatic data updates switched on
 
 - "Atjaunot datus no tabulas" now also runs on its own: every 3 hours every
