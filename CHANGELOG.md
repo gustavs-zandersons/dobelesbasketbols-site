@@ -1,5 +1,13 @@
 # Changelog
 
+## Round 25 — automatic data updates switched on
+
+- "Atjaunot datus no tabulas" now also runs on its own: every 3 hours every
+  day, and every 30 minutes on Sundays 09:00–19:30 UTC (11:00–21:30 Riga winter
+  time). The manual button still works for an instant update. A run with no
+  changes publishes nothing; a run that finds sheet errors changes nothing and
+  GitHub emails about it.
+
 ## Round 24 — YouTube streams: auto-start off
 
 - Sheet script (`apps-script/youtube.gs`): new streams are created with
