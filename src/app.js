@@ -256,12 +256,21 @@
     if (g.comp === 'dbck' && g.stage === 'hope') return 'Cerību kauss · ' + STRUCT.dbck.ties[g.tie].label;
     return gameTag(g);
   }
+  // A finished game's video (Kalendārs → "YouTube saite" in the sheet), if any.
+  var YT_ICON = '<svg class="yt-ico" viewBox="0 0 28 20" aria-hidden="true"><rect width="28" height="20" rx="5.5" fill="#FF0033"/><path d="M11.2 5.8v8.4l7.3-4.2z" fill="#fff"/></svg>';
+  function ytUrl(g) {
+    var u = (RAW[g.id] || {}).yt || g.yt || '';
+    return /^https:\/\/(www\.|m\.)?(youtube\.com|youtu\.be)\//.test(u) ? u : '';
+  }
   // One score card.
   function resRow(g) {
     var h = ctx.resolve(g.comp, g.home).team, a = ctx.resolve(g.comp, g.away).team;
     var hw = g.hs > g.as;
-    return '<a class="res" href="' + gameHref(g.id) + '" aria-label="' + esc(team(h).short + ' ' + g.hs + ':' + g.as + ' ' + team(a).short + ' — spēles statistika') + '">' +
-      '<div class="res-meta"><span class="tag">' + esc(cardTag(g)) + '</span></div>' +
+    // A YouTube mark top right when the game has a video (just a sign; the
+    // link itself is on the game page).
+    var yt = ytUrl(g);
+    return '<a class="res" href="' + gameHref(g.id) + '" aria-label="' + esc(team(h).short + ' ' + g.hs + ':' + g.as + ' ' + team(a).short + ' — spēles statistika' + (yt ? ', ir tiešraides ieraksts' : '')) + '">' +
+      '<div class="res-meta"><span class="tag">' + esc(cardTag(g)) + '</span>' + (yt ? '<span class="res-yt" title="Ir tiešraides ieraksts">' + YT_ICON + '</span>' : '') + '</div>' +
       '<div class="res-team res-home' + (hw ? ' is-win' : '') + '">' + badge(h, 'md') + nameHtml(h) + '</div>' +
       '<span class="res-sc h' + (hw ? ' is-win' : '') + '">' + g.hs + '</span>' +
       '<span class="res-sc a' + (hw ? '' : ' is-win') + '">' + g.as + '</span>' +
@@ -1029,6 +1038,7 @@
       '<a class="gh-team' + (hw ? '' : ' is-win') + '" href="' + teamHref(aId, comp) + '">' + badge(aId, 'lg') + '<span>' + esc(team(aId).name) + '</span></a>' +
       '</div>' +
       '<p class="gh-when">' + esc(cap(dateLong(g.date)) + ', ' + g.time + ' · ' + v.name) + '</p>' +
+      (ytUrl(g) ? '<a class="gh-yt" href="' + esc(ytUrl(g)) + '" target="_blank" rel="noopener">' + YT_ICON + '<span>Spēles tiešraide</span><svg class="gh-yt-out" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5h5v5M19 5l-8 8M17 14v5H5V7h5"/></svg></a>' : '') +
       (note ? '<p class="gh-note">' + note + '</p>' : '') + tieStrip + '</section>';
 
     if (!raw.box) {

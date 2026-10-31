@@ -1,5 +1,17 @@
 # Changelog
 
+## Round 27 — YouTube stream on finished games
+
+- **Result cards** ("Iepriekšējās kārtas rezultāti"): a YouTube mark top right,
+  in line with the stage name and the scores, when the game has a stream. Only a
+  sign — the card still opens the game page.
+- **Game page:** white **Spēles tiešraide** button under the date and hall; opens
+  the stream on YouTube in a new tab. Shown on both cups' colours.
+- The link comes from Kalendārs → **YouTube saite** (filled by the sheet script).
+  The importer reads it (`yt` in `src/sheet.json`); a link that isn't a YouTube
+  link is reported as a warning and not shown. The season template has the column
+  last, where the script keeps it.
+
 ## Round 26 — new update times
 
 - Automatic "Atjaunot datus no tabulas" runs: Monday–Saturday once at 12:00,
