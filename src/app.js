@@ -266,20 +266,17 @@
   function resRow(g) {
     var h = ctx.resolve(g.comp, g.home).team, a = ctx.resolve(g.comp, g.away).team;
     var hw = g.hs > g.as;
-    // The whole card opens the game page (a link stretched over it); the video
-    // link sits above it, so the two never nest.
+    // A YouTube mark top right when the game has a video (just a sign; the
+    // link itself is on the game page).
     var yt = ytUrl(g);
-    return '<div class="res">' +
-      '<a class="res-hit" href="' + gameHref(g.id) + '" aria-label="' + esc(team(h).short + ' ' + g.hs + ':' + g.as + ' ' + team(a).short + ' — spēles statistika') + '"></a>' +
-      '<div class="res-meta"><span class="tag">' + esc(cardTag(g)) + '</span></div>' +
+    return '<a class="res" href="' + gameHref(g.id) + '" aria-label="' + esc(team(h).short + ' ' + g.hs + ':' + g.as + ' ' + team(a).short + ' — spēles statistika' + (yt ? ', ir tiešraides ieraksts' : '')) + '">' +
+      '<div class="res-meta"><span class="tag">' + esc(cardTag(g)) + '</span>' + (yt ? '<span class="res-yt" title="Ir tiešraides ieraksts">' + YT_ICON + '</span>' : '') + '</div>' +
       '<div class="res-team res-home' + (hw ? ' is-win' : '') + '">' + badge(h, 'md') + nameHtml(h) + '</div>' +
       '<span class="res-sc h' + (hw ? ' is-win' : '') + '">' + g.hs + '</span>' +
       '<span class="res-sc a' + (hw ? '' : ' is-win') + '">' + g.as + '</span>' +
       '<div class="res-team res-away' + (hw ? '' : ' is-win') + '">' + badge(a, 'md') + nameHtml(a) + '</div>' +
       '<div class="res-note">' + resNote(g) + '</div>' +
-      '<div class="res-foot"><span>' + esc(g.time) + '</span>' +
-      (yt ? '<a class="res-yt" href="' + esc(yt) + '" target="_blank" rel="noopener" aria-label="' + esc(team(h).short + ' – ' + team(a).short + ': spēles video YouTube') + '">' + YT_ICON + 'Video</a>' : '') +
-      '<span class="res-go" aria-hidden="true">Statistika ›</span></div></div>';
+      '<div class="res-foot"><span>' + esc(g.time) + '</span><span class="res-go">Statistika ›</span></div></a>';
   }
 
   function renderLast(lr) {
@@ -343,7 +340,6 @@
         k.setAttribute('data-clone', '');
         k.setAttribute('aria-hidden', 'true');
         k.setAttribute('tabindex', '-1');
-        Array.prototype.forEach.call(k.querySelectorAll('a'), function (l) { l.setAttribute('tabindex', '-1'); });
         track.appendChild(k);
       });
       setW = track.children[cards.length].offsetLeft - track.children[0].offsetLeft;
@@ -1042,7 +1038,7 @@
       '<a class="gh-team' + (hw ? '' : ' is-win') + '" href="' + teamHref(aId, comp) + '">' + badge(aId, 'lg') + '<span>' + esc(team(aId).name) + '</span></a>' +
       '</div>' +
       '<p class="gh-when">' + esc(cap(dateLong(g.date)) + ', ' + g.time + ' · ' + v.name) + '</p>' +
-      (ytUrl(g) ? '<a class="gh-yt" href="' + esc(ytUrl(g)) + '" target="_blank" rel="noopener">' + YT_ICON + '<span>Skatīties spēles video</span><svg class="gh-yt-out" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5h5v5M19 5l-8 8M17 14v5H5V7h5"/></svg></a>' : '') +
+      (ytUrl(g) ? '<a class="gh-yt" href="' + esc(ytUrl(g)) + '" target="_blank" rel="noopener">' + YT_ICON + '<span>Spēles tiešraide</span><svg class="gh-yt-out" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5h5v5M19 5l-8 8M17 14v5H5V7h5"/></svg></a>' : '') +
       (note ? '<p class="gh-note">' + note + '</p>' : '') + tieStrip + '</section>';
 
     if (!raw.box) {
