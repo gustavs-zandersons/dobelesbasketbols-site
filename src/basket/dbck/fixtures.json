@@ -17,18 +17,18 @@
    "pool": "B grupa",
    "round": "Kārta: 1",
    "type": "REGULAR",
-   "status": "IN_PROGRESS",
+   "status": "CONFIRMED",
    "home": {
     "name": "Lietus",
     "code": "LIETS",
     "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
-    "score": 43
+    "score": 59
    },
    "away": {
     "name": "TSK Sprīdītis",
     "code": "TSKSP",
     "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
-    "score": 61
+    "score": 78
    }
   },
   {
@@ -41,18 +41,18 @@
    "pool": "A grupa",
    "round": "Kārta: 1",
    "type": "REGULAR",
-   "status": "SCHEDULED",
+   "status": "IN_PROGRESS",
    "home": {
     "name": "Doks",
     "code": "DOK",
     "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
-    "score": null
+    "score": 0
    },
    "away": {
     "name": "Brocēni",
     "code": "BROC",
     "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
-    "score": null
+    "score": 0
    }
   },
   {
