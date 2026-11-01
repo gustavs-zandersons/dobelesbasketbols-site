@@ -41,18 +41,18 @@
    "pool": "A grupa",
    "round": "Kārta: 1",
    "type": "REGULAR",
-   "status": "IN_PROGRESS",
+   "status": "CONFIRMED",
    "home": {
     "name": "Doks",
     "code": "DOK",
     "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
-    "score": 64
+    "score": 98
    },
    "away": {
     "name": "Brocēni",
     "code": "BROC",
     "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
-    "score": 34
+    "score": 70
    }
   },
   {
@@ -70,13 +70,13 @@
     "name": "Jaunpils",
     "code": "JPL",
     "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
-    "score": null
+    "score": 0
    },
    "away": {
     "name": "Skandijs/HQ Chipper Parts",
     "code": "SKAND",
     "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
-    "score": null
+    "score": 0
    }
   },
   {
