@@ -89,18 +89,18 @@
    "pool": "B grupa",
    "round": "Kārta: 1",
    "type": "REGULAR",
-   "status": "IN_PROGRESS",
+   "status": "CONFIRMED",
    "home": {
     "name": "Jelgava BJSS U19",
     "code": "JEL19",
     "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
-    "score": 69
+    "score": 80
    },
    "away": {
     "name": "Valauto",
     "code": "VALAU",
     "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
-    "score": 74
+    "score": 103
    }
   },
   {
