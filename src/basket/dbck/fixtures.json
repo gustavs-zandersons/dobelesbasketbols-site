@@ -65,18 +65,18 @@
    "pool": "A grupa",
    "round": "Kārta: 1",
    "type": "REGULAR",
-   "status": "IN_PROGRESS",
+   "status": "CONFIRMED",
    "home": {
     "name": "Jaunpils",
     "code": "JPL",
     "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
-    "score": 21
+    "score": 60
    },
    "away": {
     "name": "Skandijs/HQ Chipper Parts",
     "code": "SKAND",
     "entity": "13212a15-a58a-11ee-8f07-ff39c58fc41d",
-    "score": 80
+    "score": 139
    }
   },
   {
@@ -89,18 +89,18 @@
    "pool": "B grupa",
    "round": "Kārta: 1",
    "type": "REGULAR",
-   "status": "SCHEDULED",
+   "status": "IN_PROGRESS",
    "home": {
     "name": "Jelgava BJSS U19",
     "code": "JEL19",
     "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
-    "score": null
+    "score": 11
    },
    "away": {
     "name": "Valauto",
     "code": "VALAU",
     "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
-    "score": null
+    "score": 7
    }
   },
   {
