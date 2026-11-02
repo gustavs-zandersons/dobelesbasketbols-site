@@ -1614,7 +1614,16 @@
    "yt": ""
   }
  ],
- "mvps": [],
+ "mvps": [
+  {
+   "cup": "dbck",
+   "date": "2026-11-01",
+   "player": "Raimonds Kripa",
+   "team": "skandijs",
+   "game": "DBCK-GR-03",
+   "note": ""
+  }
+ ],
  "monthMvps": [],
  "decisions": []
 }

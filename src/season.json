@@ -3794,7 +3794,20 @@
    "round": "CF"
   }
  ],
- "mvps": [],
+ "mvps": [
+  {
+   "comp": "dbck",
+   "date": "2026-11-01",
+   "game": "dbck-gr-03",
+   "team": "skandijs",
+   "idx": 11,
+   "player": "Raimonds Kripa",
+   "pts": 56,
+   "reb": 28,
+   "ast": 2,
+   "eff": 68
+  }
+ ],
  "monthMvps": [],
  "lots": []
 }
