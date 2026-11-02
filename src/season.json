@@ -2918,6 +2918,7 @@
    "venue": "jelgava",
    "home": "doks",
    "away": "jaunpils",
+   "yt": "https://www.youtube.com/watch?v=8JufAEE9YJU",
    "round": "R2",
    "bl": "253633c7-d056-11f1-bc9b-b39c9ca81b6c"
   },
@@ -2930,6 +2931,7 @@
    "venue": "jelgava",
    "home": "bjss-u17",
    "away": "vilki",
+   "yt": "https://www.youtube.com/watch?v=sVFRtkbjSMM",
    "round": "R2",
    "bl": "42e8e258-d056-11f1-b95a-9fadf601be86"
   },
@@ -2942,6 +2944,7 @@
    "venue": "jelgava",
    "home": "lietus",
    "away": "ile",
+   "yt": "https://www.youtube.com/watch?v=3hl8xOJFMLk",
    "round": "R2",
    "bl": "5c3b64a6-d056-11f1-b15b-73598b3a1276"
   },
@@ -2954,6 +2957,7 @@
    "venue": "jelgava",
    "home": "buki",
    "away": "bjss-u19",
+   "yt": "https://www.youtube.com/watch?v=7BTJsQTurbQ",
    "round": "R2",
    "bl": "a52d785f-d056-11f1-9b35-d13871d73e39"
   },
