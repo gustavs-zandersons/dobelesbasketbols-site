@@ -166,6 +166,12 @@ def youtube_feed(pg, out, site, social):
     games, days = obs_page.build(out, feed['games'], made, breaks)
     print(f'obs: {games} overlays on {days} game days, {len(breaks)} half-time screens')
 
+    # The live scoreboard: admin + OBS overlay (tools/live_pages.py), drawn over the screens above.
+    import live_pages
+    season = json.loads((Path(__file__).resolve().parent.parent / 'src' / 'season.json').read_text())
+    n = live_pages.build(out, season, set(made))
+    print(f'live: scoreboard admin and overlay, {n} games to pick from')
+
 
 def prerender(out, site, body, fonts, urls, social=None):
     out = Path(out)
