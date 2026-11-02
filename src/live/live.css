@@ -31,9 +31,9 @@
 .cn-cup { width: 136px; flex: none; display: flex; align-items: flex-start; justify-content: center; background: var(--p30); }
 .cn-cup img { width: 96px; height: 96px; margin-top: 6px; object-fit: contain; display: block; }
 .cn-rows { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.cn-row { height: 54px; display: flex; align-items: center; }
+.cn-row { --rowh: 54px; height: 54px; display: flex; align-items: center; }
 .cn-row + .cn-row { box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.22); }
-.cn-row img { width: 44px; height: 44px; flex: none; margin: 0 12px; object-fit: contain; display: block; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)); }
+.cn-row .tm-in img { width: 44px; height: 44px; flex: none; margin: 0 12px; object-fit: contain; display: block; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)); }
 .cn-name { flex: 1; min-width: 0; padding-top: 2px; font: 700 28px/1 'Barlow Condensed', 'Arial Narrow', sans-serif; letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; overflow: hidden; }
 .cn-score { width: 76px; height: 54px; flex: none; box-sizing: border-box; display: flex; align-items: center; justify-content: flex-end; padding-right: 18px; font: 400 36px/1 'Anton', Impact, sans-serif; transition: background 0.25s, color 0.25s; }
 .cn-clock { height: 46px; display: flex; align-items: center; justify-content: flex-end; gap: 16px; padding-right: 18px; background: var(--p30); }
@@ -48,10 +48,10 @@
 .ov-bottom { left: 410px; top: 952px; width: 1100px; filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.35)); }
 .ov-bottom.off { transform: translateY(24px); }
 .bt-box { position: relative; display: flex; height: 80px; border-radius: 40px; overflow: hidden; }
-.bt-team { width: 425px; flex: none; display: flex; align-items: center; }
-.bt-team img { width: 56px; height: 56px; flex: none; object-fit: contain; display: block; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)); }
-.bt-team.l img { margin-left: 22px; }
-.bt-team.r img { margin-right: 22px; }
+.bt-team { --rowh: 80px; width: 425px; flex: none; display: flex; align-items: center; }
+.bt-team .tm-in img { width: 56px; height: 56px; flex: none; object-fit: contain; display: block; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)); }
+.bt-team.l .tm-in img { margin-left: 22px; }
+.bt-team.r .tm-in img { margin-right: 22px; }
 .bt-name { flex: 1; min-width: 0; font: 700 34px/1 'Barlow Condensed', 'Arial Narrow', sans-serif; letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; overflow: hidden; }
 .bt-team.l .bt-name { padding: 2px 22px 0 12px; text-align: right; }
 .bt-team.r .bt-name { padding: 2px 12px 0 22px; text-align: left; }
@@ -69,6 +69,31 @@
   transform: translateY(100%); opacity: 0; transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s;
 }
 .bt-tab.on { transform: none; opacity: 1; }
+
+/* A team scores: its name panel rolls (organisers, 3 Nov 2026).
+     0–0.25 s    logo and name fade out
+     0.3–1.3 s   the big logo, as wide as the panel, rolls up from below the
+                 panel and leaves it at the top (the panel's edges cut it off)
+     1.35–1.6 s  logo and name fade back in
+   The score box keeps its white flash and +N tab. */
+.tm { position: relative; flex: 1; min-width: 0; align-self: stretch; display: flex; overflow: hidden; }
+.tm-in { flex: 1; min-width: 0; display: flex; align-items: center; }
+.tm-roll { position: absolute; left: 0; top: 0; width: 100%; height: 100%; visibility: hidden; }
+.tm-reel { width: 100%; transform: translateY(var(--rowh)); }
+.tm-reel img { width: 100%; height: auto; display: block; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3)); }
+.tm.rolling .tm-in { animation: tm-fade 1.6s ease both; }
+.tm.rolling .tm-roll { visibility: visible; }
+.tm.rolling .tm-reel { animation: tm-roll 1s cubic-bezier(0.37, 0, 0.63, 1) 0.3s both; }
+@keyframes tm-fade {
+  0%    { opacity: 1; }
+  15.6% { opacity: 0; }
+  84.4% { opacity: 0; }
+  100%  { opacity: 1; }
+}
+@keyframes tm-roll {
+  from { transform: translateY(var(--rowh)); }
+  to   { transform: translateY(-100%); }
+}
 
 /* break: the site's PĀRTRAUKUMS screen with the score card between the title and the sponsors */
 .ht-wrap { position: absolute; filter: drop-shadow(0 16px 36px rgba(0, 0, 0, 0.4)); }
@@ -88,4 +113,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .ov, .ov.off, .cn-tab, .bt-tab { transition: none; }
+  .tm.rolling .tm-in, .tm.rolling .tm-reel { animation: none; }
+  .tm.rolling .tm-roll { visibility: hidden; }
 }

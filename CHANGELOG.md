@@ -1,5 +1,13 @@
 # Changelog
 
+## Round 29 — score roll on the scorebug
+
+- When a team scores, its name panel on the scorebug (corner and bottom bar)
+  animates: logo and name fade out, the team's logo at the panel's full width
+  rolls up through the panel and out of the top, then logo and name fade back
+  in (about 1.6 s). The score box keeps its white flash and the +N tab.
+  `src/live/render.js` (`roll`), `src/live/live.css` (`.tm`, `tm-fade`, `tm-roll`).
+
 ## Round 28 — live scoreboard for the streams
 
 - **`/live/overlay/`** — one OBS browser source (1920 × 1080, transparent) for the

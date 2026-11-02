@@ -99,6 +99,11 @@ export const BACKDROP = `
     <div style="left:0;top:0;width:1920px;height:1080px;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(0,0,0,.38) 100%)"></div>
   </div>`;
 
+// The team's name panel: logo and name, plus the big logo (as wide as the panel)
+// that rolls up through it when the team scores.
+const REEL = '<div class="tm-roll" aria-hidden="true"><div class="tm-reel"><img data-big alt=""></div></div>';
+const team = (inner) => '<div class="tm" data-tm><div class="tm-in">' + inner + '</div>' + REEL + '</div>';
+
 const LAYERS = `
   <div class="ov full off" data-ov="pregame">
     <img data-img alt="">
@@ -122,8 +127,8 @@ const LAYERS = `
     <div class="cn-box">
       <div class="cn-cup"><img data-cup alt=""></div>
       <div class="cn-rows">
-        <div class="cn-row" data-row="0"><img data-logo alt=""><div class="cn-name" data-name></div><div class="cn-score" data-score></div></div>
-        <div class="cn-row" data-row="1"><img data-logo alt=""><div class="cn-name" data-name></div><div class="cn-score" data-score></div></div>
+        <div class="cn-row" data-row="0">${team('<img data-logo alt=""><div class="cn-name" data-name></div>')}<div class="cn-score" data-score></div></div>
+        <div class="cn-row" data-row="1">${team('<img data-logo alt=""><div class="cn-name" data-name></div>')}<div class="cn-score" data-score></div></div>
         <div class="cn-clock"><div class="per" data-per></div><div class="sep"></div><div class="time" data-time></div></div>
       </div>
     </div>
@@ -132,12 +137,12 @@ const LAYERS = `
   <div class="ov ov-bottom off" data-ov="bottom">
     <div class="bt-tab" data-tab></div>
     <div class="bt-box">
-      <div class="bt-team l" data-row="0"><img data-logo alt=""><div class="bt-name" data-name></div><div class="bt-score" data-score></div></div>
+      <div class="bt-team l" data-row="0">${team('<img data-logo alt=""><div class="bt-name" data-name></div>')}<div class="bt-score" data-score></div></div>
       <div class="bt-mid">
         <div class="bt-line"><div class="per" data-per></div><div class="sep"></div><div class="time" data-time></div></div>
         <div class="bt-label" data-label></div>
       </div>
-      <div class="bt-team r" data-row="1"><div class="bt-score" data-score></div><div class="bt-name" data-name></div><img data-logo alt=""></div>
+      <div class="bt-team r" data-row="1"><div class="bt-score" data-score></div>${team('<div class="bt-name" data-name></div><img data-logo alt="">')}</div>
     </div>
   </div>`;
 
@@ -166,6 +171,17 @@ export function createOverlay(stage, D, now, opts) {
   Object.values(D.breakImg).forEach(preload);
 
   function setSrc(img, url) { if (url && img.getAttribute('src') !== url) img.src = url; }
+  // The scoring team's name panel: logo and name fade out, the big logo rolls up
+  // through the panel and out of the top, then logo and name fade back in (live.css).
+  function roll(i) {
+    stage.querySelectorAll('[data-row="' + i + '"] [data-tm]').forEach((tm) => {
+      tm.classList.remove('rolling');
+      void tm.offsetWidth;            // restart if the team scores again mid-roll
+      tm.classList.add('rolling');
+      clearTimeout(tm._roll);
+      tm._roll = setTimeout(() => tm.classList.remove("rolling"), 1700);
+    });
+  }
   function splitName(name) {
     const i = name.indexOf(' / ');
     if (i > 0) return [name.slice(0, i) + ' /', name.slice(i + 3)];
@@ -204,6 +220,7 @@ export function createOverlay(stage, D, now, opts) {
         flashTeam = flash.team; flashPts = flash.pts; flashUntil = flash.id + 3000;
         clearTimeout(flashTimer);
         flashTimer = setTimeout(() => update(last), Math.max(0, flashUntil - now()) + 30);
+        if (flash.pts > 0) roll(flash.team);
       }
     }
     if (!flash) flashTeam = -1;
@@ -228,6 +245,7 @@ export function createOverlay(stage, D, now, opts) {
       const lk = looks[i];
       row.style.background = lk.bg;
       setSrc(row.querySelector('[data-logo]'), teams[i].logo);
+      row.querySelectorAll('[data-big]').forEach((img) => setSrc(img, teams[i].logo));
       const nm = row.querySelector('[data-name]');
       nm.textContent = teams[i].short; nm.style.color = lk.text; nm.style.textShadow = lk.shadow;
       const sc = row.querySelector('[data-score]');
@@ -245,6 +263,7 @@ export function createOverlay(stage, D, now, opts) {
       const lk = looks[i];
       panel.style.background = i === 0 ? lk.bg : lk.bgRev;
       setSrc(panel.querySelector('[data-logo]'), teams[i].logo);
+      panel.querySelectorAll('[data-big]').forEach((img) => setSrc(img, teams[i].logo));
       const nm = panel.querySelector('[data-name]');
       nm.textContent = teams[i].short; nm.style.color = lk.text; nm.style.textShadow = lk.shadow;
       const sc = panel.querySelector('[data-score]');
