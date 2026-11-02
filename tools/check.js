@@ -140,7 +140,7 @@ if (MULTI) {
   (function walk(dir) {
     fs.readdirSync(dir, { withFileTypes: true }).forEach(e => {
       const f = path.join(dir, e.name);
-      if (e.isDirectory() && e.name !== 'assets' && !(dir === DIST && e.name === 'obs')) walk(f);   // /obs/ is the operator's own page (section 10)
+      if (e.isDirectory() && e.name !== 'assets' && !(dir === DIST && (e.name === 'obs' || e.name === 'live'))) walk(f);   // /obs/ and /live/ are the operators' own pages (sections 10, 11)
       else if (e.name === 'index.html') pages.push('/' + path.relative(DIST, dir).split(path.sep).filter(Boolean).map(x => x + '/').join(''));
     });
   })(DIST);
@@ -228,6 +228,34 @@ if (MULTI) {
       });
     }
   }
+}
+
+// 11. The live scoreboard (/live/admin/, /live/overlay/): kept out of search
+// results, its scripts and styles present, and the data it carries points at
+// logos and OBS screens that exist.
+if (MULTI) {
+  ['admin', 'overlay'].forEach(k => {
+    const f = path.join(DIST, 'live', k, 'index.html');
+    check(fs.existsSync(f), 'dist/live/' + k + '/index.html exists');
+    if (!fs.existsSync(f)) return;
+    const t = fs.readFileSync(f, 'utf8');
+    check(t.includes('content="noindex, nofollow"'), '/live/' + k + '/ is kept out of search results');
+    [...t.matchAll(/(?:href|src)="\/(live\/[^"?]+)/g)].forEach(m => check(fs.existsSync(path.join(DIST, m[1])), '/live/' + k + '/ links to ' + m[1]));
+    const m = /<script type="application\/json" id="live-data">([\s\S]*?)<\/script>/.exec(t);
+    check(!!m, '/live/' + k + '/ carries the season data');
+    if (!m) return;
+    let d = null;
+    try { d = JSON.parse(m[1]); } catch (e) { check(false, '/live/' + k + '/: season data is valid JSON'); return; }
+    check(d.games.length > 0, '/live/' + k + '/: games to pick from');
+    const urls = Object.values(d.teams).map(x => x.logo).concat(Object.values(d.cups).map(x => x.logo), Object.values(d.pregame), Object.values(d.breakImg));
+    urls.forEach(u => check(fs.existsSync(path.join(DIST, u)), '/live/' + k + '/: ' + u + ' exists'));
+    d.games.forEach(g => check(d.teams[g.home] && d.teams[g.away] && d.cups[g.comp], '/live/: game ' + g.id + ' has known teams and cup'));
+  });
+  ['render.js', 'sync.js', 'config.js', 'admin.js', 'screen.js'].forEach(n => {
+    const f = path.join(DIST, 'live', n);
+    check(fs.existsSync(f), 'dist/live/' + n + ' exists');
+  });
+  check(!fs.readFileSync(path.join(DIST, 'sitemap.xml'), 'utf8').includes('/live/'), '/live/ is not in the sitemap');
 }
 
 if (failures) { console.error(failures + ' check(s) failed'); process.exit(1); }

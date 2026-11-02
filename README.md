@@ -40,6 +40,13 @@ Apps Script reads to create one scheduled stream per game — and
 For the OBS operator (link shared by the organisers, not in the menu or search):
 `/obs/` — the coming game day's pre-game overlays (`/obs/<game id>.png`) and a ZIP
 per game day (`tools/obs_page.py`).
+The live scoreboard (`tools/live_pages.py`, `src/live/`): `/live/admin/` — the
+operator's controls on a phone or tablet (Google sign-in) — and `/live/overlay/`
+— the OBS browser source (1920 × 1080, transparent) showing the pre-game screen
+with a countdown, the scorebug (corner or bottom bar) or the break screen with the
+score by quarter. The two are linked through Firebase's Realtime Database
+(settings in `src/live/config.js`; without them the admin runs in test mode and the
+overlay shows a sample scorebug).
 
 The same paths under `/jelgava/` for the Challenge Cup. Old `#…` links
 (`#dobele-komanda-buki`, `#kalendars`, `#spele-…`) forward to the new addresses.

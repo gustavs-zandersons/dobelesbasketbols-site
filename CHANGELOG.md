@@ -1,5 +1,30 @@
 # Changelog
 
+## Round 28 — live scoreboard for the streams
+
+- **`/live/overlay/`** — one OBS browser source (1920 × 1080, transparent) for the
+  whole stream, in place of a PNG per game plus the OBS timer. It shows what the
+  operator picks:
+  - **Pre-game:** the game's pre-game screen (`/obs/<game id>.png`) with a live
+    countdown under "SPĒLE SĀKSIES PĒC:".
+  - **Scorebug:** the stacked corner scorebug or the bottom-centre bar, in the
+    cup's colours, with the quarter and game clock; a "+2 / +3" tab when a team scores.
+  - **Break:** the cup's PĀRTRAUKUMS screen with the score by quarter between
+    the title and the sponsors (Q1–Q2 at half-time, every quarter so far at other breaks).
+  - **Nothing.**
+- **`/live/admin/`** — the operator's controls, built for a phone (tablet too):
+  pick the game from the schedule, +1/+2/+3, −1 fix, undo, start/stop clock
+  (10-minute quarters, 5-minute overtimes, tenths in the last minute), ±1 s,
+  set time, next quarter, the countdown (schedule time or in 5/10/15/30 min),
+  layout, swap sides. The screen stays awake. Starting the clock switches to the
+  scorebug; the Break button lights up when a quarter ends.
+- The two are linked through Firebase's Realtime Database; only Google accounts
+  allowed in the database rules can change the score. Settings in
+  `src/live/config.js` — until they are filled in, the admin runs in test mode on
+  its device and the overlay shows a sample scorebug.
+- Both pages are kept out of the menu, the sitemap and search results, like
+  `/obs/`. Checks: `tools/check.js` section 11.
+
 ## Round 27 — YouTube stream on finished games
 
 - **Result cards** ("Iepriekšējās kārtas rezultāti"): a YouTube mark top right,
