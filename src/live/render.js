@@ -80,7 +80,7 @@ export function demoState(D, t) {
     v: 2, gameId: null, cup: g ? g.comp : 'dbck', home: g ? g.home : ids[0], away: g ? g.away : ids[1],
     score: [27, 26], byPeriod: [[17, 12], [10, 14]], period: 2,
     clock: { running: true, remainMs: 6 * 60000 + 42000, startedAt: t },
-    layout: 'corner', scene: 'live', startAt: t + 10 * 60000, flash: null
+    layout: 'bottom', scene: 'live', startAt: t + 10 * 60000, flash: null
   };
 }
 
@@ -144,7 +144,20 @@ const LAYERS = `
       </div>
       <div class="bt-team r" data-row="1"><div class="bt-score" data-score></div>${team('<div class="bt-name" data-name></div><img data-logo alt="">')}</div>
     </div>
+  </div>
+
+  <div class="sting" data-sting aria-hidden="true">
+    <div class="st-glow"></div>
+    <div class="st-ring a"></div>
+    <div class="st-ring b"></div>
+    <div class="st-turn"><img data-sting-logo alt=""></div>
   </div>`;
+
+// Changing what is on screen (organisers, 3 Nov 2026): the old graphic leaves, the
+// cup's logo spins in at the centre of the picture with two rings in the cup's
+// colours, then it zooms away as the new graphic comes in (timings in live.css).
+const STING_MS = 1500;      // the whole transition
+const REVEAL_MS = 1080;     // the new graphic starts coming in
 
 // stage: a 1920×1080 element; D: the page's data (teams, cups, games, images);
 // now: the shared clock (Firebase server time). Returns { update(state), tick(clockMs, countdownMs) }.
@@ -157,10 +170,39 @@ export function createOverlay(stage, D, now, opts) {
   const times = stage.querySelectorAll('[data-time]');
   const count = pre.querySelector('[data-count]');
   const measure = brk.querySelector('[data-measure]');
+  const sting = stage.querySelector('[data-sting]');
   const NAME_TEXT = 500;    // room for a team name on the score card (1020 px card with two quarters)
   const BREAK_MID = 530;    // the card is centred between PĀRTRAUKUMS and the sponsor band
   let last = null, lastFlashId = null, flashTeam = -1, flashPts = 0, flashUntil = 0, flashTimer = 0, lastTime = '', lastCount = '';
   const preloaded = {};
+  const layers = { pregame: pre, break: brk, corner: corner, bottom: bottom };
+  let shown = null;           // the graphic on screen ('none' for nothing); null until the first state
+  let want = null, revealTimer = 0, stingTimer = 0;
+  const calm = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  function showLayer(k) {
+    shown = k;
+    Object.keys(layers).forEach((key) => layers[key].classList.toggle('off', key !== k));
+  }
+  // The first state after the page opens is shown straight away; every change
+  // after that goes through the cup logo. A change while the logo is on screen
+  // just picks what comes in after it.
+  function switchTo(k, cup) {
+    if (k === want) return;
+    want = k;
+    if (shown === null || calm()) { clearTimeout(revealTimer); revealTimer = 0; showLayer(k); return; }
+    if (revealTimer) return;
+    showLayer('none');
+    setSrc(sting.querySelector('[data-sting-logo]'), cup.logo);
+    sting.style.setProperty('--st-a', cup.c1);
+    sting.style.setProperty('--st-b', cup.c2);
+    sting.classList.remove('go');
+    void sting.offsetWidth;          // restart the animation
+    sting.classList.add('go');
+    clearTimeout(stingTimer);
+    stingTimer = setTimeout(() => sting.classList.remove('go'), STING_MS + 50);
+    revealTimer = setTimeout(() => { revealTimer = 0; showLayer(want); }, REVEAL_MS);
+  }
 
   // The full-screen images are large: fetch them before they are needed.
   function preload(url) {
@@ -230,13 +272,15 @@ export function createOverlay(stage, D, now, opts) {
 
     const preImg = s.gameId ? D.pregame[s.gameId] : null;
     preload(preImg);
-    pre.classList.toggle('off', !(s.scene === 'pregame' && preImg));
-    brk.classList.toggle('off', s.scene !== 'break');
-    corner.classList.toggle('off', !(s.scene === 'live' && s.layout === 'corner'));
-    bottom.classList.toggle('off', !(s.scene === 'live' && s.layout !== 'corner'));
+    preload(cup.logo);
+    switchTo(s.scene === 'pregame' ? (preImg ? 'pregame' : 'none')
+      : s.scene === 'break' ? 'break'
+      : s.scene === 'live' ? (s.layout === 'corner' ? 'corner' : 'bottom')
+      : 'none', cup);
 
     /* pre-game screen */
     if (preImg) setSrc(pre.querySelector('[data-img]'), preImg);
+    count.style.color = cup.count || '#FFFFFF';
 
     /* corner scorebug */
     setSrc(corner.querySelector('[data-cup]'), cup.logo);

@@ -1,5 +1,34 @@
 # Changelog
 
+## Round 30 — scoreboard admin layout, scene transition
+
+Organisers' fixes after the first games, 3 Nov 2026.
+
+- **Admin layout.** Computer: the stream preview as large as possible with the
+  on-screen buttons in a column on its right; below, the score on the left, the
+  Clock and Quarter cards stacked on the right. Phone: score, clock, quarter.
+  Sign out top right; **Game setup** opens as a white pop-up from the header
+  (game from the schedule, teams, swap sides, new game, OBS address).
+- **Score:** solid +1/+2/+3 in the team's colour; a dark header like the bottom
+  bar (logo on the outer side, name, score box towards the middle, mirrored for
+  the right team); the −1 fix outlined in the team's colour. No undo, no score by
+  quarter on the admin.
+- **Clock card:** −1/−5/−15 s and +1/+5/+15 s (between 0 and the quarter's
+  length; a running clock keeps running), Set time. **Space** starts and stops
+  the clock on a computer (not while typing a time or with Game setup open; it
+  never presses the last tapped button).
+- **Quarter card:** the current quarter large, **Previous** and **Next**. Both
+  ask for a second tap; Previous straight after Next undoes it in one (quarter,
+  clock and screen put back).
+- **Game setup** lists this week's games (Monday to Sunday, by the device's
+  date) and later ones. Loading a game sets its cup's colours (the cup switch
+  is gone) and the bottom bar as the scorebug (Corner stays one tap away).
+- **Overlay:** the pre-game countdown in the colour of "SPĒLE SĀKSIES PĒC:"
+  (yellow on Dobele Cup, white on Jelgava's). Changing what is on screen goes
+  through the cup's logo: the old graphic fades, the logo spins in at the centre
+  with two rings in the cup's colours, then zooms away as the new graphic comes
+  in (1.5 s). `src/live/render.js` (`switchTo`), `src/live/live.css` (`.sting`).
+
 ## Round 29 — score roll on the scorebug
 
 - When a team scores, its name panel on the scorebug (corner and bottom bar)
