@@ -56,7 +56,8 @@ ADMIN_BODY = """
     <h1 id="hSignin">Sign in to run the scoreboard</h1>
     <p>Use the Google account the organisers added. You stay signed in on this device.</p>
     <button class="btn primary" type="button" id="signinBtn">Sign in with Google</button>
-    <p class="err" id="signinErr" hidden></p>
+    <p class="wait" id="signinWait" hidden>Checking that this account may run the scoreboard…</p>
+    <p class="err" id="signinErr" role="alert" hidden></p>
   </section>
 
   <div class="app" id="app" hidden>

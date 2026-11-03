@@ -17,9 +17,10 @@ function buzz(p) { try { if (navigator.vibrate) navigator.vibrate(p || 12); } ca
 
 let sync = null;          // the Firebase link; null in test mode
 let user = null;          // the signed-in Google account
-let mode = 'loading';     // 'test' | 'signin' | 'live'
+let mode = 'loading';     // 'test' | 'signin' | 'checking' (signed in, access not confirmed yet) | 'live'
 let online = false;
 let remoteLoaded = false, lastRemote = null;
+let checkId = 0;          // the latest access check (see checkAccess)
 const now = () => (sync ? sync.now() : Date.now());
 const remaining = (c) => R.remaining(c, now());
 
@@ -74,12 +75,14 @@ function push() {
 }
 function writeFailed(e) {
   const denied = /permission/i.test(String(e && (e.code || e.message)));
+  if (denied) {                      // taken off the list of operators while signed in
+    if (lastRemote) { S = normal(lastRemote); saveLocal(); notify(); }
+    if (user) reject(user);
+    return;
+  }
   const b = $('banner');
-  b.textContent = denied
-    ? 'This Google account (' + (user && user.email) + ') is not allowed to change the scoreboard. Ask an organiser to add it to the database rules, or sign in with another account.'
-    : 'Could not send the change: ' + ((e && e.message) || e) + '. It will be sent again with the next tap.';
+  b.textContent = 'Could not send the change: ' + ((e && e.message) || e) + '. It will be sent again with the next tap.';
   b.hidden = false;
-  if (denied && lastRemote) { S = normal(lastRemote); saveLocal(); notify(); }
 }
 function commit(next) {
   S = next;
@@ -346,7 +349,7 @@ overlay.update(S);
 let lastBar = '', lastCount = '';
 function loop() {
   const r = remaining(S.clock);
-  if (S.clock.running && r <= 0 && mode !== 'signin') {
+  if (S.clock.running && r <= 0 && (mode === 'live' || mode === 'test')) {
     act((n) => { n.clock = { running: false, remainMs: 0, startedAt: 0 }; });
     buzz([90, 60, 90]);
   }
@@ -554,17 +557,15 @@ function signInError(e) {
     user = u;
     $('signoutBtn').hidden = !u;
     if (!u) {
+      checkId++;
       mode = 'signin';
       setStatus('', 'Signed out');
       closeSetup();
       showApp(false);
+      gate('signin');
       return;
     }
-    mode = 'live';
-    setStatus(online ? 'on' : 'off', online ? 'Live' : 'Offline');
-    $('signoutBtn').title = 'Signed in as ' + u.email;
-    showApp(true);
-    if (remoteLoaded && lastRemote === null) push();     // first game ever: put this device's state in the database
+    checkAccess(u);
   });
   $('signinBtn').addEventListener('click', () => {
     $('signinErr').hidden = true;
@@ -575,3 +576,50 @@ function signInError(e) {
   });
   $('signoutBtn').addEventListener('click', () => { sync.signOut(); });
 })();
+
+/* ---------- Only the operators in the database rules get in ---------- */
+// Google sign-in itself accepts any account, so every sign-in (and every visit
+// while signed in) is checked against the database rules before the controls
+// show. An account that isn't in them is removed from Firebase again and signed out.
+function gate(state) {
+  $('signinBtn').hidden = state === 'checking';
+  $('signinWait').hidden = state !== 'checking';
+}
+function checkAccess(u) {
+  const id = ++checkId;
+  mode = 'checking';
+  setStatus('', 'Checking');
+  $('signinErr').hidden = true;
+  showApp(false);
+  gate('checking');
+  // No answer (no connection): let the operator in; the rules still guard every change.
+  const slow = setTimeout(() => { if (id === checkId && mode === 'checking') admit(u); }, 8000);
+  sync.canWrite().then((ok) => {
+    clearTimeout(slow);
+    if (id !== checkId) return;
+    if (ok === false) reject(u);
+    else if (mode === 'checking') admit(u);
+  }, () => {
+    clearTimeout(slow);
+    if (id === checkId && mode === 'checking') admit(u);
+  });
+}
+function admit(u) {
+  mode = 'live';
+  setStatus(online ? 'on' : 'off', online ? 'Live' : 'Offline');
+  $('signoutBtn').title = 'Signed in as ' + u.email;
+  gate('signin');
+  showApp(true);
+  if (remoteLoaded && lastRemote === null) push();     // first game ever: put this device's state in the database
+}
+function reject(u) {
+  checkId++;
+  mode = 'signin';
+  closeSetup();
+  showApp(false);
+  gate('signin');
+  setStatus('', 'Signed out');
+  $('signinErr').textContent = 'This Google account (' + (u.email || 'no email') + ') is not on the list of scoreboard operators, so it cannot sign in. Ask an organiser to add it, or sign in with another account.';
+  $('signinErr').hidden = false;
+  sync.removeUser();
+}

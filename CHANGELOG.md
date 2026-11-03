@@ -1,5 +1,20 @@
 # Changelog
 
+## Round 31 — only operators get into the scoreboard admin
+
+- Google sign-in accepts any account, so `/live/admin/` now checks every
+  sign-in (and every visit while signed in) against the database rules before
+  the controls show: a write that changes nothing (`live/state/v`, always 2)
+  goes through for the accounts in the rules and is refused for others. The
+  database rules stay the only list of operators.
+- An account that isn't in the rules sees "This Google account (…) is not on
+  the list of scoreboard operators" and is removed from Firebase Authentication
+  again (or just signed out, when Firebase wants a fresh sign-in for that).
+- An operator taken out of the rules while signed in is signed out at their
+  next tap. With no connection the check lets the operator in after 8 s; the
+  rules still guard every change.
+  `src/live/sync.js` (`canWrite`, `removeUser`), `src/live/admin.js` (`checkAccess`).
+
 ## Round 30 — scoreboard admin layout, scene transition
 
 Organisers' fixes after the first games, 3 Nov 2026.
