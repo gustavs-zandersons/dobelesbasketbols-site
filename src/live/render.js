@@ -80,7 +80,7 @@ export function demoState(D, t) {
     v: 2, gameId: null, cup: g ? g.comp : 'dbck', home: g ? g.home : ids[0], away: g ? g.away : ids[1],
     score: [27, 26], byPeriod: [[17, 12], [10, 14]], period: 2,
     clock: { running: true, remainMs: 6 * 60000 + 42000, startedAt: t },
-    layout: 'corner', scene: 'live', startAt: t + 10 * 60000, flash: null
+    layout: 'bottom', scene: 'live', startAt: t + 10 * 60000, flash: null
   };
 }
 

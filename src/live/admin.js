@@ -33,6 +33,8 @@ function gameMeta(g) {
 }
 
 /* ---------- State ---------- */
+// A game loaded from the schedule always starts on the pre-game screen with the
+// bottom bar as its scorebug; "New game" keeps the teams and the layout.
 function freshState(g, keep) {
   const base = keep || {};
   return {
@@ -40,23 +42,22 @@ function freshState(g, keep) {
     cup: g ? g.comp : base.cup, home: g ? g.home : base.home, away: g ? g.away : base.away,
     score: [0, 0], byPeriod: [[0, 0]], period: 1,
     clock: { running: false, remainMs: R.QMS, startedAt: 0 },
-    layout: base.layout || 'corner',
+    layout: g ? 'bottom' : (base.layout || 'bottom'),
     scene: 'pregame',
     startAt: g ? R.gameStart(g) : (base.startAt || now() + 15 * 60000),
-    flash: null,
+    flash: null, back: null,
     meta: g ? gameMeta(g) : (base.meta || CUP_NAMES[base.cup])
   };
 }
 // Fill the optional fields the database leaves out.
-const normal = (s) => Object.assign({ gameId: null, flash: null, meta: '', layout: 'corner', startAt: 0 }, s);
+const normal = (s) => Object.assign({ gameId: null, flash: null, back: null, meta: '', layout: 'bottom', startAt: 0 }, s);
 
 let S = null;
-let UNDO = [];
 try {
   const raw = localStorage.getItem(LS_KEY);
   if (raw) {
     const saved = JSON.parse(raw);
-    if (saved && R.validState(saved.state, D)) { S = normal(saved.state); UNDO = Array.isArray(saved.undo) ? saved.undo : []; }
+    if (saved && R.validState(saved.state, D)) S = normal(saved.state);
   }
 } catch (e) { /* storage blocked */ }
 if (!S) {
@@ -65,7 +66,7 @@ if (!S) {
 }
 
 const subscribers = [];
-function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify({ state: S, undo: UNDO })); } catch (e) { /* ignore */ } }
+function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify({ state: S })); } catch (e) { /* ignore */ } }
 function notify() { subscribers.forEach((f) => f(S)); }
 function push() {
   if (mode !== 'live') return;
@@ -80,21 +81,20 @@ function writeFailed(e) {
   b.hidden = false;
   if (denied && lastRemote) { S = normal(lastRemote); saveLocal(); notify(); }
 }
-function commit(next, undoEntry) {
-  if (undoEntry) { UNDO.push(undoEntry); if (UNDO.length > 200) UNDO.shift(); }
+function commit(next) {
   S = next;
   saveLocal();
   notify();
   push();
 }
-function act(fn, undoEntry) { const n = clone(S); fn(n); commit(n, undoEntry); }
+function act(fn) { const n = clone(S); fn(n); commit(n); }
 function ensurePeriods(n) { while (n.byPeriod.length < n.period) n.byPeriod.push([0, 0]); }
 function inProgress() { return S.score[0] + S.score[1] > 0 || S.period > 1 || remaining(S.clock) < periodLen(S.period); }
-// Manual team or cup changes that no longer match the loaded game drop it (its pre-game screen shows other teams).
+// Manual team changes that no longer match the loaded game drop it (its pre-game screen shows other teams).
 function checkGame(n) {
   const g = gameById(n.gameId);
   if (!g) return;
-  const same = g.comp === n.cup && ((g.home === n.home && g.away === n.away) || (g.home === n.away && g.away === n.home));
+  const same = (g.home === n.home && g.away === n.away) || (g.home === n.away && g.away === n.home);
   if (!same) { n.gameId = null; n.meta = CUP_NAMES[n.cup]; }
 }
 // Another device (or a reload) changed the game: take the database's version.
@@ -116,9 +116,10 @@ function addPoints(i, pts) {
     n.score[i] += pts;
     n.byPeriod[n.period - 1][i] += pts;
     n.flash = { team: i, pts: pts, id: now() };
-  }, { type: 'score', team: i, pts: pts, period: S.period });
+  });
   buzz();
 }
+// −1 fix: takes the point from the latest quarter in which this team scored.
 function minusOne(i) {
   if (S.score[i] <= 0) return;
   let p = S.period;
@@ -128,25 +129,7 @@ function minusOne(i) {
     n.score[i] -= 1;
     n.byPeriod[p - 1][i] = Math.max(0, n.byPeriod[p - 1][i] - 1);
     n.flash = null;
-  }, { type: 'score', team: i, pts: -1, period: p });
-  buzz();
-}
-function undo() {
-  const u = UNDO.pop();
-  if (!u) return;
-  const n = clone(S);
-  if (u.type === 'score') {
-    ensurePeriods(n);
-    n.score[u.team] = Math.max(0, n.score[u.team] - u.pts);
-    const row = n.byPeriod[u.period - 1];
-    if (row) row[u.team] = Math.max(0, row[u.team] - u.pts);
-    n.flash = null;
-  } else if (u.type === 'period') {
-    n.period = u.prev.period;
-    n.clock = u.prev.clock;
-    n.scene = u.prev.scene;
-  }
-  commit(n);
+  });
   buzz();
 }
 function toggleClock() {
@@ -155,7 +138,8 @@ function toggleClock() {
     if (n.clock.running) n.clock = { running: false, remainMs: r, startedAt: 0 };
     else if (n.clock.remainMs > 0) {
       n.clock = { running: true, remainMs: n.clock.remainMs, startedAt: now() };
-      if (n.scene === 'pregame' || n.scene === 'break') n.scene = 'live';   // play is on: show the scorebug
+      n.back = null;                                                        // play is on in this quarter
+      if (n.scene === 'pregame' || n.scene === 'break') n.scene = 'live';   // show the scorebug
     }
   });
   buzz(20);
@@ -168,29 +152,39 @@ function setRemaining(ms) {
       : { running: false, remainMs: v, startedAt: 0 };
   });
 }
+// Next quarter remembers where the clock was, so ◀ straight after it puts
+// everything back (an accidental tap); once the new quarter's clock starts, ◀
+// just steps back a quarter.
 function nextPeriod() {
-  const prev = { period: S.period, clock: clone(S.clock), scene: S.scene };
+  const back = { period: S.period, clock: clone(S.clock), scene: S.scene };
   act((n) => {
     n.period += 1;
     ensurePeriods(n);
     n.clock = { running: false, remainMs: periodLen(n.period), startedAt: 0 };
     if (n.scene === 'break') n.scene = 'live';
     n.flash = null;
-  }, { type: 'period', prev: prev });
+    n.back = back;
+  });
   buzz();
 }
 function prevPeriod() {
   if (S.period <= 1) return;
-  const prev = { period: S.period, clock: clone(S.clock), scene: S.scene };
+  const b = S.back;
   const r = remaining(S.clock);
   act((n) => {
-    n.period -= 1;
-    n.clock = { running: false, remainMs: Math.min(r, periodLen(n.period)), startedAt: 0 };
+    if (b && b.period === n.period - 1 && !n.clock.running) {
+      n.period = b.period; n.clock = b.clock; n.scene = b.scene;
+    } else {
+      n.period -= 1;
+      n.clock = { running: false, remainMs: Math.min(r, periodLen(n.period)), startedAt: 0 };
+    }
+    n.back = null;
     n.flash = null;
-  }, { type: 'period', prev: prev });
+  });
+  buzz();
 }
-function loadGame(g) { UNDO = []; commit(freshState(g)); }
-function newGame() { UNDO = []; commit(freshState(null, S)); }
+function loadGame(g) { commit(freshState(g)); }
+function newGame() { commit(freshState(null, S)); }
 
 /* ---------- Preview ---------- */
 const stage = $('stage');
@@ -262,21 +256,13 @@ function render(s) {
   const teams = [D.teams[s.home], D.teams[s.away]];
   $('gameTitle').textContent = teams[0].short + ' – ' + teams[1].short;
   $('gameMeta').textContent = s.meta || CUP_NAMES[s.cup];
-  for (let i = 0; i < 2; i++) {
+  [cup.c1, cup.c2].forEach((c, i) => {
+    $('col' + i).style.setProperty('--sc-tint', isLight(c) ? 'rgba(0, 0, 0, 0.12)' : 'rgba(0, 0, 0, 0.28)');   // as on the scorebug
     $('logo' + i).src = teams[i].logo;
     $('name' + i).textContent = teams[i].short;
     $('score' + i).textContent = s.score[i];
     $('fix' + i).disabled = s.score[i] <= 0;
-  }
-  $('qline').textContent = s.byPeriod.slice(0, Math.max(s.period, 1))
-    .map((q, i) => periodLabel(i + 1) + ' ' + (q ? q[0] : 0) + '–' + (q ? q[1] : 0)).join('   ·   ');
-
-  const u = UNDO[UNDO.length - 1];
-  const undoBtn = $('undoBtn');
-  undoBtn.disabled = !u;
-  if (!u) undoBtn.textContent = 'Nothing to undo';
-  else if (u.type === 'score') undoBtn.textContent = 'Undo ' + (u.pts > 0 ? '+' + u.pts : '−1') + ' ' + teams[u.team].short;
-  else undoBtn.textContent = 'Undo: back to ' + periodLabel(u.prev.period);
+  });
 
   $('periodNow').textContent = periodLabel(s.period);
   $('barPeriod').textContent = periodLabel(s.period);
@@ -305,12 +291,10 @@ function render(s) {
          : 'The pre-game screen needs a game loaded from the schedule (Game setup).');
   $('breakNote').textContent = 'The PĀRTRAUKUMS screen with the score by quarter: ' +
     (s.period <= 1 ? 'Q1' : 'Q1–' + periodLabel(s.period)) + '. Next quarter or Start clock returns to the scorebug.';
-  $('layoutCorner').setAttribute('aria-pressed', String(s.layout === 'corner'));
   $('layoutBottom').setAttribute('aria-pressed', String(s.layout !== 'corner'));
+  $('layoutCorner').setAttribute('aria-pressed', String(s.layout === 'corner'));
 
   // setup
-  $('cupDbck').setAttribute('aria-pressed', String(s.cup === 'dbck'));
-  $('cupJssc').setAttribute('aria-pressed', String(s.cup === 'jssc'));
   $('homeSel').value = s.home;
   $('awaySel').value = s.away;
 
@@ -372,7 +356,6 @@ document.querySelectorAll('[data-pts]').forEach((b) => {
     if (p < 0) minusOne(i); else addPoints(i, p);
   });
 });
-$('undoBtn').addEventListener('click', undo);
 $('clockBtn').addEventListener('click', toggleClock);
 $('minus1').addEventListener('click', () => { setRemaining(remaining(S.clock) - 1000); buzz(); });
 $('plus1').addEventListener('click', () => { setRemaining(remaining(S.clock) + 1000); buzz(); });
@@ -421,8 +404,8 @@ $('nextQ').addEventListener('click', (e) => {
 document.querySelectorAll('[data-scene]').forEach((b) => {
   b.addEventListener('click', () => { act((n) => { n.scene = b.dataset.scene; }); buzz(); });
 });
-$('layoutCorner').addEventListener('click', () => act((n) => { n.layout = 'corner'; }));
 $('layoutBottom').addEventListener('click', () => act((n) => { n.layout = 'bottom'; }));
+$('layoutCorner').addEventListener('click', () => act((n) => { n.layout = 'corner'; }));
 $('cdSchedule').addEventListener('click', () => {
   const g = gameById(S.gameId);
   if (g) { act((n) => { n.startAt = R.gameStart(g); }); buzz(); }
@@ -438,12 +421,21 @@ document.querySelectorAll('[data-cd-nudge]').forEach((b) => {
   });
 });
 
-$('cupDbck').addEventListener('click', () => act((n) => { n.cup = 'dbck'; checkGame(n); }));
-$('cupJssc').addEventListener('click', () => act((n) => { n.cup = 'jssc'; checkGame(n); }));
+/* ---------- Game setup pop-up ---------- */
+const setup = $('setup');
+function openSetup() {
+  const pick = gameById(S.gameId) || R.nextGame(D, Date.now());
+  if (pick) $('gameSelect').value = pick.id;
+  if (setup.showModal) setup.showModal(); else setup.setAttribute('open', '');
+}
+function closeSetup() { if (setup.close) setup.close(); else setup.removeAttribute('open'); }
+$('setupBtn').addEventListener('click', openSetup);
+$('setupClose').addEventListener('click', closeSetup);
+setup.addEventListener('click', (e) => { if (e.target === setup) closeSetup(); });   // a tap outside the window
+
 $('homeSel').addEventListener('change', (e) => act((n) => { n.home = e.target.value; checkGame(n); }));
 $('awaySel').addEventListener('change', (e) => act((n) => { n.away = e.target.value; checkGame(n); }));
 $('swapBtn').addEventListener('click', () => {
-  UNDO = UNDO.map((x) => (x.type === 'score' ? Object.assign({}, x, { team: 1 - x.team }) : x));
   act((n) => {
     const h = n.home; n.home = n.away; n.away = h;
     n.score.reverse();
@@ -454,17 +446,17 @@ $('swapBtn').addEventListener('click', () => {
 $('loadGame').addEventListener('click', (e) => {
   const g = gameById($('gameSelect').value);
   if (!g) return;
-  if (inProgress()) confirmTap(e.currentTarget, 'Score and clock will reset. Tap again', () => loadGame(g));
-  else loadGame(g);
+  const run = () => { loadGame(g); closeSetup(); };
+  if (inProgress()) confirmTap(e.currentTarget, 'Score and clock will reset. Tap again', run);
+  else run();
 });
-$('newGameBtn').addEventListener('click', (e) => confirmTap(e.currentTarget, 'Resets score, clock and quarter. Tap again', newGame));
+$('newGameBtn').addEventListener('click', (e) => confirmTap(e.currentTarget, 'Resets score, clock and quarter. Tap again', () => { newGame(); closeSetup(); }));
 
-// OBS address
 const obsUrl = location.origin + '/live/overlay/';
 $('obsUrl').textContent = obsUrl;
 $('copyObs').addEventListener('click', () => {
   const done = () => { $('copyObs').textContent = 'Copied'; setTimeout(() => { $('copyObs').textContent = 'Copy'; }, 1800); };
-  try { navigator.clipboard.writeText(obsUrl).then(done, () => {}); } catch (e) { /* select it instead */ }
+  try { navigator.clipboard.writeText(obsUrl).then(done, () => {}); } catch (e) { /* the address can be selected instead */ }
 });
 
 /* ---------- Connection and sign-in ---------- */
@@ -472,6 +464,7 @@ function setStatus(state, text) { const st = $('status'); st.dataset.state = sta
 function showApp(show) {
   $('app').hidden = !show;
   $('clockbar').hidden = !show;
+  $('setupBtn').hidden = !show;
   $('signin').hidden = show;
   document.body.classList.toggle('gate', !show);
   if (show) { fitStage(); overlay.update(S); }
@@ -505,16 +498,17 @@ function signInError(e) {
   sync.onState(onRemote);
   sync.onUser((u) => {
     user = u;
+    $('signoutBtn').hidden = !u;
     if (!u) {
       mode = 'signin';
       setStatus('', 'Signed out');
+      closeSetup();
       showApp(false);
       return;
     }
     mode = 'live';
     setStatus(online ? 'on' : 'off', online ? 'Live' : 'Offline');
-    $('who').textContent = 'Signed in as ' + u.email;
-    $('account').hidden = false;
+    $('signoutBtn').title = 'Signed in as ' + u.email;
     showApp(true);
     if (remoteLoaded && lastRemote === null) push();     // first game ever: put this device's state in the database
   });

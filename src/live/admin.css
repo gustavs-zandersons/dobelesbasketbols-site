@@ -1,7 +1,10 @@
-/* The scoreboard admin (/live/admin/): phone first, tablet second.
-   Phone: one column of control cards, the game clock fixed to the bottom edge.
-   Tablet and wider: stream preview and on-screen controls left, score and clock right.
-   One dark look on purpose: it is used courtside, often next to a bright screen. */
+/* The scoreboard admin (/live/admin/): phone first, computer second.
+   Phone: everything one below the other, the game clock fixed to the bottom edge.
+   Computer (860 px and wider), in rows (organisers, 3 Nov 2026):
+     1. the stream preview as large as possible, the on-screen buttons in a column on its right
+     2. score and clock side by side
+   Game setup opens as a pop-up from the header. One dark look on purpose: it is
+   used courtside, often next to a bright screen. */
 :root {
   color-scheme: dark;
   --bg: #0A1220;
@@ -38,21 +41,22 @@ img { max-width: 100%; }
 [hidden] { display: none !important; }
 button, select, input { font: inherit; color: inherit; }
 button { cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
-button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 button:disabled { cursor: default; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* ---------- Header ---------- */
 .top {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px;
-  padding-block: 14px 8px;
+  max-width: 1440px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 10px;
+  padding-block: 12px 8px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  max-width: 1280px; margin: 0 auto;
 }
-.brand { font: 700 13px/1 var(--font-cond); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+.top-row { display: flex; align-items: center; gap: 10px; min-height: 36px; }
+.brand { font: 700 13px/1 var(--font-cond); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-right: auto; }
 .status {
-  margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px;
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px;
   border: 1px solid var(--line); border-radius: 999px;
   font: 600 12px/1 var(--font-cond); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
 }
@@ -60,27 +64,24 @@ button:disabled { cursor: default; }
 .status[data-state="on"]::before { background: var(--go); }
 .status[data-state="off"]::before { background: var(--stop); }
 .status[data-state="test"]::before { background: var(--warn); }
-.game-title { flex-basis: 100%; margin: 6px 0 0; font: 700 26px/1.05 var(--font-cond); letter-spacing: 0.02em; text-transform: uppercase; text-wrap: balance; }
-.game-meta { flex-basis: 100%; color: var(--muted); font-size: 14px; }
+.game-row { display: flex; align-items: center; gap: 12px; }
+.game-text { flex: 1; min-width: 0; }
+.game-title { margin: 0; font: 700 26px/1.05 var(--font-cond); letter-spacing: 0.02em; text-transform: uppercase; text-wrap: balance; }
+.game-meta { color: var(--muted); font-size: 14px; }
 
-/* ---------- Columns ---------- */
+/* ---------- Layout ---------- */
 .wrap {
-  max-width: 1280px; margin: 0 auto;
+  max-width: 1440px; margin: 0 auto;
   padding-block: 8px 0;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 .banner { margin: 0 0 12px; padding: 12px 14px; border-radius: var(--radius); background: #3A1D22; border: 1px solid #7A2E36; color: #FFD7D5; }
-.cols { display: flex; flex-direction: column; gap: 12px; }
-.col { display: contents; }
-.card-preview { order: 1; }
-.card-screen { order: 2; }
-.card-score { order: 3; }
-.card-clock { order: 4; }
-.card-setup { order: 5; }
+.app, .row { display: flex; flex-direction: column; gap: 12px; }
 @media (min-width: 860px) {
-  .cols { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: start; gap: 16px; }
-  .col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .app { gap: 16px; }
+  .row-top { display: grid; grid-template-columns: minmax(0, 1fr) 300px; align-items: start; gap: 16px; }
+  .row-play { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 16px; }
 }
 
 .card {
@@ -100,6 +101,8 @@ button:disabled { cursor: default; }
 .btn:disabled { opacity: 0.45; }
 .btn.armed { background: var(--stop); border-color: var(--stop); color: #fff; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.small { min-height: 36px; padding: 0 12px; font-size: 15px; }
+.btn.ghost { background: transparent; }
 
 /* ---------- Sign-in ---------- */
 .signin { max-width: 480px; margin: 24px auto 0; text-align: left; }
@@ -113,8 +116,9 @@ button:disabled { cursor: default; }
 /* ---------- On screen ---------- */
 .scenes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 @media (min-width: 520px) { .scenes { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 860px) { .scenes { grid-template-columns: minmax(0, 1fr); } }
 .scene-btn {
-  min-height: 58px; padding: 6px 8px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--line);
+  min-height: 56px; padding: 6px 8px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--line);
   font: 700 17px/1.05 var(--font-cond); letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted);
 }
 .scene-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
@@ -125,7 +129,7 @@ button:disabled { cursor: default; }
 .countdown strong { font: 400 34px/1 var(--font-num); font-variant-numeric: tabular-nums; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chips .btn { min-height: 44px; flex: 1 1 auto; }
-.setting { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; }
+.setting { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; flex-wrap: wrap; }
 .setting > span { font-weight: 600; }
 .seg { display: inline-grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; flex: none; }
 .seg button { min-height: 44px; padding: 0 14px; background: transparent; border: 0; font: 700 16px/1 var(--font-cond); letter-spacing: 0.04em; color: var(--muted); }
@@ -134,29 +138,53 @@ button:disabled { cursor: default; }
 .note { margin: 0; color: var(--muted); font-size: 14px; }
 
 /* ---------- Score ---------- */
+/* Each team: a dark header like the bottom bar on stream (logo on the outer side,
+   name, score box towards the middle), then the solid +1/+2/+3 and the −1 fix. */
 .teams { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.team-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.team-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; container-type: inline-size; }
 .team-head {
-  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "logo score" "name name";
-  align-items: center; gap: 6px 8px; padding: 10px 12px 12px;
-  border-radius: 10px; background: var(--tc); color: var(--tt);
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "logo name score";
+  align-items: center; min-height: 72px; border-radius: 10px; overflow: hidden;
+  background: var(--surface-2); border: 1px solid var(--line);
 }
-.team-head img { grid-area: logo; width: 36px; height: 36px; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)); }
-.team-head .sc { grid-area: score; justify-self: end; font: 400 36px/1 var(--font-num); }
-.team-head .nm { grid-area: name; min-width: 0; font: 700 20px/1.05 var(--font-cond); letter-spacing: 0.02em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.team-head img { grid-area: logo; width: 52px; height: 52px; margin: 0 10px 0 12px; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)); }
+.team-head .nm {
+  grid-area: name; min-width: 0; padding-right: 10px;
+  font: 700 21px/1.05 var(--font-cond); letter-spacing: 0.02em; text-transform: uppercase; overflow-wrap: anywhere;
+}
+.team-head .sc {
+  grid-area: score; align-self: stretch; min-width: 76px; padding: 0 14px;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(var(--sc-tint), var(--sc-tint)), var(--tc); color: var(--tt);
+  font: 400 44px/1 var(--font-num);
+}
+.team-col.right .team-head { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "score name logo"; }
+.team-col.right .team-head img { margin: 0 12px 0 10px; }
+.team-col.right .team-head .nm { padding: 0 0 0 10px; text-align: right; }
+/* Half a phone screen is too narrow for logo, name and score in one line: the name goes under them. */
+@container (max-width: 250px) {
+  .team-head { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "logo score" "name name"; min-height: 0; }
+  .team-col.right .team-head { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "score logo" "name name"; }
+  .team-head img { width: 40px; height: 40px; margin: 8px 0 8px 10px; }
+  .team-col.right .team-head img { margin: 8px 10px 8px 0; }
+  .team-head .sc { justify-self: end; min-width: 0; width: 100%; max-width: 84px; margin-left: 10px; font-size: 36px; padding: 0 10px; min-height: 56px; }
+  .team-col.right .team-head .sc { justify-self: start; margin: 0 10px 0 0; }
+  .team-head .nm, .team-col.right .team-head .nm { padding: 8px 10px 10px; font-size: 18px; text-align: left; border-top: 1px solid var(--line); }
+  .team-col.right .team-head .nm { text-align: right; }
+}
 .pt {
-  min-height: 60px; border-radius: 10px; background: var(--surface-2);
-  border: 2px solid var(--tc); font: 400 30px/1 var(--font-num); color: var(--fg);
-  transition: background 0.12s, color 0.12s;
+  min-height: 60px; border-radius: 10px; border: 0;
+  background: var(--tc); color: var(--tt); font: 400 30px/1 var(--font-num);
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.18);
+  transition: transform 0.08s, filter 0.12s;
 }
-.pt:active { background: var(--tc); color: var(--tt); }
+.pt:active { transform: scale(0.97); filter: brightness(1.12); }
 .fix {
-  min-height: 44px; border-radius: 10px; background: transparent; border: 1px dashed var(--line);
-  color: var(--muted); font: 700 15px/1 var(--font-cond); letter-spacing: 0.06em; text-transform: uppercase;
+  min-height: 52px; border-radius: 10px; background: transparent; border: 2px solid var(--tc);
+  color: var(--fg); font: 700 17px/1 var(--font-cond); letter-spacing: 0.06em; text-transform: uppercase;
 }
+.fix:active:not(:disabled) { background: var(--surface-2); }
 .fix:disabled { opacity: 0.4; }
-.qline { margin: 0; color: var(--muted); font-size: 14px; text-align: center; font-variant-numeric: tabular-nums; }
-.undo { width: 100%; min-height: 52px; text-transform: uppercase; letter-spacing: 0.06em; }
 
 /* ---------- Clock & quarter ---------- */
 .row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
@@ -171,16 +199,22 @@ button:disabled { cursor: default; }
 .hint { margin: 0; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); color: var(--fg); font-size: 15px; }
 .err { margin: 0; color: #FF9C9A; font-size: 14px; }
 
-/* ---------- Setup ---------- */
-.card-setup { padding: 0; }
-.card-setup summary {
-  list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 14px; cursor: pointer; min-height: 52px;
+/* ---------- Game setup pop-up ---------- */
+.setup {
+  width: min(560px, 100%); max-width: 100%; max-height: min(92vh, 92dvh); padding: 0; margin: auto;
+  border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--fg);
 }
-.card-setup summary::-webkit-details-marker { display: none; }
-.card-setup summary::after { content: "Open"; font: 600 14px/1 var(--font-cond); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
-.card-setup details[open] summary::after { content: "Close"; }
-.setup-body { display: flex; flex-direction: column; gap: 12px; padding: 0 14px 14px; }
+.setup::backdrop { background: rgba(4, 8, 16, 0.72); }
+@media (max-width: 600px) {
+  .setup { margin: auto 0 0; width: 100%; border-radius: 16px 16px 0 0; border-bottom: 0; }
+}
+.setup-head {
+  position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 16px; background: var(--surface); border-bottom: 1px solid var(--line);
+}
+.setup-head h2 { margin: 0; font: 700 22px/1.1 var(--font-cond); letter-spacing: 0.04em; text-transform: uppercase; }
+.setup-body { display: flex; flex-direction: column; gap: 14px; padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
+.setup-body hr { width: 100%; margin: 2px 0; border: 0; border-top: 1px solid var(--line); }
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field label, .field .lbl { font: 700 13px/1 var(--font-cond); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
 select {
@@ -190,8 +224,6 @@ select {
 .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .copy-row { display: flex; gap: 8px; align-items: center; }
 .copy-row code { flex: 1; min-width: 0; padding: 12px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); font: 500 14px/1.3 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; user-select: all; }
-.account { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 4px; border-top: 1px solid var(--line); }
-.account span { min-width: 0; overflow-wrap: anywhere; color: var(--muted); font-size: 14px; }
 
 /* ---------- Clock bar ---------- */
 .clockbar {
@@ -202,7 +234,7 @@ select {
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-.clockbar-in { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; gap: 14px; }
+.clockbar-in { max-width: 1440px; margin: 0 auto; display: flex; align-items: center; gap: 14px; }
 .clock-read { display: flex; align-items: baseline; gap: 10px; flex: none; min-width: 128px; }
 .clock-read .p { font: 700 20px/1 var(--font-cond); letter-spacing: 0.06em; color: var(--accent); }
 .clock-read .t { font: 400 42px/1 var(--font-num); font-variant-numeric: tabular-nums; }
