@@ -6,9 +6,11 @@ import { FIREBASE, DB_PATH } from './config.js';
 
 const SDK = 'https://www.gstatic.com/firebasejs/10.14.1/';
 
+const denied = (e) => /permission/i.test(String((e && (e.code || e.message)) || ''));
+
 // Returns null when Firebase isn't set up yet (config.js), otherwise
 // { now, onState, write, onConnection } and, with { auth: true },
-// { onUser, signIn, signOut } for the admin page.
+// { onUser, signIn, signOut, canWrite, removeUser } for the admin page.
 export async function connect(opts) {
   if (!FIREBASE || !FIREBASE.databaseURL) return null;
   const appMod = await import(SDK + 'firebase-app.js');
@@ -33,6 +35,30 @@ export async function connect(opts) {
     api.onUser = (cb) => authMod.onAuthStateChanged(auth, cb);
     api.signIn = () => authMod.signInWithPopup(auth, new authMod.GoogleAuthProvider());
     api.signOut = () => authMod.signOut(auth);
+    // May the signed-in account run the scoreboard? The database rules are the
+    // list of operators, so ask them: a write that changes nothing (v is always 2)
+    // goes through for the accounts in the rules and is refused for any other.
+    // true / false; null when there is no game state yet to test with (the first
+    // full write then decides). Other errors (offline) reject.
+    api.canWrite = async () => {
+      const cur = (await dbMod.get(stateRef)).val();
+      if (!cur || cur.v !== 2) return null;
+      try {
+        await dbMod.update(stateRef, { v: 2 });
+        return true;
+      } catch (e) {
+        if (denied(e)) return false;
+        throw e;
+      }
+    };
+    // Deletes the signed-in account from Firebase Authentication (one that is not
+    // an operator), which also signs it out. Firebase only allows this shortly
+    // after the sign-in; otherwise it just signs out.
+    api.removeUser = () => {
+      const u = auth.currentUser;
+      if (!u) return Promise.resolve();
+      return authMod.deleteUser(u).catch(() => authMod.signOut(auth));
+    };
   }
   return api;
 }
