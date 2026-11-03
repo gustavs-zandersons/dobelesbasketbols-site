@@ -22,11 +22,15 @@ SRC = ROOT / 'src' / 'live'
 CUPS = {
     'dbck': {'name': 'Dobeles Basketbola Čempionu kauss', 'label': 'Dobeles Čempionu kauss · 2026/27',
              'logo': '/assets/dbck-mark.webp',
-             'c1': '#E1B942', 'c2': '#204E99', 'ink': '#14284D', 'accent': '#E1B942', 'muted': '#C6D3EC'},
+             'c1': '#E1B942', 'c2': '#204E99', 'ink': '#14284D', 'accent': '#E1B942', 'muted': '#C6D3EC',
+             'count': '#E9B716'},
     'jssc': {'name': 'Jelgavas Sporta servisa centra Izaicinājuma kauss', 'label': 'JSSC Izaicinājuma kauss · 2026/27',
              'logo': '/assets/jssc-logo.webp',
-             'c1': '#9C213D', 'c2': '#1E47B5', 'ink': '#5E1224', 'accent': '#B7CAFF', 'muted': '#F2CDD6'},
+             'c1': '#9C213D', 'c2': '#1E47B5', 'ink': '#5E1224', 'accent': '#B7CAFF', 'muted': '#F2CDD6',
+             'count': '#FFFFFF'},
 }
+# 'count': the pre-game countdown, in the colour of "SPĒLE SĀKSIES PĒC:" on that cup's
+# pre-game screen (src/poster.js, OVERLAY.starts.color).
 BREAKS = {'dbck': '/obs/partraukums-dobele.png', 'jssc': '/obs/partraukums-jelgava.png'}
 
 ADMIN_BODY = """
@@ -128,26 +132,36 @@ ADMIN_BODY = """
         </div>
       </section>
 
-      <section class="card card-clock" aria-labelledby="hClock">
-        <h2 id="hClock">Clock and quarter</h2>
-        <div class="row3">
-          <button class="btn" type="button" id="minus1">−1 s</button>
-          <button class="btn" type="button" id="plus1">+1 s</button>
+      <div class="side">
+        <section class="card card-clock" aria-labelledby="hClock">
+          <h2 id="hClock">Clock</h2>
+          <div class="nudges" role="group" aria-label="Correct the clock">
+            <button class="btn" type="button" data-nudge="-1">−1 s</button>
+            <button class="btn" type="button" data-nudge="-5">−5 s</button>
+            <button class="btn" type="button" data-nudge="-15">−15 s</button>
+            <button class="btn" type="button" data-nudge="1">+1 s</button>
+            <button class="btn" type="button" data-nudge="5">+5 s</button>
+            <button class="btn" type="button" data-nudge="15">+15 s</button>
+          </div>
           <button class="btn" type="button" id="setTimeBtn" aria-expanded="false" aria-controls="setTimeBox">Set time</button>
-        </div>
-        <form class="set-time" id="setTimeBox" hidden>
-          <label class="sr" for="timeInput">Time left</label>
-          <input id="timeInput" type="text" inputmode="decimal" autocomplete="off" placeholder="4:37">
-          <button class="btn" type="submit">Set</button>
-        </form>
-        <p class="err" id="timeErr" hidden>Type the time left as minutes:seconds, for example 4:37 or 0:48.3.</p>
-        <div class="quarter">
-          <button class="btn" type="button" id="prevQ" aria-label="Back one quarter">◀</button>
-          <div class="now" id="periodNow">Q1</div>
-          <button class="btn" type="button" id="nextQ">Next: Q2</button>
-        </div>
-        <p class="hint" id="hint" hidden></p>
-      </section>
+          <form class="set-time" id="setTimeBox" hidden>
+            <label class="sr" for="timeInput">Time left</label>
+            <input id="timeInput" type="text" inputmode="decimal" autocomplete="off" placeholder="4:37">
+            <button class="btn" type="submit">Set</button>
+          </form>
+          <p class="err" id="timeErr" hidden>Type the time left as minutes:seconds, for example 4:37 or 0:48.3.</p>
+        </section>
+
+        <section class="card card-quarter" aria-labelledby="hQuarter">
+          <h2 id="hQuarter">Quarter</h2>
+          <div class="q-now" id="periodNow">Q1</div>
+          <div class="two q-nav">
+            <button class="btn" type="button" id="prevQ">Previous</button>
+            <button class="btn" type="button" id="nextQ">Next: Q2</button>
+          </div>
+          <p class="hint" id="hint" hidden></p>
+        </section>
+      </div>
     </div>
   </div>
 </main>
@@ -160,7 +174,7 @@ ADMIN_BODY = """
   <div class="setup-body">
     <p class="note" id="testNote" hidden>Test mode: the scoreboard is not connected to Firebase, so changes stay on this device and OBS does not see them.</p>
     <div class="field">
-      <label for="gameSelect">Game from the schedule</label>
+      <label for="gameSelect">Game from the schedule: this week and later</label>
       <select id="gameSelect"></select>
     </div>
     <button class="btn primary" type="button" id="loadGame">Load this game</button>
@@ -189,7 +203,7 @@ ADMIN_BODY = """
 <footer class="clockbar" id="clockbar" hidden>
   <div class="clockbar-in">
     <div class="clock-read"><span class="p" id="barPeriod">Q1</span><span class="t" id="barTime">10:00</span></div>
-    <button id="clockBtn" type="button">Start clock</button>
+    <button id="clockBtn" type="button" aria-keyshortcuts="Space"><span id="clockTxt">Start clock</span><kbd class="kbd" aria-hidden="true">Space</kbd></button>
   </div>
 </footer>
 """

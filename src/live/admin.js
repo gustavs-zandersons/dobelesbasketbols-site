@@ -226,10 +226,31 @@ Object.keys(D.teams).forEach((tid) => {
     $(id).appendChild(o);
   });
 });
-(function fillGames() {
+// Game setup lists this week's games (Monday to Sunday, by this device's date) and
+// the ones after it; worked out again each time the pop-up opens.
+function weekStart(t) {
+  const d = new Date(t);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function fillGames() {
   const sel = $('gameSelect');
+  sel.textContent = '';
+  const from = weekStart(Date.now());
+  const list = games.filter((g) => g.date >= from);
+  if (!list.length) {
+    const o = document.createElement('option');
+    o.value = ''; o.textContent = 'No games this week or later';
+    sel.appendChild(o);
+    sel.disabled = true;
+    $('loadGame').disabled = true;
+    return;
+  }
+  sel.disabled = false;
+  $('loadGame').disabled = false;
   const byDay = new Map();
-  games.forEach((g) => { if (!byDay.has(g.date)) byDay.set(g.date, []); byDay.get(g.date).push(g); });
+  list.forEach((g) => { if (!byDay.has(g.date)) byDay.set(g.date, []); byDay.get(g.date).push(g); });
   byDay.forEach((list) => {
     const og = document.createElement('optgroup');
     og.label = dayLabel(list[0]) + ' · ' + (D.venues[list[0].venue] || '');
@@ -241,9 +262,11 @@ Object.keys(D.teams).forEach((tid) => {
     });
     sel.appendChild(og);
   });
-  const pick = gameById(S.gameId) || R.nextGame(D, Date.now());
-  if (pick) sel.value = pick.id;
-})();
+  const loaded = list.find((g) => g.id === S.gameId);
+  const pick = loaded || list.find((g) => R.gameStart(g) >= new Date().setHours(0, 0, 0, 0)) || list[0];
+  sel.value = pick.id;
+}
+fillGames();
 
 function render(s) {
   const cup = D.cups[s.cup];
@@ -268,6 +291,7 @@ function render(s) {
   $('barPeriod').textContent = periodLabel(s.period);
   $('prevQ').disabled = s.period <= 1;
   const keep = (id, text) => { const b = $(id); if (b.dataset.armed !== '1') b.textContent = text; };
+  keep('prevQ', s.period > 1 ? 'Previous: ' + periodLabel(s.period - 1) : 'Previous');
   keep('nextQ', 'Next: ' + periodLabel(s.period + 1));
   keep('newGameBtn', 'New game: reset score and clock');
   keep('loadGame', 'Load this game');
@@ -311,7 +335,7 @@ function render(s) {
   const cb = $('clockBtn');
   cb.classList.toggle('running', !!s.clock.running);
   cb.disabled = over;
-  cb.textContent = s.clock.running ? 'Stop clock' : (over ? periodLabel(s.period) + ' over' : 'Start clock');
+  $('clockTxt').textContent = s.clock.running ? 'Stop clock' : (over ? periodLabel(s.period) + ' over' : 'Start clock');
 }
 
 subscribers.push(render, overlay.update);
@@ -357,8 +381,33 @@ document.querySelectorAll('[data-pts]').forEach((b) => {
   });
 });
 $('clockBtn').addEventListener('click', toggleClock);
-$('minus1').addEventListener('click', () => { setRemaining(remaining(S.clock) - 1000); buzz(); });
-$('plus1').addEventListener('click', () => { setRemaining(remaining(S.clock) + 1000); buzz(); });
+// −1/−5/−15 s and +1/+5/+15 s: between 0 and the quarter's length; a running clock keeps running.
+document.querySelectorAll('[data-nudge]').forEach((b) => {
+  b.addEventListener('click', () => { setRemaining(remaining(S.clock) + Number(b.dataset.nudge) * 1000); buzz(); });
+});
+
+// Space starts and stops the clock (a computer or a tablet with a keyboard).
+// Not while typing a time or with Game setup open; and Space never presses the
+// last tapped button (a +2 again), the browser's default for a focused button.
+function spaceKey(e) {
+  if (e.code !== 'Space' && e.key !== ' ') return false;
+  if (e.ctrlKey || e.metaKey || e.altKey) return false;
+  const t = e.target;
+  if (t && t.closest && t.closest('input, textarea, select, [contenteditable="true"]')) return false;
+  if (setup.open || $('app').hidden) return false;
+  return true;
+}
+document.addEventListener('keydown', (e) => {
+  if (!spaceKey(e)) return;
+  e.preventDefault();
+  if (e.repeat) return;                         // held down: one press
+  const cb = $('clockBtn');
+  if (cb.disabled) return;
+  toggleClock();
+  cb.classList.add('pressed');
+  setTimeout(() => cb.classList.remove('pressed'), 160);
+});
+document.addEventListener('keyup', (e) => { if (spaceKey(e)) e.preventDefault(); });
 
 function parseTime(str) {
   const t = String(str).trim().replace(',', '.');
@@ -394,7 +443,13 @@ $('setTimeBox').addEventListener('submit', (e) => {
   buzz();
 });
 
-$('prevQ').addEventListener('click', prevPeriod);
+// Previous asks for a second tap, except straight after Next (then it just puts
+// everything back, see nextPeriod).
+$('prevQ').addEventListener('click', (e) => {
+  const b = S.back;
+  if (b && b.period === S.period - 1 && !S.clock.running) prevPeriod();
+  else confirmTap(e.currentTarget, 'Back to ' + periodLabel(S.period - 1) + '? Tap again', prevPeriod);
+});
 $('nextQ').addEventListener('click', (e) => {
   const r = remaining(S.clock);
   if (S.clock.running || r > 0) confirmTap(e.currentTarget, (S.clock.running ? 'Clock running. ' : fmtClock(r) + ' left. ') + 'Tap again', nextPeriod);
@@ -424,8 +479,7 @@ document.querySelectorAll('[data-cd-nudge]').forEach((b) => {
 /* ---------- Game setup pop-up ---------- */
 const setup = $('setup');
 function openSetup() {
-  const pick = gameById(S.gameId) || R.nextGame(D, Date.now());
-  if (pick) $('gameSelect').value = pick.id;
+  fillGames();
   if (setup.showModal) setup.showModal(); else setup.setAttribute('open', '');
 }
 function closeSetup() { if (setup.close) setup.close(); else setup.removeAttribute('open'); }

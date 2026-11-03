@@ -2,9 +2,9 @@
    Phone: everything one below the other, the game clock fixed to the bottom edge.
    Computer (860 px and wider), in rows (organisers, 3 Nov 2026):
      1. the stream preview as large as possible, the on-screen buttons in a column on its right
-     2. score and clock side by side
-   Game setup opens as a pop-up from the header. One dark look on purpose: it is
-   used courtside, often next to a bright screen. */
+     2. the score on the left; the clock and the quarter one above the other on the right
+   Game setup opens as a white pop-up from the header. The page itself is dark on
+   purpose: it is used courtside, often next to a bright screen. */
 :root {
   color-scheme: dark;
   --bg: #0A1220;
@@ -77,9 +77,9 @@ button:disabled { cursor: default; }
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 .banner { margin: 0 0 12px; padding: 12px 14px; border-radius: var(--radius); background: #3A1D22; border: 1px solid #7A2E36; color: #FFD7D5; }
-.app, .row { display: flex; flex-direction: column; gap: 12px; }
+.app, .row, .side { display: flex; flex-direction: column; gap: 12px; }
 @media (min-width: 860px) {
-  .app { gap: 16px; }
+  .app, .side { gap: 16px; }
   .row-top { display: grid; grid-template-columns: minmax(0, 1fr) 300px; align-items: start; gap: 16px; }
   .row-play { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 16px; }
 }
@@ -186,25 +186,35 @@ button:disabled { cursor: default; }
 .fix:active:not(:disabled) { background: var(--surface-2); }
 .fix:disabled { opacity: 0.4; }
 
-/* ---------- Clock & quarter ---------- */
-.row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+/* ---------- Clock ---------- */
+/* −1 −5 −15 over +1 +5 +15, then Set time across the card. */
+.nudges { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .set-time { display: flex; gap: 8px; }
 .set-time input {
   flex: 1; min-width: 0; height: 52px; padding: 0 14px; border-radius: 10px;
   background: var(--bg); border: 1px solid var(--line); font: 400 28px/1 var(--font-num); letter-spacing: 0.02em;
 }
 .set-time .btn { min-width: 88px; }
-.quarter { display: grid; grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1.5fr); gap: 8px; align-items: center; }
-.quarter .now { text-align: center; font: 400 36px/1 var(--font-num); color: var(--accent); }
+/* ---------- Quarter ---------- */
+.q-now { text-align: center; font: 400 64px/1 var(--font-num); letter-spacing: 0.02em; color: var(--accent); padding: 2px 0 4px; }
+.q-nav .btn { min-height: 56px; padding: 6px 10px; line-height: 1.1; text-wrap: balance; }
 .hint { margin: 0; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); color: var(--fg); font-size: 15px; }
 .err { margin: 0; color: #FF9C9A; font-size: 14px; }
 
 /* ---------- Game setup pop-up ---------- */
+/* White with black text (organisers, 3 Nov 2026): the page's colours are swapped
+   for light ones inside it; Load keeps the cup's colour, a second tap stays red. */
 .setup {
+  color-scheme: light;
+  --surface: #FFFFFF; --surface-2: #EEF1F5; --bg: #F4F6F9;
+  --line: rgba(17, 24, 39, 0.16); --fg: #111111; --muted: #5B6578;
   width: min(560px, 100%); max-width: 100%; max-height: min(92vh, 92dvh); padding: 0; margin: auto;
-  border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--fg);
+  border: 0; border-radius: 16px; background: var(--surface); color: var(--fg);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
 }
-.setup::backdrop { background: rgba(4, 8, 16, 0.72); }
+.setup::backdrop { background: rgba(4, 8, 16, 0.82); }
+.setup button:focus-visible, .setup select:focus-visible { outline-color: #14284D; }
+.setup .btn.primary { box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12); }
 @media (max-width: 600px) {
   .setup { margin: auto 0 0; width: 100%; border-radius: 16px 16px 0 0; border-bottom: 0; }
 }
@@ -240,8 +250,17 @@ select {
 .clock-read .t { font: 400 42px/1 var(--font-num); font-variant-numeric: tabular-nums; }
 #clockBtn {
   flex: 1; min-height: 62px; border-radius: 12px; border: 0;
+  display: flex; align-items: center; justify-content: center; gap: 14px;
   background: var(--go); color: #fff;
   font: 700 22px/1 var(--font-cond); letter-spacing: 0.1em; text-transform: uppercase;
+  transition: filter 0.12s, transform 0.08s;
 }
 #clockBtn.running { background: var(--stop); }
 #clockBtn:disabled { background: var(--surface-2); color: var(--muted); }
+#clockBtn.pressed { filter: brightness(1.2); transform: scale(0.985); }
+/* The Space shortcut, shown where there is a keyboard and mouse. */
+.kbd { display: none; padding: 5px 8px 4px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.45); font: 600 12px/1 var(--font-cond); letter-spacing: 0.12em; opacity: 0.85; }
+@media (min-width: 860px) and (hover: hover) and (pointer: fine) {
+  .kbd { display: inline-block; }
+  #clockBtn:disabled .kbd { display: none; }
+}

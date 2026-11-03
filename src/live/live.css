@@ -16,12 +16,14 @@
 .ov { position: absolute; transition: opacity 0.35s ease, transform 0.35s ease, visibility 0s linear 0s; }
 .ov.off { opacity: 0; visibility: hidden; transition: opacity 0.35s ease, transform 0.35s ease, visibility 0s linear 0.35s; }
 .full { left: 0; top: 0; width: 1920px; height: 1080px; }
+.full.off { transform: scale(1.03); }
 .full > img { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; display: block; }
 .per { font: 700 24px/1 'Barlow Condensed', 'Arial Narrow', sans-serif; letter-spacing: 0.06em; color: var(--ov-accent); }
 .sep { width: 2px; height: 26px; flex: none; background: rgba(255, 255, 255, 0.4); }
 .time { font: 400 32px/1 'Anton', Impact, sans-serif; letter-spacing: 0.01em; color: #fff; }
 
-/* pre-game: the site's pre-game screen (/obs/<game>.png), countdown under "SPĒLE SĀKSIES PĒC:" */
+/* pre-game: the site's pre-game screen (/obs/<game>.png), countdown under "SPĒLE SĀKSIES PĒC:"
+   in that line's colour (yellow on Dobele Cup, white on Jelgava's; render.js sets it) */
 .pg-count { position: absolute; left: 773px; top: 711px; width: 600px; text-align: center; font: 400 94px/1 'Anton', Impact, sans-serif; letter-spacing: 0.01em; color: #fff; }
 
 /* corner scorebug */
@@ -111,8 +113,53 @@
 .ht-t { width: 150px; align-self: stretch; flex: none; display: flex; align-items: center; justify-content: center; font: 400 76px/1 'Anton', Impact, sans-serif; }
 .ht-measure { position: absolute; left: 0; top: 0; visibility: hidden; white-space: nowrap; font: 700 44px/1 'Barlow Condensed', 'Arial Narrow', sans-serif; letter-spacing: 0.03em; text-transform: uppercase; }
 
+/* Changing what is on screen (organisers, 3 Nov 2026), 1.5 s:
+     0–0.35 s     the old graphic fades out
+     0–0.87 s     the cup logo spins in at the centre (one and a half turns, slowing
+                  down to face the camera) over a soft dark glow; two rings in the
+                  cup's colours spread out from it
+     1.03–1.48 s  the logo zooms towards the camera and fades
+     1.08–1.43 s  the new graphic comes in (render.js REVEAL_MS) */
+.sting { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; pointer-events: none; visibility: hidden; --st-a: #E1B942; --st-b: #204E99; }
+.sting.go { visibility: visible; }
+.sting > div { position: absolute; left: 960px; top: 540px; }
+.st-glow, .st-ring { opacity: 0; }
+.st-glow { width: 820px; height: 820px; margin: -410px 0 0 -410px; border-radius: 50%; background: radial-gradient(closest-side, rgba(6, 10, 20, 0.6) 0%, rgba(6, 10, 20, 0.32) 50%, rgba(6, 10, 20, 0) 100%); }
+.st-ring { width: 360px; height: 360px; margin: -180px 0 0 -180px; border-radius: 50%; box-sizing: border-box; }
+.st-ring.a { border: 12px solid var(--st-a); }
+.st-ring.b { border: 7px solid var(--st-b); }
+.st-turn { width: 300px; height: 300px; margin: -150px 0 0 -150px; perspective: 1400px; }
+.st-turn img { width: 100%; height: 100%; object-fit: contain; display: block; opacity: 0; filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.45)); }
+.sting.go .st-glow { animation: st-glow 1.5s ease both; }
+.sting.go .st-ring.a { animation: st-ring 0.95s cubic-bezier(0.2, 0.7, 0.2, 1) 0.12s both; }
+.sting.go .st-ring.b { animation: st-ring 0.95s cubic-bezier(0.2, 0.7, 0.2, 1) 0.3s both; }
+.sting.go .st-turn img { animation: st-spin 0.87s cubic-bezier(0.15, 0.6, 0.25, 1) both; }
+.sting.go .st-turn { animation: st-away 0.45s linear 1.03s both; }
+@keyframes st-glow {
+  0%   { opacity: 0; }
+  20%  { opacity: 1; }
+  70%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes st-ring {
+  0%   { opacity: 0; transform: scale(0.55); }
+  15%  { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.9); }
+}
+@keyframes st-spin {
+  0%   { opacity: 0; transform: scale(0.35) rotateY(-540deg); }
+  25%  { opacity: 1; }
+  100% { opacity: 1; transform: scale(1) rotateY(0deg); }
+}
+@keyframes st-away {
+  0%   { opacity: 1; transform: scale(1); filter: blur(0px); }
+  50%  { opacity: 0.55; transform: scale(1.15); filter: blur(2px); }
+  100% { opacity: 0; transform: scale(1.6); filter: blur(8px); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ov, .ov.off, .cn-tab, .bt-tab { transition: none; }
+  .sting { display: none; }
   .tm.rolling .tm-in, .tm.rolling .tm-reel { animation: none; }
   .tm.rolling .tm-roll { visibility: hidden; }
 }
