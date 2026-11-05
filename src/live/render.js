@@ -149,7 +149,9 @@ const LAYERS = `
   <div class="sting" data-sting aria-hidden="true"></div>`;
 
 // Transitions between what is on screen, in the cup's colours and with its logo
-// (organisers, 3–5 Nov 2026). Timings in ms: ms the whole transition, show when
+// (organisers, 3–5 Nov 2026). The admin's Settings pick one per scene
+// (state.transitions.<scene>, the scene being switched to; switching the scorebug
+// layout uses the Scorebug one). Timings in ms: ms the whole transition, show when
 // the new graphic comes in. 'spin' fades the old graphic out first and the new
 // one in over the logo; the others cover the whole picture and swap the graphics
 // while it is covered (cut). Animations in live.css under the same names.
@@ -307,7 +309,7 @@ export function createOverlay(stage, D, now, opts) {
     switchTo(s.scene === 'pregame' ? (preImg ? 'pregame' : 'none')
       : s.scene === 'break' ? 'break'
       : s.scene === 'live' ? (s.layout === 'corner' ? 'corner' : 'bottom')
-      : 'none', cup, s.transition);
+      : 'none', cup, (s.transitions && s.transitions[s.scene]) || s.transition);
 
     /* pre-game screen */
     if (preImg) setSrc(pre.querySelector('[data-img]'), preImg);

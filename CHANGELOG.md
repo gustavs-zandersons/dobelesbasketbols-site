@@ -1,5 +1,21 @@
 # Changelog
 
+## Round 32 — scene transitions to choose from, admin Settings
+
+- Four more transitions between what is on screen, next to the logo spin: **Slash**
+  (slanted bands in the cup colours sweep across), **Iris** (discs grow from the
+  centre, then the picture opens from the middle), **Stripes** (six bars slide in
+  from alternate sides) and **Split** (top and bottom halves slam shut around a
+  logo badge). They cover the whole picture and swap the graphics underneath, so
+  the cut between a full-screen image and the camera doesn't show. All use the
+  cup's colours and logo. `src/live/render.js` (`STINGERS`), `src/live/live.css`.
+- Admin: a settings button (gear) next to **Game setup** opens **Settings**, a white
+  pop-up like Game setup. **Scene transitions**: a transition for each scene
+  (Pre-game, Scorebug, Break, Nothing), played when the stream switches to it;
+  switching Bottom bar ↔ Corner uses the Scorebug one. Saved in the live state
+  (`transitions`), so OBS follows straight away; kept when loading a game or
+  starting a new one. Default: logo spin everywhere.
+
 ## Round 31 — only operators get into the scoreboard admin
 
 - Google sign-in accepts any account, so `/live/admin/` now checks every
