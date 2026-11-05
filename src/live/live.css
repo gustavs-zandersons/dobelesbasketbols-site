@@ -113,16 +113,28 @@
 .ht-t { width: 150px; align-self: stretch; flex: none; display: flex; align-items: center; justify-content: center; font: 400 76px/1 'Anton', Impact, sans-serif; }
 .ht-measure { position: absolute; left: 0; top: 0; visibility: hidden; white-space: nowrap; font: 700 44px/1 'Barlow Condensed', 'Arial Narrow', sans-serif; letter-spacing: 0.03em; text-transform: uppercase; }
 
-/* Changing what is on screen (organisers, 3 Nov 2026), 1.5 s:
+/* ---------- Transitions between what is on screen ----------
+   render.js STINGERS picks one (state.transition); all use the cup's colours
+   (--st-a colour 1, --st-b colour 2, --st-ink dark, --st-hi highlight) and logo.
+   'spin' fades the graphics; the others cover the whole picture and the graphics
+   swap underneath (.ov.cut: no fade or slide). */
+.sting { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden; pointer-events: none; visibility: hidden;
+         --st-a: #E1B942; --st-b: #204E99; --st-ink: #14284D; --st-hi: #E1B942; }
+.sting.go { visibility: visible; }
+.sting > div { position: absolute; }
+.ov.cut, .ov.cut.off { transition: none; }
+.sx-logo { left: 960px; top: 540px; width: 300px; height: 300px; margin: -150px 0 0 -150px; opacity: 0; }
+.sx-logo img, .spl-badge img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.sx-logo img { filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.35)); }
+
+/* Logo spin (organisers, 3 Nov 2026), 1.5 s:
      0–0.35 s     the old graphic fades out
      0–0.87 s     the cup logo spins in at the centre (one and a half turns, slowing
                   down to face the camera) over a soft dark glow; two rings in the
                   cup's colours spread out from it
      1.03–1.48 s  the logo zooms towards the camera and fades
-     1.08–1.43 s  the new graphic comes in (render.js REVEAL_MS) */
-.sting { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; pointer-events: none; visibility: hidden; --st-a: #E1B942; --st-b: #204E99; }
-.sting.go { visibility: visible; }
-.sting > div { position: absolute; left: 960px; top: 540px; }
+     1.08–1.43 s  the new graphic comes in */
+.sting[data-kind="spin"] > div { left: 960px; top: 540px; }
 .st-glow, .st-ring { opacity: 0; }
 .st-glow { width: 820px; height: 820px; margin: -410px 0 0 -410px; border-radius: 50%; background: radial-gradient(closest-side, rgba(6, 10, 20, 0.6) 0%, rgba(6, 10, 20, 0.32) 50%, rgba(6, 10, 20, 0) 100%); }
 .st-ring { width: 360px; height: 360px; margin: -180px 0 0 -180px; border-radius: 50%; box-sizing: border-box; }
@@ -155,6 +167,128 @@
   0%   { opacity: 1; transform: scale(1); filter: blur(0px); }
   50%  { opacity: 0.55; transform: scale(1.15); filter: blur(2px); }
   100% { opacity: 0; transform: scale(1.6); filter: blur(8px); }
+}
+
+/* Slash, 1.4 s:
+     0–0.54 s     three slanted bands (colour 1, colour 2, then the dark one) sweep
+                  in from the left one after another and cover the picture
+     0.48–0.66 s  the logo slides in on the dark band; 0.56 s the graphics swap
+     0.8–0.92 s   the logo slides on out to the right
+     0.86–1.38 s  the bands sweep on out to the right, dark one first */
+.sl-in { left: -260px; top: 0; width: 2440px; height: 1080px; transform: translateX(-2800px); }
+.sl-band { width: 100%; height: 100%; transform: translateX(0) skewX(-18deg); }
+.sl-in.a .sl-band { background: var(--st-a); }
+.sl-in.b .sl-band { background: var(--st-b); }
+.sl-in.c .sl-band { background: linear-gradient(100deg, rgba(255, 255, 255, 0) 38%, rgba(255, 255, 255, 0.07) 50%, rgba(255, 255, 255, 0) 62%), var(--st-ink); }
+.sting.go .sl-in { animation: sl-in 0.4s cubic-bezier(0.76, 0, 0.24, 1) both; }
+.sting.go .sl-in.b { animation-delay: 0.07s; }
+.sting.go .sl-in.c { animation-delay: 0.14s; }
+.sting.go .sl-band { animation: sl-out 0.38s cubic-bezier(0.76, 0, 0.24, 1) both; }
+.sting.go .sl-in.c .sl-band { animation-delay: 0.86s; }
+.sting.go .sl-in.b .sl-band { animation-delay: 0.93s; }
+.sting.go .sl-in.a .sl-band { animation-delay: 1s; }
+.sting[data-kind="slash"].go .sx-logo { animation: sl-logo 1.4s linear both; }
+@keyframes sl-in { from { transform: translateX(-2800px); } to { transform: translateX(0); } }
+@keyframes sl-out { from { transform: translateX(0) skewX(-18deg); } to { transform: translateX(2800px) skewX(-18deg); } }
+@keyframes sl-logo {
+  0%, 34%   { opacity: 0; transform: translateX(-140px) scale(0.92); animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+  47%, 57%  { opacity: 1; transform: translateX(0) scale(1); }
+  57%       { animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.4); }
+  66%, 100% { opacity: 0; transform: translateX(180px) scale(1); }
+}
+
+/* Iris, 1.4 s:
+     0–0.53 s     a disc in colour 1, then one in colour 2, grow from the centre and
+                  cover the picture
+     0.42–0.67 s  the logo pops in the middle; 0.56 s the graphics swap
+     0.76–0.9 s   the logo shrinks into the centre
+     0.9–1.38 s   the picture opens out from the centre, colour 2 first, so a ring
+                  of colour 1 runs around the opening */
+.ir { left: 960px; top: 540px; width: 2400px; height: 2400px; margin: -1200px 0 0 -1200px; border-radius: 50%; box-sizing: border-box; border: 1200px solid var(--st-a); transform: scale(0); }
+.ir.b { border-color: var(--st-b); }
+.sting.go .ir { animation: ir-grow 0.45s cubic-bezier(0.7, 0, 0.3, 1) both, ir-open 0.4s cubic-bezier(0.6, 0, 0.3, 1) 0.98s both; }
+.sting.go .ir.b { animation-delay: 0.08s, 0.9s; }
+.sting[data-kind="iris"].go .sx-logo, .sting[data-kind="stripes"].go .sx-logo { animation: sx-pop 1.4s linear both; }
+@keyframes ir-grow { from { transform: scale(0); } to { transform: scale(1); } }
+@keyframes ir-open { from { border-width: 1200px; } to { border-width: 0px; } }
+@keyframes sx-pop {
+  0%, 30%   { opacity: 0; transform: scale(0.4); animation-timing-function: cubic-bezier(0.3, 1.5, 0.6, 1); }
+  48%       { opacity: 1; transform: scale(1); }
+  54%       { opacity: 1; transform: scale(1); animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.5); }
+  64%, 100% { opacity: 0; transform: scale(0.2); }
+}
+
+/* Stripes, 1.4 s:
+     0–0.54 s     six dark bars, each with an edge in the cup's highlight colour,
+                  slide in from alternate sides one after another and cover the picture
+     0.42–0.67 s  the logo pops in the middle; 0.56 s the graphics swap
+     0.76–0.9 s   the logo shrinks away
+     0.88–1.4 s   the bars slide on out the far side, in the same order */
+.sp { left: -24px; width: 1968px; height: 181px; }
+.sp.l { transform: translateX(-2100px); }
+.sp.r { transform: translateX(2100px); }
+.sp-bar { width: 100%; height: 100%; background-color: var(--st-ink); }
+.sp.l .sp-bar { box-shadow: inset -16px 0 0 var(--st-hi); }
+.sp.r .sp-bar { box-shadow: inset 16px 0 0 var(--st-hi); background-image: linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05)); }
+.sting.go .sp { animation: sp-in-l 0.36s cubic-bezier(0.7, 0, 0.3, 1) calc(var(--i) * 35ms) both; }
+.sting.go .sp.r { animation-name: sp-in-r; }
+.sting.go .sp-bar { animation: sp-out-l 0.34s cubic-bezier(0.7, 0, 0.3, 1) calc(0.88s + var(--i) * 35ms) both; }
+.sting.go .sp.r .sp-bar { animation-name: sp-out-r; }
+@keyframes sp-in-l { from { transform: translateX(-2100px); } to { transform: translateX(0); } }
+@keyframes sp-in-r { from { transform: translateX(2100px); } to { transform: translateX(0); } }
+@keyframes sp-out-l { from { transform: translateX(0); } to { transform: translateX(2100px); } }
+@keyframes sp-out-r { from { transform: translateX(0); } to { transform: translateX(-2100px); } }
+
+/* Split, 1.3 s:
+     0–0.36 s     the top half of the picture in colour 1 and the bottom half in
+                  colour 2 slam shut on a slanted seam, with a jolt and a white
+                  flash along the seam
+     0.36–0.59 s  a round badge with the logo pops on the seam; 0.42 s the graphics swap
+     0.78–0.88 s  the badge shrinks away
+     0.84–1.26 s  the halves open again */
+.spl-shake { left: 0; top: 0; width: 1920px; height: 1080px; }
+.spl-half, .spl-seam { position: absolute; }
+.spl-half { left: 0; top: 0; width: 1920px; height: 1080px; }
+.spl-half.top { background: var(--st-a); clip-path: polygon(0 0, 100% 0, 100% 44%, 0 56%); transform: translateY(-700px); }
+.spl-half.bot { background: var(--st-b); clip-path: polygon(0 56%, 100% 44%, 100% 100%, 0 100%); transform: translateY(700px); }
+.spl-seam { left: -40px; top: 536px; width: 2000px; height: 8px; background: #FFFFFF; transform: rotate(-3.87deg) scaleX(0); }
+.spl-badge { left: 960px; top: 540px; width: 340px; height: 340px; margin: -170px 0 0 -170px; padding: 46px; box-sizing: border-box; border-radius: 50%;
+             background: var(--st-ink); box-shadow: 0 0 0 8px #FFFFFF, 0 18px 40px rgba(0, 0, 0, 0.35); transform: scale(0); }
+.sting.go .spl-half.top { animation: spl-top 1.3s linear both; }
+.sting.go .spl-half.bot { animation: spl-bot 1.3s linear both; }
+.sting.go .spl-shake { animation: spl-shake 0.24s linear 0.36s both; }
+.sting.go .spl-seam { animation: spl-seam 1.3s linear both; }
+.sting.go .spl-badge { animation: spl-badge 1.3s linear both; }
+@keyframes spl-top {
+  0%        { transform: translateY(-700px); animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.4); }
+  27.7%     { transform: translateY(0); }
+  64.6%     { transform: translateY(0); animation-timing-function: cubic-bezier(0.6, 0, 0.2, 1); }
+  97%, 100% { transform: translateY(-700px); }
+}
+@keyframes spl-bot {
+  0%        { transform: translateY(700px); animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.4); }
+  27.7%     { transform: translateY(0); }
+  64.6%     { transform: translateY(0); animation-timing-function: cubic-bezier(0.6, 0, 0.2, 1); }
+  97%, 100% { transform: translateY(700px); }
+}
+@keyframes spl-shake {
+  0%   { transform: translateY(0); }
+  25%  { transform: translateY(10px); }
+  50%  { transform: translateY(-6px); }
+  75%  { transform: translateY(3px); }
+  100% { transform: translateY(0); }
+}
+@keyframes spl-seam {
+  0%, 27.7% { opacity: 1; transform: rotate(-3.87deg) scaleX(0); animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+  36%       { opacity: 1; transform: rotate(-3.87deg) scaleX(1); }
+  60%       { opacity: 1; transform: rotate(-3.87deg) scaleX(1); }
+  66%, 100% { opacity: 0; transform: rotate(-3.87deg) scaleX(1); }
+}
+@keyframes spl-badge {
+  0%, 27.7% { transform: scale(0); animation-timing-function: cubic-bezier(0.3, 1.6, 0.5, 1); }
+  45%       { transform: scale(1); }
+  60%       { transform: scale(1); animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.5); }
+  68%, 100% { transform: scale(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {

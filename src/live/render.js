@@ -146,18 +146,40 @@ const LAYERS = `
     </div>
   </div>
 
-  <div class="sting" data-sting aria-hidden="true">
-    <div class="st-glow"></div>
-    <div class="st-ring a"></div>
-    <div class="st-ring b"></div>
-    <div class="st-turn"><img data-sting-logo alt=""></div>
-  </div>`;
+  <div class="sting" data-sting aria-hidden="true"></div>`;
 
-// Changing what is on screen (organisers, 3 Nov 2026): the old graphic leaves, the
-// cup's logo spins in at the centre of the picture with two rings in the cup's
-// colours, then it zooms away as the new graphic comes in (timings in live.css).
-const STING_MS = 1500;      // the whole transition
-const REVEAL_MS = 1080;     // the new graphic starts coming in
+// Transitions between what is on screen, in the cup's colours and with its logo
+// (organisers, 3–5 Nov 2026). Timings in ms: ms the whole transition, show when
+// the new graphic comes in. 'spin' fades the old graphic out first and the new
+// one in over the logo; the others cover the whole picture and swap the graphics
+// while it is covered (cut). Animations in live.css under the same names.
+const LOGO = '<div class="sx-logo"><img data-sting-logo alt=""></div>';
+const STRIPES = 6;
+export const STINGERS = {
+  spin: {
+    name: 'Logo spin', ms: 1500, show: 1080, cut: false,
+    html: '<div class="st-glow"></div><div class="st-ring a"></div><div class="st-ring b"></div><div class="st-turn"><img data-sting-logo alt=""></div>'
+  },
+  slash: {
+    name: 'Slash', ms: 1400, show: 560, cut: true,
+    html: ['a', 'b', 'c'].map((k) => '<div class="sl-in ' + k + '"><div class="sl-band"></div></div>').join('') + LOGO
+  },
+  iris: {
+    name: 'Iris', ms: 1400, show: 560, cut: true,
+    html: '<div class="ir a"></div><div class="ir b"></div>' + LOGO
+  },
+  stripes: {
+    name: 'Stripes', ms: 1400, show: 560, cut: true,
+    html: Array.from({ length: STRIPES }, (_, i) =>
+      '<div class="sp ' + (i % 2 ? 'r' : 'l') + '" style="top:' + (i * 180) + 'px;--i:' + i + '"><div class="sp-bar"></div></div>').join('') + LOGO
+  },
+  split: {
+    name: 'Split', ms: 1300, show: 420, cut: true,
+    html: '<div class="spl-shake"><div class="spl-half top"></div><div class="spl-half bot"></div><div class="spl-seam"></div></div>'
+      + '<div class="spl-badge"><img data-sting-logo alt=""></div>'
+  },
+};
+export const DEFAULT_STINGER = 'spin';
 
 // stage: a 1920×1080 element; D: the page's data (teams, cups, games, images);
 // now: the shared clock (Firebase server time). Returns { update(state), tick(clockMs, countdownMs) }.
@@ -180,28 +202,37 @@ export function createOverlay(stage, D, now, opts) {
   let want = null, revealTimer = 0, stingTimer = 0;
   const calm = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
-  function showLayer(k) {
+  // cut: swap without the graphics' own fade and slide (the picture is covered).
+  function showLayer(k, cut) {
     shown = k;
+    const els = Object.keys(layers).map((key) => layers[key]);
+    if (cut) els.forEach((el) => el.classList.add('cut'));
     Object.keys(layers).forEach((key) => layers[key].classList.toggle('off', key !== k));
+    if (cut) { void stage.offsetWidth; setTimeout(() => els.forEach((el) => el.classList.remove('cut')), 60); }
   }
   // The first state after the page opens is shown straight away; every change
-  // after that goes through the cup logo. A change while the logo is on screen
-  // just picks what comes in after it.
-  function switchTo(k, cup) {
+  // after that goes through the transition. A change while one is playing just
+  // picks what comes in at its end.
+  function switchTo(k, cup, kind) {
     if (k === want) return;
     want = k;
     if (shown === null || calm()) { clearTimeout(revealTimer); revealTimer = 0; showLayer(k); return; }
     if (revealTimer) return;
-    showLayer('none');
-    setSrc(sting.querySelector('[data-sting-logo]'), cup.logo);
+    const st = STINGERS[kind] || STINGERS[DEFAULT_STINGER];
+    const name = STINGERS[kind] ? kind : DEFAULT_STINGER;
+    if (sting.dataset.kind !== name) { sting.innerHTML = st.html; sting.dataset.kind = name; }
+    sting.querySelectorAll('[data-sting-logo]').forEach((img) => setSrc(img, cup.logo));
     sting.style.setProperty('--st-a', cup.c1);
     sting.style.setProperty('--st-b', cup.c2);
+    sting.style.setProperty('--st-ink', cup.ink);
+    sting.style.setProperty('--st-hi', cup.accent);
+    if (!st.cut) showLayer('none');
     sting.classList.remove('go');
     void sting.offsetWidth;          // restart the animation
     sting.classList.add('go');
     clearTimeout(stingTimer);
-    stingTimer = setTimeout(() => sting.classList.remove('go'), STING_MS + 50);
-    revealTimer = setTimeout(() => { revealTimer = 0; showLayer(want); }, REVEAL_MS);
+    stingTimer = setTimeout(() => sting.classList.remove('go'), st.ms + 50);
+    revealTimer = setTimeout(() => { revealTimer = 0; showLayer(want, st.cut); }, st.show);
   }
 
   // The full-screen images are large: fetch them before they are needed.
@@ -276,7 +307,7 @@ export function createOverlay(stage, D, now, opts) {
     switchTo(s.scene === 'pregame' ? (preImg ? 'pregame' : 'none')
       : s.scene === 'break' ? 'break'
       : s.scene === 'live' ? (s.layout === 'corner' ? 'corner' : 'bottom')
-      : 'none', cup);
+      : 'none', cup, s.transition);
 
     /* pre-game screen */
     if (preImg) setSrc(pre.querySelector('[data-img]'), preImg);
