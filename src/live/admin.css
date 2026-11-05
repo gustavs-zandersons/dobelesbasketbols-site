@@ -66,6 +66,9 @@ button:disabled { cursor: default; }
 .status[data-state="test"]::before { background: var(--warn); }
 .game-row { display: flex; align-items: center; gap: 12px; }
 .game-text { flex: 1; min-width: 0; }
+.game-actions { display: flex; gap: 8px; flex: none; }
+.btn.icon { width: 48px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+.btn.icon svg { display: block; }
 .game-title { margin: 0; font: 700 26px/1.05 var(--font-cond); letter-spacing: 0.02em; text-transform: uppercase; text-wrap: balance; }
 .game-meta { color: var(--muted); font-size: 14px; }
 
@@ -229,6 +232,13 @@ button:disabled { cursor: default; }
 .setup-head h2 { margin: 0; font: 700 22px/1.1 var(--font-cond); letter-spacing: 0.04em; text-transform: uppercase; }
 .setup-body { display: flex; flex-direction: column; gap: 14px; padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
 .setup-body hr { width: 100%; margin: 2px 0; border: 0; border-top: 1px solid var(--line); }
+/* Settings → Scene transitions: scene name, then its transition */
+.trans { display: flex; flex-direction: column; gap: 10px; }
+.trans h3 { margin: 0; font: 700 17px/1.1 var(--font-cond); letter-spacing: 0.06em; text-transform: uppercase; }
+.trans-list { display: flex; flex-direction: column; }
+.trans-row { display: grid; grid-template-columns: minmax(84px, 2fr) minmax(0, 3fr); align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.trans-row:last-child { border-bottom: 1px solid var(--line); }
+.trans-row label { font: 700 18px/1.1 var(--font-cond); letter-spacing: 0.03em; text-transform: uppercase; }
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field label, .field .lbl { font: 700 13px/1 var(--font-cond); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
 select {

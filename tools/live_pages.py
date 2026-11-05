@@ -45,7 +45,12 @@ ADMIN_BODY = """
       <h1 class="game-title" id="gameTitle"></h1>
       <div class="game-meta" id="gameMeta"></div>
     </div>
-    <button class="btn" type="button" id="setupBtn" aria-haspopup="dialog" aria-controls="setup" hidden>Game setup</button>
+    <div class="game-actions">
+      <button class="btn" type="button" id="setupBtn" aria-haspopup="dialog" aria-controls="setup" hidden>Game setup</button>
+      <button class="btn icon" type="button" id="settingsBtn" aria-haspopup="dialog" aria-controls="settings" aria-label="Settings" title="Settings" hidden>
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
   </div>
 </header>
 
@@ -198,6 +203,25 @@ ADMIN_BODY = """
       <span class="lbl">OBS: Browser source, 1920 × 1080</span>
       <div class="copy-row"><code id="obsUrl"></code><button class="btn" type="button" id="copyObs">Copy</button></div>
     </div>
+  </div>
+</dialog>
+
+<dialog class="setup" id="settings" aria-labelledby="hSettings">
+  <div class="setup-head">
+    <h2 id="hSettings">Settings</h2>
+    <button class="btn small" type="button" id="settingsClose">Close</button>
+  </div>
+  <div class="setup-body">
+    <section class="trans" aria-labelledby="hTrans">
+      <h3 id="hTrans">Scene transitions</h3>
+      <p class="note">The transition that plays when the stream switches to each scene. A change reaches OBS straight away and stays for the next games. Switching the scorebug between Bottom bar and Corner uses the Scorebug one.</p>
+      <div class="trans-list">
+        <div class="trans-row"><label for="trPregame">Pre-game</label><select id="trPregame" data-trans="pregame"></select></div>
+        <div class="trans-row"><label for="trLive">Scorebug</label><select id="trLive" data-trans="live"></select></div>
+        <div class="trans-row"><label for="trBreak">Break</label><select id="trBreak" data-trans="break"></select></div>
+        <div class="trans-row"><label for="trOff">Nothing</label><select id="trOff" data-trans="off"></select></div>
+      </div>
+    </section>
   </div>
 </dialog>
 

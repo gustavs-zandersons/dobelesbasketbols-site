@@ -36,9 +36,21 @@ function gameMeta(g) {
 /* ---------- State ---------- */
 // A game loaded from the schedule always starts on the pre-game screen with the
 // bottom bar as its scorebug; "New game" keeps the teams and the layout.
+// Settings → Scene transitions: which transition plays when the stream switches
+// to each scene. A setting, so loading a game or starting a new one keeps it.
+const SCENE_KEYS = ['pregame', 'live', 'break', 'off'];
+function transitionsOf(s) {
+  const t = {};
+  SCENE_KEYS.forEach((k) => {
+    const v = s && s.transitions && s.transitions[k];
+    t[k] = R.STINGERS[v] ? v : R.DEFAULT_STINGER;
+  });
+  return t;
+}
 function freshState(g, keep) {
   const base = keep || {};
   return {
+    transitions: transitionsOf(keep || S),
     v: 2, gameId: g ? g.id : (base.gameId || null),
     cup: g ? g.comp : base.cup, home: g ? g.home : base.home, away: g ? g.away : base.away,
     score: [0, 0], byPeriod: [[0, 0]], period: 1,
@@ -51,7 +63,7 @@ function freshState(g, keep) {
   };
 }
 // Fill the optional fields the database leaves out.
-const normal = (s) => Object.assign({ gameId: null, flash: null, back: null, meta: '', layout: 'bottom', startAt: 0 }, s);
+const normal = (s) => Object.assign({ gameId: null, flash: null, back: null, meta: '', layout: 'bottom', startAt: 0 }, s, { transitions: transitionsOf(s) });
 
 let S = null;
 try {
@@ -325,6 +337,9 @@ function render(s) {
   $('homeSel').value = s.home;
   $('awaySel').value = s.away;
 
+  // settings
+  document.querySelectorAll('[data-trans]').forEach((sel) => { sel.value = s.transitions[sel.dataset.trans]; });
+
   // what to do next
   let msg = '';
   if (over && s.period === 2 && s.scene !== 'break') msg = 'Q2 is over. Show the break screen with the halftime score?';
@@ -390,14 +405,14 @@ document.querySelectorAll('[data-nudge]').forEach((b) => {
 });
 
 // Space starts and stops the clock (a computer or a tablet with a keyboard).
-// Not while typing a time or with Game setup open; and Space never presses the
+// Not while typing a time or with a pop-up open; and Space never presses the
 // last tapped button (a +2 again), the browser's default for a focused button.
 function spaceKey(e) {
   if (e.code !== 'Space' && e.key !== ' ') return false;
   if (e.ctrlKey || e.metaKey || e.altKey) return false;
   const t = e.target;
   if (t && t.closest && t.closest('input, textarea, select, [contenteditable="true"]')) return false;
-  if (setup.open || $('app').hidden) return false;
+  if (setup.open || settings.open || $('app').hidden) return false;
   return true;
 }
 document.addEventListener('keydown', (e) => {
@@ -490,6 +505,23 @@ $('setupBtn').addEventListener('click', openSetup);
 $('setupClose').addEventListener('click', closeSetup);
 setup.addEventListener('click', (e) => { if (e.target === setup) closeSetup(); });   // a tap outside the window
 
+/* ---------- Settings pop-up: a transition for each scene ---------- */
+const settings = $('settings');
+document.querySelectorAll('[data-trans]').forEach((sel) => {
+  Object.keys(R.STINGERS).forEach((k) => {
+    const o = document.createElement('option');
+    o.value = k; o.textContent = R.STINGERS[k].name;
+    sel.appendChild(o);
+  });
+  sel.value = S.transitions[sel.dataset.trans];
+  sel.addEventListener('change', () => act((n) => { n.transitions = Object.assign(transitionsOf(n), { [sel.dataset.trans]: sel.value }); }));
+});
+function openSettings() { if (settings.showModal) settings.showModal(); else settings.setAttribute('open', ''); }
+function closeSettings() { if (settings.close) settings.close(); else settings.removeAttribute('open'); }
+$('settingsBtn').addEventListener('click', openSettings);
+$('settingsClose').addEventListener('click', closeSettings);
+settings.addEventListener('click', (e) => { if (e.target === settings) closeSettings(); });
+
 $('homeSel').addEventListener('change', (e) => act((n) => { n.home = e.target.value; checkGame(n); }));
 $('awaySel').addEventListener('change', (e) => act((n) => { n.away = e.target.value; checkGame(n); }));
 $('swapBtn').addEventListener('click', () => {
@@ -522,6 +554,7 @@ function showApp(show) {
   $('app').hidden = !show;
   $('clockbar').hidden = !show;
   $('setupBtn').hidden = !show;
+  $('settingsBtn').hidden = !show;
   $('signin').hidden = show;
   document.body.classList.toggle('gate', !show);
   if (show) { fitStage(); overlay.update(S); }
@@ -561,6 +594,7 @@ function signInError(e) {
       mode = 'signin';
       setStatus('', 'Signed out');
       closeSetup();
+      closeSettings();
       showApp(false);
       gate('signin');
       return;
@@ -616,6 +650,7 @@ function reject(u) {
   checkId++;
   mode = 'signin';
   closeSetup();
+  closeSettings();
   showApp(false);
   gate('signin');
   setStatus('', 'Signed out');
