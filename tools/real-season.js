@@ -143,6 +143,7 @@ SHEET.calendar.forEach(row => {
   const g = { id: row.id.toLowerCase(), sheetId: row.id, comp: row.cup, stage: st, date: row.date, time: row.time, venue: row.hall || null, home: row.home, away: row.away };
   if (row.tie) { g.tie = row.tie; g.n = row.n || 1; }
   if (row.status === 'Ja vajag') g.ifNeeded = true;
+  if (row.yt) g.yt = row.yt;            // the game's YouTube stream (Kalendārs → YouTube saite)
   const [rid, rstage, rlabel] = roundOf(row);
   g.round = rid;
   if (!rounds.has(rid)) rounds.set(rid, { id: rid, comp: row.cup, stage: rstage, label: rlabel, date: null });

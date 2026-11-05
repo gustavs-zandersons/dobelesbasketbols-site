@@ -1,5 +1,261 @@
 # Changelog
 
+## Round 32 — scene transitions to choose from, admin Settings
+
+- Four more transitions between what is on screen, next to the logo spin: **Slash**
+  (slanted bands in the cup colours sweep across), **Iris** (discs grow from the
+  centre, then the picture opens from the middle), **Stripes** (six bars slide in
+  from alternate sides) and **Split** (top and bottom halves slam shut around a
+  logo badge). They cover the whole picture and swap the graphics underneath, so
+  the cut between a full-screen image and the camera doesn't show. All use the
+  cup's colours and logo. `src/live/render.js` (`STINGERS`), `src/live/live.css`.
+- Admin: a settings button (gear) next to **Game setup** opens **Settings**, a white
+  pop-up like Game setup. **Scene transitions**: a transition for each scene
+  (Pre-game, Scorebug, Break, Nothing), played when the stream switches to it;
+  switching Bottom bar ↔ Corner uses the Scorebug one. Saved in the live state
+  (`transitions`), so OBS follows straight away; kept when loading a game or
+  starting a new one. Default: logo spin everywhere.
+
+## Round 31 — only operators get into the scoreboard admin
+
+- Google sign-in accepts any account, so `/live/admin/` now checks every
+  sign-in (and every visit while signed in) against the database rules before
+  the controls show: a write that changes nothing (`live/state/v`, always 2)
+  goes through for the accounts in the rules and is refused for others. The
+  database rules stay the only list of operators.
+- An account that isn't in the rules sees "This Google account (…) is not on
+  the list of scoreboard operators" and is removed from Firebase Authentication
+  again (or just signed out, when Firebase wants a fresh sign-in for that).
+- An operator taken out of the rules while signed in is signed out at their
+  next tap. With no connection the check lets the operator in after 8 s; the
+  rules still guard every change.
+  `src/live/sync.js` (`canWrite`, `removeUser`), `src/live/admin.js` (`checkAccess`).
+
+## Round 30 — scoreboard admin layout, scene transition
+
+Organisers' fixes after the first games, 3 Nov 2026.
+
+- **Admin layout.** Computer: the stream preview as large as possible with the
+  on-screen buttons in a column on its right; below, the score on the left, the
+  Clock and Quarter cards stacked on the right. Phone: score, clock, quarter.
+  Sign out top right; **Game setup** opens as a white pop-up from the header
+  (game from the schedule, teams, swap sides, new game, OBS address).
+- **Score:** solid +1/+2/+3 in the team's colour; a dark header like the bottom
+  bar (logo on the outer side, name, score box towards the middle, mirrored for
+  the right team); the −1 fix outlined in the team's colour. No undo, no score by
+  quarter on the admin.
+- **Clock card:** −1/−5/−15 s and +1/+5/+15 s (between 0 and the quarter's
+  length; a running clock keeps running), Set time. **Space** starts and stops
+  the clock on a computer (not while typing a time or with Game setup open; it
+  never presses the last tapped button).
+- **Quarter card:** the current quarter large, **Previous** and **Next**. Both
+  ask for a second tap; Previous straight after Next undoes it in one (quarter,
+  clock and screen put back).
+- **Game setup** lists this week's games (Monday to Sunday, by the device's
+  date) and later ones. Loading a game sets its cup's colours (the cup switch
+  is gone) and the bottom bar as the scorebug (Corner stays one tap away).
+- **Overlay:** the pre-game countdown in the colour of "SPĒLE SĀKSIES PĒC:"
+  (yellow on Dobele Cup, white on Jelgava's). Changing what is on screen goes
+  through the cup's logo: the old graphic fades, the logo spins in at the centre
+  with two rings in the cup's colours, then zooms away as the new graphic comes
+  in (1.5 s). `src/live/render.js` (`switchTo`), `src/live/live.css` (`.sting`).
+
+## Round 29 — score roll on the scorebug
+
+- When a team scores, its name panel on the scorebug (corner and bottom bar)
+  animates: logo and name fade out, the team's logo at the panel's full width
+  rolls up through the panel and out of the top, then logo and name fade back
+  in (about 1.6 s). The score box keeps its white flash and the +N tab.
+  `src/live/render.js` (`roll`), `src/live/live.css` (`.tm`, `tm-fade`, `tm-roll`).
+
+## Round 28 — live scoreboard for the streams
+
+- **`/live/overlay/`** — one OBS browser source (1920 × 1080, transparent) for the
+  whole stream, in place of a PNG per game plus the OBS timer. It shows what the
+  operator picks:
+  - **Pre-game:** the game's pre-game screen (`/obs/<game id>.png`) with a live
+    countdown under "SPĒLE SĀKSIES PĒC:".
+  - **Scorebug:** the stacked corner scorebug or the bottom-centre bar, in the
+    cup's colours, with the quarter and game clock; a "+2 / +3" tab when a team scores.
+  - **Break:** the cup's PĀRTRAUKUMS screen with the score by quarter between
+    the title and the sponsors (Q1–Q2 at half-time, every quarter so far at other breaks).
+  - **Nothing.**
+- **`/live/admin/`** — the operator's controls, built for a phone (tablet too):
+  pick the game from the schedule, +1/+2/+3, −1 fix, undo, start/stop clock
+  (10-minute quarters, 5-minute overtimes, tenths in the last minute), ±1 s,
+  set time, next quarter, the countdown (schedule time or in 5/10/15/30 min),
+  layout, swap sides. The screen stays awake. Starting the clock switches to the
+  scorebug; the Break button lights up when a quarter ends.
+- The two are linked through Firebase's Realtime Database; only Google accounts
+  allowed in the database rules can change the score. Settings in
+  `src/live/config.js` — until they are filled in, the admin runs in test mode on
+  its device and the overlay shows a sample scorebug.
+- Both pages are kept out of the menu, the sitemap and search results, like
+  `/obs/`. Checks: `tools/check.js` section 11.
+
+## Round 27 — YouTube stream on finished games
+
+- **Result cards** ("Iepriekšējās kārtas rezultāti"): a YouTube mark top right,
+  in line with the stage name and the scores, when the game has a stream. Only a
+  sign — the card still opens the game page.
+- **Game page:** white **Spēles tiešraide** button under the date and hall; opens
+  the stream on YouTube in a new tab. Shown on both cups' colours.
+- The link comes from Kalendārs → **YouTube saite** (filled by the sheet script).
+  The importer reads it (`yt` in `src/sheet.json`); a link that isn't a YouTube
+  link is reported as a warning and not shown. The season template has the column
+  last, where the script keeps it.
+
+## Round 26 — new update times
+
+- Automatic "Atjaunot datus no tabulas" runs: Monday–Saturday once at 12:00,
+  Sundays every 15 minutes from 09:00 to 18:00 (Riga winter time; GitHub's
+  schedule is in UTC, so in summer time each run is an hour later).
+
+## Round 25 — automatic data updates switched on
+
+- "Atjaunot datus no tabulas" now also runs on its own: every 3 hours every
+  day, and every 30 minutes on Sundays 09:00–19:30 UTC (11:00–21:30 Riga winter
+  time). The manual button still works for an instant update. A run with no
+  changes publishes nothing; a run that finds sheet errors changes nothing and
+  GitHub emails about it.
+
+## Round 24 — YouTube streams: auto-start off
+
+- Sheet script (`apps-script/youtube.gs`): new streams are created with
+  **auto-start off** (auto-stop stays on), as the organisers asked on 30 Oct —
+  OBS streaming puts the stream in preview, the operator clicks **Go Live**.
+  Upcoming streams that already exist are switched on the next run (their other
+  settings — DVR, latency, embedding — are sent back unchanged). Live or finished
+  streams are never touched. Settings in `CONFIG.AUTO_START` / `AUTO_STOP`.
+
+## Round 23 — OBS half-time screens
+
+- `Poster.renderBreak`: last season's "PĀRTRAUKUMS" screen, one per cup —
+  frame darkened like the pre-game overlay (60 %), the cup's round logo top left,
+  PĀRTRAUKUMS top right (positions from last season's image), and the same
+  sponsor band as the pre-game overlay (shared `sponsorBand`, so switching
+  screens in OBS doesn't make the band jump).
+- `/obs/` lists both at the bottom ("Pārtraukums", always there):
+  `/obs/partraukums-dobele.png`, `/obs/partraukums-jelgava.png`. Rebuilt with
+  every site update, so a sponsor change reaches them too.
+
+## Round 22 — OBS pre-game overlays + the operator's page; new Jelgava vertical logo
+
+- **Overlay:** `Poster.renderOverlay` (src/poster.js) — the organisers' Photoshop
+  "Pregame overlay" (positions, sizes, colours read from the PSD): 1920×1080 PNG,
+  the frame darkened with #020202 at 60 % (Photoshop had 90 %; organisers chose
+  60 % on 29 Oct) so the camera shows through, the cup's vertical logo, TIEŠRAIDE
+  top right, team logos with PRET, "SPĒLE SĀKSIES PĒC:" (yellow / white for
+  Jelgava) with room for OBS's own countdown, sponsors on the thumbnails' jagged
+  white band. Anton stands in for Impact.
+- **Operator's page `/obs/`** (tools/obs_page.py): not in the menu, sitemap or
+  search (noindex). Shows the coming game day (picked in the browser by date,
+  plus any other game day within 6 days) with each game's overlay, a PNG
+  download (`2026-11-01_11-00_lietus-spriditis.png`) and a ZIP per game day;
+  "Rādīt visas nākamās spēles" shows the rest. Overlays and ZIPs are made by
+  every build for each upcoming game whose teams are known (`dist/obs/`).
+- **Jelgava vertical logo** replaced (round court emblem; original in
+  `design/youtube/jssc-vertikals.png`) — used by thumbnails and overlays.
+- `check.js`: /obs/ kept out of search and the sitemap, its links exist, one
+  1920×1080 transparent PNG per game with known teams.
+
+## Round 21 — season years in YouTube titles
+
+- YouTube titles and descriptions name the season as in the rules: "2026./2027. gada
+  Dobeles basketbola čempionu kauss" / "2026./2027. gada JSSC Izaicinājuma kauss"
+  (was "2026. gada"). Longest real title 89 characters; all stages still fit within
+  YouTube's 100 with the game number. Streams already created are updated on the
+  sheet script's next run (no manual edits).
+
+## Round 20 — YouTube streams (feed + thumbnails + sheet script)
+
+- **YouTube feed:** every build writes `dist/youtube/speles.json` — each game not
+  played yet with its start time (UTC), YouTube title and description (rules agreed
+  28 Oct: `home short - away short | 2026. gada <cup> - <stage>`, game number for
+  two-game ties and best-of-3 only while ≤ 100 characters; Jelgava cup as "JSSC
+  Izaicinājuma kauss"; "Dobeles čempionu kauss" if still too long), playlist,
+  whether both teams are known (slot codes resolved by the engine) and whether a
+  "Ja vajag" game is needed. Built by `tools/youtube_feed.js` inside the
+  pre-render browser, so it matches the site.
+- **Thumbnails:** `dist/youtube/<game id>.jpg`, 1920×1080 (laid out at 1280×720),
+  for every game whose teams are known — `Poster.renderThumb` in `src/poster.js`,
+  last season's "TIEŠRAIDE" card reworked with the organisers: dark concrete
+  background (`assets/youtube/fons.jpg`), the cup's vertical logo on the left
+  (`assets/youtube/<cup>-vertikals.webp`, originals in `design/youtube/`),
+  TIEŠRAIDE in wide grey letters with the top of the Š level with the panel,
+  both crests (sized by area) with a white "PRET" between them, and the sponsors
+  on the posters' jagged white band at the bottom, clear of YouTube's
+  bottom-right badge.
+- **Team logos from the originals (whole site):** Buki, Doks, Īle, Jaunpils,
+  Skandijs, Sprīdītis, Valauto and Vilki now have their original files in
+  `design/teams/` (1000–3000 px; were 160 px copies from last season). The site's
+  copies (`assets/teams/`, 256 px) are remade from them, so logos are sharp
+  everywhere (pages, posters). `prepare_assets.py youtube` makes 600 px copies for
+  the thumbnails (`assets/youtube/teams/`); crests there are sized by area, so a
+  wide logo looks as big as a round one.
+- **Season sheet script:** `apps-script/youtube.gs` (+ `appsscript.json`, install
+  steps in `apps-script/README.md`). Creates or updates one scheduled stream per
+  game for the next 7 days, sets the thumbnail and playlist, writes the link into
+  Kalendārs → "YouTube saite", emails a report; menu "YouTube" in the sheet;
+  Mondays 09:00 once switched on. The importer ignores the extra column.
+- `check.js`: YouTube limits for every feed entry (title 1–100 characters,
+  description ≤ 5000 bytes, no < or >) and a thumbnail under 2 MB for every game
+  with known teams.
+
+## Round 19 — released 28 Oct 2026: Garage Barber logo readable on white
+
+- Garage Barber's logo keeps its white disc and transparent outside, but the
+  text, garage, chair and barber poles are now black, so it shows on the white
+  sponsor strip and sponsor pop-up. Same path, no sheet change.
+
+## Round 18 — released 28 Oct 2026: new Garage Barber logo
+
+- Garage Barber's logo replaced with the white version they sent, at the same
+  path (`assets/sponsors/garage-barber.webp`), so the sheet needs no change.
+  Note: it is white on transparent, so on the white sponsor strip and sponsor
+  pop-up it does not show.
+
+## Round 17 — released 27 Oct 2026: smaller cookie button
+
+- The cookie button is 30 px (was 44 px) on every screen, with a smaller icon;
+  the tappable area still reaches 44 px. On phones it sits lower: 8 px from the
+  bottom and 10 px from the right edge (computers: 14 px).
+
+## Round 16 — released 27 Oct 2026: floating cookie button
+
+- **Cookie settings:** a small round button (44 px) with a cookie icon in the
+  bottom-right corner replaces the "Sīkdatnes" footer link. It appears once the
+  visitor has chosen ("Piekrist" or "Atteikties"), opens the cookie banner again
+  to change the choice, hides while the banner is open, and comes back after the
+  new choice (keyboard focus returns to it). Label "Sīkdatņu iestatījumi".
+- `check.js`: the button is never saved in a pre-rendered page.
+
+## Round 15 — released 27 Oct 2026: Google Analytics with a cookie banner
+
+- **Google Analytics** (`G-G9W635957K`) on dobelesbasketbols.lv, only after
+  the visitor agrees. Banner text: "Mēs izmantojam Google Analytics sīkdatnes,
+  lai veidotu statistiku par tīmekļvietnes apmeklējumu. Tās saglabāsim tikai
+  tad, ja piekritīsiet." Buttons "Atteikties" / "Piekrist", the same size.
+- Before "Piekrist" nothing is sent to Google and no cookies are set. The
+  choice is kept in the browser. **"Sīkdatnes"** in the footer opens the
+  banner again; "Atteikties" switches tracking off and deletes the `_ga` cookies.
+- Analytics only (ads storage denied). One page view per address, sent by the
+  site itself after the page title is set — Google's own "page changes based
+  on browser history events" must be off in the stream's enhanced measurement.
+- Not loaded in previews, local builds or the pre-renderer; `check.js` makes
+  sure no page is saved with the Google tag or the banner in it.
+
+## Round 14 — released 27 Oct 2026: new sponsor Spēka Stacija
+
+- **Spēka Stacija** (fitnesa studija, Dobele) joins the sponsors as
+  Atbalstītājs, 15th in the order: footer, Sponsori page (with its description
+  and Instagram link from the sheet) and the poster sponsor bands.
+- Logo `assets/sponsors/speka-stacija.webp` (259×200, transparent), made with
+  the sheet importer's own processing; original in `design/sponsors/`. The
+  sheet's Sponsori row links `https://dobelesbasketbols.lv/assets/sponsors/speka-stacija.webp`
+  (ID `speka-stacija`), which the importer keeps as the site's own logo.
+- Sponsor data from the sheet ("Atjaunot datus no tabulas" run on this branch).
+
 ## Round 13 — released 26 Oct 2026: new Brocēni logo
 
 - **Brocēni:** new logo — the Brocēni coat of arms (blue and silver shield

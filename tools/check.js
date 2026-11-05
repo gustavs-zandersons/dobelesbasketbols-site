@@ -140,7 +140,7 @@ if (MULTI) {
   (function walk(dir) {
     fs.readdirSync(dir, { withFileTypes: true }).forEach(e => {
       const f = path.join(dir, e.name);
-      if (e.isDirectory() && e.name !== 'assets') walk(f);
+      if (e.isDirectory() && e.name !== 'assets' && !(dir === DIST && (e.name === 'obs' || e.name === 'live'))) walk(f);   // /obs/ and /live/ are the operators' own pages (sections 10, 11)
       else if (e.name === 'index.html') pages.push('/' + path.relative(DIST, dir).split(path.sep).filter(Boolean).map(x => x + '/').join(''));
     });
   })(DIST);
@@ -160,6 +160,8 @@ if (MULTI) {
     check(title && title.length > 10, p + ': title');
     check(desc && desc.length > 50, p + ': description');
     check(t.includes('property="og:title"') && t.includes('property="og:image"') && t.includes('property="og:description"'), p + ': link-preview tags');
+    // Google Analytics loads only after consent (app.js), never from the saved page.
+    check(!t.includes('googletagmanager.com') && !t.includes('id="consent"') && !t.includes('id="cookie-btn"'), p + ': no Google tag, cookie banner or cookie button saved in the page');
     check(/<h1[\s>]/.test(t.replace(/<section class="hero"[\s\S]*?<\/section>/, '')) || p === '/' || p === '/jelgava/', p + ': a heading in the page content');
     if (robots === 'index, follow') {
       check(canon && canon.startsWith(SITE + '/'), p + ': canonical address');
@@ -175,6 +177,85 @@ if (MULTI) {
   check(!bad.size, 'links to pages that do not exist:\n  ' + [...bad].slice(0, 20).join('\n  '));
   const nf = fs.readFileSync(path.join(DIST, '404.html'), 'utf8');
   check(nf.includes('content="noindex'), '404.html is kept out of search results');
+}
+
+// 9. YouTube feed (dist/youtube/speles.json) for the season sheet's Apps Script:
+// YouTube's limits (title 1–100 characters, description ≤ 5000 bytes, no < or >),
+// a start time per game, and a thumbnail under 2 MB for every game whose teams are known.
+const YT = path.join(DIST, 'youtube', 'speles.json');
+let ytGames = 0;
+if (MULTI) {
+  check(fs.existsSync(YT), 'dist/youtube/speles.json exists');
+  if (fs.existsSync(YT)) {
+    const feed = JSON.parse(fs.readFileSync(YT, 'utf8'));
+    const ids = new Set();
+    (feed.games || []).forEach(g => {
+      ytGames++;
+      check(!ids.has(g.id), 'youtube: game listed once: ' + g.id); ids.add(g.id);
+      check(!isNaN(Date.parse(g.start)), 'youtube ' + g.id + ': start time');
+      if (!g.teamsKnown) { check(!g.title && !g.thumb, 'youtube ' + g.id + ': no title or thumbnail before the teams are known'); return; }
+      const len = Array.from(g.title || '').length;
+      check(len >= 1 && len <= 100, 'youtube ' + g.id + ': title length ' + len + ' (YouTube allows 1–100): ' + g.title);
+      check(!/[<>]/.test(g.title + g.description), 'youtube ' + g.id + ': no < or > in title or description');
+      check(Buffer.byteLength(g.description || '', 'utf8') <= 5000, 'youtube ' + g.id + ': description within 5000 bytes');
+      check(/ \| \d{4}\.\/\d{4}\. gada /.test(g.title), 'youtube ' + g.id + ': title follows "teams | 2026./2027. gada cup - stage": ' + g.title);
+      const f = path.join(DIST, 'youtube', g.id + '.jpg');
+      check(fs.existsSync(f) && fs.statSync(f).size < 2 * 1024 * 1024, 'youtube ' + g.id + ': thumbnail exists and is under 2 MB');
+      check(/^[0-9a-f]{12}$/.test(g.thumbVersion || ''), 'youtube ' + g.id + ': thumbnail version');
+    });
+  }
+}
+
+// 10. The OBS operator's page (/obs/): kept out of search results, one overlay
+// (1920×1080 PNG) per game whose teams are known, every link and ZIP present.
+if (MULTI) {
+  const OBS = path.join(DIST, 'obs', 'index.html');
+  check(fs.existsSync(OBS), 'dist/obs/index.html exists');
+  if (fs.existsSync(OBS)) {
+    const t = fs.readFileSync(OBS, 'utf8');
+    check(t.includes('content="noindex, nofollow"'), '/obs/ is kept out of search results');
+    ['dobele', 'jelgava'].forEach(k => check(t.includes('/obs/partraukums-' + k + '.png') && fs.existsSync(path.join(DIST, 'obs', 'partraukums-' + k + '.png')), '/obs/ has the half-time screen for ' + k));
+    check(!fs.readFileSync(path.join(DIST, 'sitemap.xml'), 'utf8').includes('/obs/'), '/obs/ is not in the sitemap');
+    [...t.matchAll(/(?:href|src)="\/(obs\/[^"]+)"/g)].forEach(m => check(fs.existsSync(path.join(DIST, m[1])), '/obs/ links to ' + m[1]));
+    if (fs.existsSync(YT)) {
+      JSON.parse(fs.readFileSync(YT, 'utf8')).games.filter(g => g.teamsKnown).forEach(g => {
+        const f = path.join(DIST, 'obs', g.id + '.png');
+        check(fs.existsSync(f), 'obs: overlay for ' + g.id);
+        if (fs.existsSync(f)) {
+          const b = fs.readFileSync(f);
+          check(b.readUInt32BE(16) === 1920 && b.readUInt32BE(20) === 1080 && b[25] === 6, 'obs: ' + g.id + ' is a 1920×1080 PNG with transparency');
+        }
+      });
+    }
+  }
+}
+
+// 11. The live scoreboard (/live/admin/, /live/overlay/): kept out of search
+// results, its scripts and styles present, and the data it carries points at
+// logos and OBS screens that exist.
+if (MULTI) {
+  ['admin', 'overlay'].forEach(k => {
+    const f = path.join(DIST, 'live', k, 'index.html');
+    check(fs.existsSync(f), 'dist/live/' + k + '/index.html exists');
+    if (!fs.existsSync(f)) return;
+    const t = fs.readFileSync(f, 'utf8');
+    check(t.includes('content="noindex, nofollow"'), '/live/' + k + '/ is kept out of search results');
+    [...t.matchAll(/(?:href|src)="\/(live\/[^"?]+)/g)].forEach(m => check(fs.existsSync(path.join(DIST, m[1])), '/live/' + k + '/ links to ' + m[1]));
+    const m = /<script type="application\/json" id="live-data">([\s\S]*?)<\/script>/.exec(t);
+    check(!!m, '/live/' + k + '/ carries the season data');
+    if (!m) return;
+    let d = null;
+    try { d = JSON.parse(m[1]); } catch (e) { check(false, '/live/' + k + '/: season data is valid JSON'); return; }
+    check(d.games.length > 0, '/live/' + k + '/: games to pick from');
+    const urls = Object.values(d.teams).map(x => x.logo).concat(Object.values(d.cups).map(x => x.logo), Object.values(d.pregame), Object.values(d.breakImg));
+    urls.forEach(u => check(fs.existsSync(path.join(DIST, u)), '/live/' + k + '/: ' + u + ' exists'));
+    d.games.forEach(g => check(d.teams[g.home] && d.teams[g.away] && d.cups[g.comp], '/live/: game ' + g.id + ' has known teams and cup'));
+  });
+  ['render.js', 'sync.js', 'config.js', 'admin.js', 'screen.js'].forEach(n => {
+    const f = path.join(DIST, 'live', n);
+    check(fs.existsSync(f), 'dist/live/' + n + ' exists');
+  });
+  check(!fs.readFileSync(path.join(DIST, 'sitemap.xml'), 'utf8').includes('/live/'), '/live/ is not in the sitemap');
 }
 
 if (failures) { console.error(failures + ' check(s) failed'); process.exit(1); }

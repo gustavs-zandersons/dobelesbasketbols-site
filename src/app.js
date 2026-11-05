@@ -256,12 +256,21 @@
     if (g.comp === 'dbck' && g.stage === 'hope') return 'Cerību kauss · ' + STRUCT.dbck.ties[g.tie].label;
     return gameTag(g);
   }
+  // A finished game's video (Kalendārs → "YouTube saite" in the sheet), if any.
+  var YT_ICON = '<svg class="yt-ico" viewBox="0 0 28 20" aria-hidden="true"><rect width="28" height="20" rx="5.5" fill="#FF0033"/><path d="M11.2 5.8v8.4l7.3-4.2z" fill="#fff"/></svg>';
+  function ytUrl(g) {
+    var u = (RAW[g.id] || {}).yt || g.yt || '';
+    return /^https:\/\/(www\.|m\.)?(youtube\.com|youtu\.be)\//.test(u) ? u : '';
+  }
   // One score card.
   function resRow(g) {
     var h = ctx.resolve(g.comp, g.home).team, a = ctx.resolve(g.comp, g.away).team;
     var hw = g.hs > g.as;
-    return '<a class="res" href="' + gameHref(g.id) + '" aria-label="' + esc(team(h).short + ' ' + g.hs + ':' + g.as + ' ' + team(a).short + ' — spēles statistika') + '">' +
-      '<div class="res-meta"><span class="tag">' + esc(cardTag(g)) + '</span></div>' +
+    // A YouTube mark top right when the game has a video (just a sign; the
+    // link itself is on the game page).
+    var yt = ytUrl(g);
+    return '<a class="res" href="' + gameHref(g.id) + '" aria-label="' + esc(team(h).short + ' ' + g.hs + ':' + g.as + ' ' + team(a).short + ' — spēles statistika' + (yt ? ', ir tiešraides ieraksts' : '')) + '">' +
+      '<div class="res-meta"><span class="tag">' + esc(cardTag(g)) + '</span>' + (yt ? '<span class="res-yt" title="Ir tiešraides ieraksts">' + YT_ICON + '</span>' : '') + '</div>' +
       '<div class="res-team res-home' + (hw ? ' is-win' : '') + '">' + badge(h, 'md') + nameHtml(h) + '</div>' +
       '<span class="res-sc h' + (hw ? ' is-win' : '') + '">' + g.hs + '</span>' +
       '<span class="res-sc a' + (hw ? '' : ' is-win') + '">' + g.as + '</span>' +
@@ -1029,6 +1038,7 @@
       '<a class="gh-team' + (hw ? '' : ' is-win') + '" href="' + teamHref(aId, comp) + '">' + badge(aId, 'lg') + '<span>' + esc(team(aId).name) + '</span></a>' +
       '</div>' +
       '<p class="gh-when">' + esc(cap(dateLong(g.date)) + ', ' + g.time + ' · ' + v.name) + '</p>' +
+      (ytUrl(g) ? '<a class="gh-yt" href="' + esc(ytUrl(g)) + '" target="_blank" rel="noopener">' + YT_ICON + '<span>Spēles tiešraide</span><svg class="gh-yt-out" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5h5v5M19 5l-8 8M17 14v5H5V7h5"/></svg></a>' : '') +
       (note ? '<p class="gh-note">' + note + '</p>' : '') + tieStrip + '</section>';
 
     if (!raw.box) {
@@ -2893,9 +2903,11 @@
   }
 
   // ---------- Render ----------
+  var trackPage = function () {};        // replaced by the statistics section below
   function render() {
     renderView();
     try { applyMeta(); } catch (e) { if (window.__PRERENDER) throw e; }
+    trackPage();
   }
   function renderView() {
     ctx = window.Engine.create(DATA, SHOW_DEMO ? (DEMO[state.demo] || DEMO.group) : LIVE ? liveToday() : FIXED_TODAY);
@@ -3133,6 +3145,112 @@
   document.addEventListener('keydown', function () { usingKeyboard = true; }, true);
   document.addEventListener('pointerdown', function () { usingKeyboard = false; }, true);
   document.addEventListener('touchstart', function () { usingKeyboard = false; }, { capture: true, passive: true });
+
+  // ---------- Visitor statistics (Google Analytics), only with consent ----------
+  // Google Analytics loads only on the live site and only after the visitor
+  // presses "Piekrist" — before that nothing is sent to Google and no cookies
+  // are set. The choice is kept in this browser; after it, a small round cookie
+  // button in the bottom-right corner opens the banner again ("Atteikties"
+  // removes the cookies).
+  var GA_ID = 'G-G9W635957K';
+  var GA_ON = ['dobelesbasketbols.lv', 'www.dobelesbasketbols.lv'].indexOf(window.location.hostname) >= 0 && !window.__PRERENDER;
+  var gaLoaded = false, gaLastPath = null;
+  function loadAnalytics() {
+    if (!GA_ON || gaLoaded) return;
+    gaLoaded = true;
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    window.gtag('consent', 'default', { analytics_storage: 'granted', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
+    window.gtag('js', new Date());
+    // Page views are sent by trackPage(): the site changes pages without reloading.
+    window.gtag('config', GA_ID, { send_page_view: false });
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+    document.head.appendChild(s);
+  }
+  // One page view per address (called after every render; re-renders of the same page don't count).
+  trackPage = function () {
+    if (!gaLoaded) return;
+    var p = window.location.pathname;
+    if (p === gaLastPath) return;
+    gaLastPath = p;
+    window.gtag('event', 'page_view', { page_location: window.location.href, page_path: p, page_title: document.title });
+  };
+  function stopAnalytics() {
+    if (gaLoaded) window.gtag('consent', 'update', { analytics_storage: 'denied' });
+    document.cookie.split(';').forEach(function (c) {           // remove _ga and _ga_<id>
+      var name = c.split('=')[0].trim();
+      if (!/^_ga(_|$)/.test(name)) return;
+      var host = window.location.hostname, base = host.replace(/^www\./, '');
+      ['', '; domain=' + host, '; domain=.' + base].forEach(function (d) {
+        document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/' + d;
+      });
+    });
+  }
+  function showConsent() {
+    if (window.__PRERENDER || $('consent')) return;
+    var el = document.createElement('div');
+    el.className = 'consent';
+    el.id = 'consent';
+    el.setAttribute('role', 'region');
+    el.setAttribute('aria-label', 'Sīkdatnes');
+    el.innerHTML = '<div class="wrap consent-inner">' +
+      '<p class="consent-text">Mēs izmantojam Google Analytics sīkdatnes, lai veidotu statistiku par tīmekļvietnes apmeklējumu. Tās saglabāsim tikai tad, ja piekritīsiet.</p>' +
+      '<div class="consent-btns"><button type="button" class="btn" data-consent="denied">Atteikties</button>' +
+      '<button type="button" class="btn btn--fill" data-consent="granted">Piekrist</button></div></div>';
+    document.body.appendChild(el);
+    var btn = $('cookie-btn');
+    if (btn) btn.remove();                            // the banner replaces the button while open
+    consentRoom();
+    window.addEventListener('resize', consentRoom);
+  }
+  var COOKIE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">' +
+    '<path d="M12 3a9 9 0 1 0 9 9 3 3 0 0 1-3.5-3.5A3 3 0 0 1 12 3z"/>' +
+    '<g fill="currentColor" stroke="none"><circle cx="8.3" cy="9.6" r="1.25"/><circle cx="8.9" cy="15.4" r="1.25"/><circle cx="13.9" cy="13.4" r="1.25"/><circle cx="14.6" cy="18" r="1"/></g></svg>';
+  function showCookieBtn() {
+    if (window.__PRERENDER || $('cookie-btn') || $('consent')) return;
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.id = 'cookie-btn';
+    b.className = 'cookie-btn';
+    b.setAttribute('data-consent-open', '');
+    b.setAttribute('aria-label', 'Sīkdatņu iestatījumi');
+    b.title = 'Sīkdatņu iestatījumi';
+    b.innerHTML = COOKIE_ICON;
+    document.body.appendChild(b);
+    return b;
+  }
+  // Room under the page while the banner is open, so it never covers the footer.
+  function consentRoom() {
+    var el = $('consent');
+    document.body.style.paddingBottom = el ? el.offsetHeight + 'px' : '';
+  }
+  function setConsent(v) {
+    save('consent', v);
+    var el = $('consent');
+    if (el) el.remove();
+    window.removeEventListener('resize', consentRoom);
+    consentRoom();
+    if (v === 'granted') { loadAnalytics(); trackPage(); } else stopAnalytics();
+    var btn = showCookieBtn();
+    if (btn && reopened) btn.focus();                 // keyboard users land back where they started
+    reopened = false;
+  }
+  var reopened = false;
+  document.addEventListener('click', function (e) {
+    var c = e.target.closest('[data-consent]');
+    if (c) { setConsent(c.getAttribute('data-consent')); return; }
+    if (e.target.closest('[data-consent-open]')) {
+      reopened = true;
+      showConsent();
+      var b = document.querySelector('#consent [data-consent="granted"]');
+      if (b) b.focus();
+    }
+  });
+  var consent = load('consent');                      // 'granted' | 'denied' | null (not asked yet)
+  if (consent === 'granted') loadAnalytics();
+  if (consent === 'granted' || consent === 'denied') showCookieBtn(); else showConsent();
 
   if (!SHOW_DEMO) {
     document.querySelector('.demo').hidden = true;

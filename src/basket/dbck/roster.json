@@ -76,7 +76,7 @@
   },
   {
    "pid": "789e64eb-124b-11ed-888c-4d73ff065d6a",
-   "name": "Klāvs Pitkevičs",
+   "name": "Klāvs Pitkēvičs",
    "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
    "team": "BK Buki/Sandramebeles.lv"
   },
@@ -171,6 +171,12 @@
    "team": "Brocēni"
   },
   {
+   "pid": "47524bb2-124c-11ed-9497-613bda7c34a2",
+   "name": "Arvis Šlanka",
+   "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+   "team": "Brocēni"
+  },
+  {
    "pid": "fcb0dc7f-124e-11ed-a94e-0b958117d9a1",
    "name": "Edgars Grablovskis",
    "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
@@ -179,6 +185,12 @@
   {
    "pid": "7cee2f7d-b02e-11f0-a7bb-139d53bb7a37",
    "name": "Elvijs Stencelis",
+   "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+   "team": "Brocēni"
+  },
+  {
+   "pid": "aab6263a-124f-11ed-a9c5-b7f2ae46b531",
+   "name": "Ilgvars Cielava",
    "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
    "team": "Brocēni"
   },
@@ -197,6 +209,12 @@
   {
    "pid": "3c1e4390-124c-11ed-9a6f-5b2da3c36294",
    "name": "Krišjānis Valters",
+   "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
+   "team": "Brocēni"
+  },
+  {
+   "pid": "e277fec7-a54a-11f0-a7e3-972f1b192f27",
+   "name": "Mārtiņš Rutkis",
    "entity": "3e98d39b-a81c-11f0-b45f-4ddada37364c",
    "team": "Brocēni"
   },
@@ -907,12 +925,6 @@
    "name": "Ralfs Skadiņš",
    "entity": "1df48533-a58b-11ee-82e8-e3a31ad3912f",
    "team": "TSK Sprīdītis"
-  },
-  {
-   "pid": "428592e0-cae6-11ef-afd8-abf99270214e",
-   "name": "Edgars Krūmiņš",
-   "entity": "56e10b08-a58a-11ee-8830-55c2fe3fbbe9",
-   "team": "Valauto"
   },
   {
    "pid": "d444ade0-124b-11ed-a6ed-85f4d1dadc7b",

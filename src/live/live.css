@@ -1,0 +1,299 @@
+/* The stream overlay (1920×1080). Shared by /live/overlay/ (OBS) and the admin's preview. */
+@font-face { font-family: 'Anton'; font-weight: 400; font-display: block; src: url(/assets/fonts/anton-400.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 700; font-display: block; src: url(/assets/fonts/barlow-condensed-700.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-weight: 600; font-display: block; src: url(/assets/fonts/barlow-condensed-600.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow'; font-weight: 500; font-display: swap; src: url(/assets/fonts/barlow-500.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow'; font-weight: 600; font-display: swap; src: url(/assets/fonts/barlow-600.woff2) format('woff2'); }
+
+.stage {
+  --p30: rgba(0, 0, 0, 0.3); --p50: rgba(0, 0, 0, 0.5);
+  --ov-accent: #E1B942; --ov-ink: #14284D; --ov-muted: #C6D3EC;
+  position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; overflow: hidden;
+  font-family: 'Barlow', system-ui, sans-serif;
+}
+.stage .scene { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+.stage .scene div { position: absolute; }
+.ov { position: absolute; transition: opacity 0.35s ease, transform 0.35s ease, visibility 0s linear 0s; }
+.ov.off { opacity: 0; visibility: hidden; transition: opacity 0.35s ease, transform 0.35s ease, visibility 0s linear 0.35s; }
+.full { left: 0; top: 0; width: 1920px; height: 1080px; }
+.full.off { transform: scale(1.03); }
+.full > img { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; display: block; }
+.per { font: 700 24px/1 'Barlow Condensed', 'Arial Narrow', sans-serif; letter-spacing: 0.06em; color: var(--ov-accent); }
+.sep { width: 2px; height: 26px; flex: none; background: rgba(255, 255, 255, 0.4); }
+.time { font: 400 32px/1 'Anton', Impact, sans-serif; letter-spacing: 0.01em; color: #fff; }
+
+/* pre-game: the site's pre-game screen (/obs/<game>.png), countdown under "SPĒLE SĀKSIES PĒC:"
+   in that line's colour (yellow on Dobele Cup, white on Jelgava's; render.js sets it) */
+.pg-count { position: absolute; left: 773px; top: 711px; width: 600px; text-align: center; font: 400 94px/1 'Anton', Impact, sans-serif; letter-spacing: 0.01em; color: #fff; }
+
+/* corner scorebug */
+.ov-corner { left: 64px; top: 56px; filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.35)); }
+.ov-corner.off { transform: translateX(-24px); }
+.cn-box { position: relative; display: flex; width: 492px; border-radius: 10px; overflow: hidden; }
+.cn-cup { width: 136px; flex: none; display: flex; align-items: flex-start; justify-content: center; background: var(--p30); }
+.cn-cup img { width: 96px; height: 96px; margin-top: 6px; object-fit: contain; display: block; }
+.cn-rows { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.cn-row { --rowh: 54px; height: 54px; display: flex; align-items: center; }
+.cn-row + .cn-row { box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.22); }
+.cn-row .tm-in img { width: 44px; height: 44px; flex: none; margin: 0 12px; object-fit: contain; display: block; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)); }
+.cn-name { flex: 1; min-width: 0; padding-top: 2px; font: 700 28px/1 'Barlow Condensed', 'Arial Narrow', sans-serif; letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; overflow: hidden; }
+.cn-score { width: 76px; height: 54px; flex: none; box-sizing: border-box; display: flex; align-items: center; justify-content: flex-end; padding-right: 18px; font: 400 36px/1 'Anton', Impact, sans-serif; transition: background 0.25s, color 0.25s; }
+.cn-clock { height: 46px; display: flex; align-items: center; justify-content: flex-end; gap: 16px; padding-right: 18px; background: var(--p30); }
+.cn-tab {
+  position: absolute; left: 484px; top: 0; height: 54px; display: flex; align-items: center; padding: 0 16px 0 22px;
+  border-radius: 0 10px 10px 0; background: #fff; color: var(--ov-ink); font: 400 30px/1 'Anton', Impact, sans-serif;
+  transform: translateX(-100%); opacity: 0; transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s;
+}
+.cn-tab.on { transform: none; opacity: 1; }
+
+/* bottom bar */
+.ov-bottom { left: 410px; top: 952px; width: 1100px; filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.35)); }
+.ov-bottom.off { transform: translateY(24px); }
+.bt-box { position: relative; display: flex; height: 80px; border-radius: 40px; overflow: hidden; }
+.bt-team { --rowh: 80px; width: 425px; flex: none; display: flex; align-items: center; }
+.bt-team .tm-in img { width: 56px; height: 56px; flex: none; object-fit: contain; display: block; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)); }
+.bt-team.l .tm-in img { margin-left: 22px; }
+.bt-team.r .tm-in img { margin-right: 22px; }
+.bt-name { flex: 1; min-width: 0; font: 700 34px/1 'Barlow Condensed', 'Arial Narrow', sans-serif; letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; overflow: hidden; }
+.bt-team.l .bt-name { padding: 2px 22px 0 12px; text-align: right; }
+.bt-team.r .bt-name { padding: 2px 12px 0 22px; text-align: left; }
+.bt-score { width: 100px; align-self: stretch; flex: none; display: flex; align-items: center; justify-content: center; font: 400 48px/1 'Anton', Impact, sans-serif; transition: background 0.25s, color 0.25s; }
+.bt-mid { width: 250px; flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; background: var(--p50); }
+.bt-line { display: flex; align-items: center; gap: 14px; }
+.bt-mid .per { font-size: 26px; }
+.bt-mid .sep { height: 28px; }
+.bt-mid .time { font-size: 40px; }
+.bt-label { font: 600 13px/1 'Barlow Condensed', 'Arial Narrow', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255, 255, 255, 0.82); white-space: nowrap; }
+.bt-tab {
+  position: absolute; top: -40px; width: 100px; height: 46px; padding-bottom: 6px; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: center; border-radius: 10px 10px 0 0;
+  background: #fff; color: var(--ov-ink); font: 400 28px/1 'Anton', Impact, sans-serif;
+  transform: translateY(100%); opacity: 0; transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s;
+}
+.bt-tab.on { transform: none; opacity: 1; }
+
+/* A team scores: its name panel rolls (organisers, 3 Nov 2026).
+     0–0.25 s    logo and name fade out
+     0.3–1.3 s   the big logo, as wide as the panel, rolls up from below the
+                 panel and leaves it at the top (the panel's edges cut it off)
+     1.35–1.6 s  logo and name fade back in
+   The score box keeps its white flash and +N tab. */
+.tm { position: relative; flex: 1; min-width: 0; align-self: stretch; display: flex; overflow: hidden; }
+.tm-in { flex: 1; min-width: 0; display: flex; align-items: center; }
+.tm-roll { position: absolute; left: 0; top: 0; width: 100%; height: 100%; visibility: hidden; }
+.tm-reel { width: 100%; transform: translateY(var(--rowh)); }
+.tm-reel img { width: 100%; height: auto; display: block; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3)); }
+.tm.rolling .tm-in { animation: tm-fade 1.6s ease both; }
+.tm.rolling .tm-roll { visibility: visible; }
+.tm.rolling .tm-reel { animation: tm-roll 1s cubic-bezier(0.37, 0, 0.63, 1) 0.3s both; }
+@keyframes tm-fade {
+  0%    { opacity: 1; }
+  15.6% { opacity: 0; }
+  84.4% { opacity: 0; }
+  100%  { opacity: 1; }
+}
+@keyframes tm-roll {
+  from { transform: translateY(var(--rowh)); }
+  to   { transform: translateY(-100%); }
+}
+
+/* break: the site's PĀRTRAUKUMS screen with the score card between the title and the sponsors */
+.ht-wrap { position: absolute; filter: drop-shadow(0 16px 36px rgba(0, 0, 0, 0.4)); }
+.ht-box { display: flex; flex-direction: column; border-radius: 14px; overflow: hidden; }
+.ht-head { height: 50px; display: flex; align-items: center; background: var(--p30); font: 700 22px/1 'Barlow Condensed', 'Arial Narrow', sans-serif; letter-spacing: 0.12em; color: var(--ov-muted); }
+.ht-head .sp { flex: 1; min-width: 0; }
+.ht-head .q { width: 112px; flex: none; text-align: center; }
+.ht-head .t { width: 150px; flex: none; }
+.ht-row { display: flex; align-items: center; }
+.ht-row + .ht-row { box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.22); }
+.ht-row img { width: 84px; height: 84px; flex: none; margin: 0 18px 0 20px; object-fit: contain; display: block; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45)); }
+.ht-name { flex: 1; min-width: 0; padding-right: 24px; display: flex; flex-direction: column; gap: 6px; font: 700 44px/1 'Barlow Condensed', 'Arial Narrow', sans-serif; letter-spacing: 0.03em; text-transform: uppercase; }
+.ht-name div { white-space: nowrap; }
+.ht-q { width: 112px; align-self: stretch; flex: none; display: flex; align-items: center; justify-content: center; font: 400 52px/1 'Anton', Impact, sans-serif; }
+.ht-t { width: 150px; align-self: stretch; flex: none; display: flex; align-items: center; justify-content: center; font: 400 76px/1 'Anton', Impact, sans-serif; }
+.ht-measure { position: absolute; left: 0; top: 0; visibility: hidden; white-space: nowrap; font: 700 44px/1 'Barlow Condensed', 'Arial Narrow', sans-serif; letter-spacing: 0.03em; text-transform: uppercase; }
+
+/* ---------- Transitions between what is on screen ----------
+   render.js STINGERS picks one (state.transition); all use the cup's colours
+   (--st-a colour 1, --st-b colour 2, --st-ink dark, --st-hi highlight) and logo.
+   'spin' fades the graphics; the others cover the whole picture and the graphics
+   swap underneath (.ov.cut: no fade or slide). */
+.sting { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden; pointer-events: none; visibility: hidden;
+         --st-a: #E1B942; --st-b: #204E99; --st-ink: #14284D; --st-hi: #E1B942; }
+.sting.go { visibility: visible; }
+.sting > div { position: absolute; }
+.ov.cut, .ov.cut.off { transition: none; }
+.sx-logo { left: 960px; top: 540px; width: 300px; height: 300px; margin: -150px 0 0 -150px; opacity: 0; }
+.sx-logo img, .spl-badge img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.sx-logo img { filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.35)); }
+
+/* Logo spin (organisers, 3 Nov 2026), 1.5 s:
+     0–0.35 s     the old graphic fades out
+     0–0.87 s     the cup logo spins in at the centre (one and a half turns, slowing
+                  down to face the camera) over a soft dark glow; two rings in the
+                  cup's colours spread out from it
+     1.03–1.48 s  the logo zooms towards the camera and fades
+     1.08–1.43 s  the new graphic comes in */
+.sting[data-kind="spin"] > div { left: 960px; top: 540px; }
+.st-glow, .st-ring { opacity: 0; }
+.st-glow { width: 820px; height: 820px; margin: -410px 0 0 -410px; border-radius: 50%; background: radial-gradient(closest-side, rgba(6, 10, 20, 0.6) 0%, rgba(6, 10, 20, 0.32) 50%, rgba(6, 10, 20, 0) 100%); }
+.st-ring { width: 360px; height: 360px; margin: -180px 0 0 -180px; border-radius: 50%; box-sizing: border-box; }
+.st-ring.a { border: 12px solid var(--st-a); }
+.st-ring.b { border: 7px solid var(--st-b); }
+.st-turn { width: 300px; height: 300px; margin: -150px 0 0 -150px; perspective: 1400px; }
+.st-turn img { width: 100%; height: 100%; object-fit: contain; display: block; opacity: 0; filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.45)); }
+.sting.go .st-glow { animation: st-glow 1.5s ease both; }
+.sting.go .st-ring.a { animation: st-ring 0.95s cubic-bezier(0.2, 0.7, 0.2, 1) 0.12s both; }
+.sting.go .st-ring.b { animation: st-ring 0.95s cubic-bezier(0.2, 0.7, 0.2, 1) 0.3s both; }
+.sting.go .st-turn img { animation: st-spin 0.87s cubic-bezier(0.15, 0.6, 0.25, 1) both; }
+.sting.go .st-turn { animation: st-away 0.45s linear 1.03s both; }
+@keyframes st-glow {
+  0%   { opacity: 0; }
+  20%  { opacity: 1; }
+  70%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes st-ring {
+  0%   { opacity: 0; transform: scale(0.55); }
+  15%  { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.9); }
+}
+@keyframes st-spin {
+  0%   { opacity: 0; transform: scale(0.35) rotateY(-540deg); }
+  25%  { opacity: 1; }
+  100% { opacity: 1; transform: scale(1) rotateY(0deg); }
+}
+@keyframes st-away {
+  0%   { opacity: 1; transform: scale(1); filter: blur(0px); }
+  50%  { opacity: 0.55; transform: scale(1.15); filter: blur(2px); }
+  100% { opacity: 0; transform: scale(1.6); filter: blur(8px); }
+}
+
+/* Slash, 1.4 s:
+     0–0.54 s     three slanted bands (colour 1, colour 2, then the dark one) sweep
+                  in from the left one after another and cover the picture
+     0.48–0.66 s  the logo slides in on the dark band; 0.56 s the graphics swap
+     0.8–0.92 s   the logo slides on out to the right
+     0.86–1.38 s  the bands sweep on out to the right, dark one first */
+.sl-in { left: -260px; top: 0; width: 2440px; height: 1080px; transform: translateX(-2800px); }
+.sl-band { width: 100%; height: 100%; transform: translateX(0) skewX(-18deg); }
+.sl-in.a .sl-band { background: var(--st-a); }
+.sl-in.b .sl-band { background: var(--st-b); }
+.sl-in.c .sl-band { background: linear-gradient(100deg, rgba(255, 255, 255, 0) 38%, rgba(255, 255, 255, 0.07) 50%, rgba(255, 255, 255, 0) 62%), var(--st-ink); }
+.sting.go .sl-in { animation: sl-in 0.4s cubic-bezier(0.76, 0, 0.24, 1) both; }
+.sting.go .sl-in.b { animation-delay: 0.07s; }
+.sting.go .sl-in.c { animation-delay: 0.14s; }
+.sting.go .sl-band { animation: sl-out 0.38s cubic-bezier(0.76, 0, 0.24, 1) both; }
+.sting.go .sl-in.c .sl-band { animation-delay: 0.86s; }
+.sting.go .sl-in.b .sl-band { animation-delay: 0.93s; }
+.sting.go .sl-in.a .sl-band { animation-delay: 1s; }
+.sting[data-kind="slash"].go .sx-logo { animation: sl-logo 1.4s linear both; }
+@keyframes sl-in { from { transform: translateX(-2800px); } to { transform: translateX(0); } }
+@keyframes sl-out { from { transform: translateX(0) skewX(-18deg); } to { transform: translateX(2800px) skewX(-18deg); } }
+@keyframes sl-logo {
+  0%, 34%   { opacity: 0; transform: translateX(-140px) scale(0.92); animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+  47%, 57%  { opacity: 1; transform: translateX(0) scale(1); }
+  57%       { animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.4); }
+  66%, 100% { opacity: 0; transform: translateX(180px) scale(1); }
+}
+
+/* Iris, 1.4 s:
+     0–0.53 s     a disc in colour 1, then one in colour 2, grow from the centre and
+                  cover the picture
+     0.42–0.67 s  the logo pops in the middle; 0.56 s the graphics swap
+     0.76–0.9 s   the logo shrinks into the centre
+     0.9–1.38 s   the picture opens out from the centre, colour 2 first, so a ring
+                  of colour 1 runs around the opening */
+.ir { left: 960px; top: 540px; width: 2400px; height: 2400px; margin: -1200px 0 0 -1200px; border-radius: 50%; box-sizing: border-box; border: 1200px solid var(--st-a); transform: scale(0); }
+.ir.b { border-color: var(--st-b); }
+.sting.go .ir { animation: ir-grow 0.45s cubic-bezier(0.7, 0, 0.3, 1) both, ir-open 0.4s cubic-bezier(0.6, 0, 0.3, 1) 0.98s both; }
+.sting.go .ir.b { animation-delay: 0.08s, 0.9s; }
+.sting[data-kind="iris"].go .sx-logo, .sting[data-kind="stripes"].go .sx-logo { animation: sx-pop 1.4s linear both; }
+@keyframes ir-grow { from { transform: scale(0); } to { transform: scale(1); } }
+@keyframes ir-open { from { border-width: 1200px; } to { border-width: 0px; } }
+@keyframes sx-pop {
+  0%, 30%   { opacity: 0; transform: scale(0.4); animation-timing-function: cubic-bezier(0.3, 1.5, 0.6, 1); }
+  48%       { opacity: 1; transform: scale(1); }
+  54%       { opacity: 1; transform: scale(1); animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.5); }
+  64%, 100% { opacity: 0; transform: scale(0.2); }
+}
+
+/* Stripes, 1.4 s:
+     0–0.54 s     six dark bars, each with an edge in the cup's highlight colour,
+                  slide in from alternate sides one after another and cover the picture
+     0.42–0.67 s  the logo pops in the middle; 0.56 s the graphics swap
+     0.76–0.9 s   the logo shrinks away
+     0.88–1.4 s   the bars slide on out the far side, in the same order */
+.sp { left: -24px; width: 1968px; height: 181px; }
+.sp.l { transform: translateX(-2100px); }
+.sp.r { transform: translateX(2100px); }
+.sp-bar { width: 100%; height: 100%; background-color: var(--st-ink); }
+.sp.l .sp-bar { box-shadow: inset -16px 0 0 var(--st-hi); }
+.sp.r .sp-bar { box-shadow: inset 16px 0 0 var(--st-hi); background-image: linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05)); }
+.sting.go .sp { animation: sp-in-l 0.36s cubic-bezier(0.7, 0, 0.3, 1) calc(var(--i) * 35ms) both; }
+.sting.go .sp.r { animation-name: sp-in-r; }
+.sting.go .sp-bar { animation: sp-out-l 0.34s cubic-bezier(0.7, 0, 0.3, 1) calc(0.88s + var(--i) * 35ms) both; }
+.sting.go .sp.r .sp-bar { animation-name: sp-out-r; }
+@keyframes sp-in-l { from { transform: translateX(-2100px); } to { transform: translateX(0); } }
+@keyframes sp-in-r { from { transform: translateX(2100px); } to { transform: translateX(0); } }
+@keyframes sp-out-l { from { transform: translateX(0); } to { transform: translateX(2100px); } }
+@keyframes sp-out-r { from { transform: translateX(0); } to { transform: translateX(-2100px); } }
+
+/* Split, 1.3 s:
+     0–0.36 s     the top half of the picture in colour 1 and the bottom half in
+                  colour 2 slam shut on a slanted seam, with a jolt and a white
+                  flash along the seam
+     0.36–0.59 s  a round badge with the logo pops on the seam; 0.42 s the graphics swap
+     0.78–0.88 s  the badge shrinks away
+     0.84–1.26 s  the halves open again */
+.spl-shake { left: 0; top: 0; width: 1920px; height: 1080px; }
+.spl-half, .spl-seam { position: absolute; }
+.spl-half { left: 0; top: 0; width: 1920px; height: 1080px; }
+.spl-half.top { background: var(--st-a); clip-path: polygon(0 0, 100% 0, 100% 44%, 0 56%); transform: translateY(-700px); }
+.spl-half.bot { background: var(--st-b); clip-path: polygon(0 56%, 100% 44%, 100% 100%, 0 100%); transform: translateY(700px); }
+.spl-seam { left: -40px; top: 536px; width: 2000px; height: 8px; background: #FFFFFF; transform: rotate(-3.87deg) scaleX(0); }
+.spl-badge { left: 960px; top: 540px; width: 340px; height: 340px; margin: -170px 0 0 -170px; padding: 46px; box-sizing: border-box; border-radius: 50%;
+             background: var(--st-ink); box-shadow: 0 0 0 8px #FFFFFF, 0 18px 40px rgba(0, 0, 0, 0.35); transform: scale(0); }
+.sting.go .spl-half.top { animation: spl-top 1.3s linear both; }
+.sting.go .spl-half.bot { animation: spl-bot 1.3s linear both; }
+.sting.go .spl-shake { animation: spl-shake 0.24s linear 0.36s both; }
+.sting.go .spl-seam { animation: spl-seam 1.3s linear both; }
+.sting.go .spl-badge { animation: spl-badge 1.3s linear both; }
+@keyframes spl-top {
+  0%        { transform: translateY(-700px); animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.4); }
+  27.7%     { transform: translateY(0); }
+  64.6%     { transform: translateY(0); animation-timing-function: cubic-bezier(0.6, 0, 0.2, 1); }
+  97%, 100% { transform: translateY(-700px); }
+}
+@keyframes spl-bot {
+  0%        { transform: translateY(700px); animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.4); }
+  27.7%     { transform: translateY(0); }
+  64.6%     { transform: translateY(0); animation-timing-function: cubic-bezier(0.6, 0, 0.2, 1); }
+  97%, 100% { transform: translateY(700px); }
+}
+@keyframes spl-shake {
+  0%   { transform: translateY(0); }
+  25%  { transform: translateY(10px); }
+  50%  { transform: translateY(-6px); }
+  75%  { transform: translateY(3px); }
+  100% { transform: translateY(0); }
+}
+@keyframes spl-seam {
+  0%, 27.7% { opacity: 1; transform: rotate(-3.87deg) scaleX(0); animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+  36%       { opacity: 1; transform: rotate(-3.87deg) scaleX(1); }
+  60%       { opacity: 1; transform: rotate(-3.87deg) scaleX(1); }
+  66%, 100% { opacity: 0; transform: rotate(-3.87deg) scaleX(1); }
+}
+@keyframes spl-badge {
+  0%, 27.7% { transform: scale(0); animation-timing-function: cubic-bezier(0.3, 1.6, 0.5, 1); }
+  45%       { transform: scale(1); }
+  60%       { transform: scale(1); animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.5); }
+  68%, 100% { transform: scale(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ov, .ov.off, .cn-tab, .bt-tab { transition: none; }
+  .sting { display: none; }
+  .tm.rolling .tm-in, .tm.rolling .tm-reel { animation: none; }
+  .tm.rolling .tm-roll { visibility: hidden; }
+}

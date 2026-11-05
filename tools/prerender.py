@@ -123,7 +123,57 @@ def page(site, meta, attrs, body, fonts, urls, path=None):
             body.strip() + '\n' + scripts + '\n</body>\n</html>\n')
 
 
-def prerender(out, site, body, fonts, urls):
+def youtube_feed(pg, out, site, social):
+    """dist/youtube/speles.json + one 1280×720 thumbnail per game whose teams are
+    known (tools/youtube_feed.js). Read by the season sheet's Apps Script."""
+    import base64
+    import hashlib
+    pg.add_script_tag(content=(Path(__file__).parent / 'youtube_feed.js').read_text())
+    big = sorted(f.stem for f in (out / 'assets' / 'youtube' / 'teams').glob('*.webp'))         # large team logos
+    feed = pg.evaluate('(o) => window.YouTubeFeed.feed(o)', {'site': site, 'links': social, 'bigTeams': big})
+    d = out / 'youtube'
+    d.mkdir(parents=True, exist_ok=True)
+    n = 0
+    for g in feed['games']:
+        if not g.get('thumb'):
+            continue
+        url = pg.evaluate('(id) => window.YouTubeFeed.thumb(id)', g['id'])
+        if not url or not url.startswith('data:image/jpeg;base64,'):
+            raise SystemExit(f'youtube: no thumbnail for {g["id"]}')
+        raw = base64.b64decode(url.split(',', 1)[1])
+        (d / f'{g["id"]}.jpg').write_bytes(raw)
+        g['thumbVersion'] = hashlib.sha256(raw).hexdigest()[:12]   # the script re-uploads only when this changes
+        n += 1
+    (d / 'speles.json').write_text(json.dumps(feed, ensure_ascii=False, indent=1) + '\n')
+    print(f'youtube: {len(feed["games"])} games in the feed, {n} thumbnails')
+
+    # OBS pre-game overlays + the operator's page (tools/obs_page.py).
+    import obs_page
+    made = {}
+    for g in feed['games']:
+        if not g.get('thumb'):
+            continue
+        url = pg.evaluate('(id) => window.YouTubeFeed.overlay(id)', g['id'])
+        if not url or not url.startswith('data:image/png;base64,'):
+            raise SystemExit(f'obs: no overlay for {g["id"]}')
+        made[g['id']] = base64.b64decode(url.split(',', 1)[1])
+    breaks = {}
+    for cup in ('dbck', 'jssc'):
+        url = pg.evaluate('(c) => window.YouTubeFeed.halftime(c)', cup)
+        if not url or not url.startswith('data:image/png;base64,'):
+            raise SystemExit(f'obs: no half-time screen for {cup}')
+        breaks[cup] = base64.b64decode(url.split(',', 1)[1])
+    games, days = obs_page.build(out, feed['games'], made, breaks)
+    print(f'obs: {games} overlays on {days} game days, {len(breaks)} half-time screens')
+
+    # The live scoreboard: admin + OBS overlay (tools/live_pages.py), drawn over the screens above.
+    import live_pages
+    season = json.loads((Path(__file__).resolve().parent.parent / 'src' / 'season.json').read_text())
+    n = live_pages.build(out, season, set(made))
+    print(f'live: scoreboard admin and overlay, {n} games to pick from')
+
+
+def prerender(out, site, body, fonts, urls, social=None):
     out = Path(out)
     start = time.time()
     html = shell(body, fonts, urls)
@@ -174,6 +224,7 @@ def prerender(out, site, body, fonts, urls):
         r['meta']['index'] = False
         r['meta']['path'] = None
         (out / '404.html').write_text(page(site, r['meta'], r['attrs'], r['body'], fonts, urls))
+        youtube_feed(pg, out, site, social or {})
         browser.close()
     # /dobele/ is the same as the front page
     d = out / 'dobele' / 'index.html'

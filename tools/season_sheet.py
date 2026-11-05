@@ -283,8 +283,9 @@ ws.cell(row=1, column=1).comment = Comment('Īss ID (mazie burti). Kalendārā z
 # ---------------------------------------------------------------- Kalendārs
 ws = wb.create_sheet('Kalendārs')
 cols = ['Spēles ID', 'Kauss', 'Posms', 'Kārta', 'Pāris', 'Spēle Nr.', 'Datums', 'Laiks', 'Zāle',
-        'Mājinieki', 'Viesi', 'Statuss', 'basket.lv saite', 'Piezīme', 'Pārbaude']
-header(ws, cols, [15, 8, 28, 11, 9, 9, 12, 8, 11, 13, 13, 12, 30, 28, 46])
+        'Mājinieki', 'Viesi', 'Statuss', 'basket.lv saite', 'Piezīme', 'Pārbaude', 'YouTube saite']
+# "YouTube saite" last, where the sheet script (apps-script/youtube.gs) keeps it.
+header(ws, cols, [15, 8, 28, 11, 9, 9, 12, 8, 11, 13, 13, 12, 30, 28, 46, 44])
 games = []   # (id, cup, stage, round, tie, n, home, away, status)
 for i in range(1, 31):
     games.append((f'DBCK-GR-{i:02d}', 'DBČK', 'Grupu turnīrs', '', '', '', '', '', 'Plānota'))
@@ -322,16 +323,17 @@ if SHEET.get('calendar'):
     cal_rows = [[g['id'], CUP_LABELS[g['cup']], g['stage'], f"{g['round']}. kārta" if g['round'] else None, g['tie'] or None,
                  g['n'] or None, date.fromisoformat(g['date']) if g['date'] else None,
                  time(*map(int, g['time'].split(':'))) if g['time'] else None, g['hall'] or None, g['home'] or None,
-                 g['away'] or None, g['status'] or None, g['basket'] or None, g['note'] or None] for g in SHEET['calendar']]
+                 g['away'] or None, g['status'] or None, g['basket'] or None, g['note'] or None, None, g.get('yt') or None]
+                for g in SHEET['calendar']]
 else:
-    cal_rows = [[gid, cup, stage, rnd or None, tie or None, n or None, None, None, None, home or None, away or None, status, None, None]
+    cal_rows = [[gid, cup, stage, rnd or None, tie or None, n or None, None, None, None, home or None, away or None, status, None, None, None, None]
                 for gid, cup, stage, rnd, tie, n, home, away, status in games]
 for i, vals in enumerate(cal_rows, start=2):
     for j, v in enumerate(vals, start=1):
         ws.cell(row=i, column=j, value=v)
 last = 1 + CAL_ROWS
-kinds = ['auto', 'auto', 'auto', 'in', 'auto', 'auto', 'in', 'in', 'in', 'in', 'in', 'in', 'in', 'in', 'calc']
-style_rows(ws, 2, last, 15, kinds)
+kinds = ['auto', 'auto', 'auto', 'in', 'auto', 'auto', 'in', 'in', 'in', 'in', 'in', 'in', 'in', 'in', 'calc', 'in']
+style_rows(ws, 2, last, 16, kinds)
 # Extra rows below the prefilled season are fully editable.
 for r in range(2 + len(cal_rows), last + 1):
     for ci in range(1, 7):
