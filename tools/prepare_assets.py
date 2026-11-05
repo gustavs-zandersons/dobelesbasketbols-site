@@ -18,6 +18,12 @@
         "next" = next-round posters (photo strip on top), "results" = results
         posters (full photo). The two pools are kept separate.
 
+    python3 tools/prepare_assets.py gallery <name>=<file> [<name>=<file> ...]
+        "Par mums" gallery photos  ->  assets/about/gallery/<name>-<width>.webp
+        Each photo in widths 400, 800 and 1200 px for the mosaic, plus 2000 px
+        on the long side for the full-screen viewer. The order, the mosaic
+        blocks and the descriptions are set in src/app.js (GALLERY).
+
     python3 tools/prepare_assets.py fonts
         design/fonts/*.ttf  ->  assets/fonts/*.woff2  (+ their licences)
         The site serves its own fonts: one file per weight holding every
@@ -120,6 +126,28 @@ def photos(files, focus, use):
     mpath.write_text(json.dumps(manifest, ensure_ascii=False, indent=1) + '\n')
 
 
+GALLERY_WIDTHS = (400, 800, 1200)   # mosaic tiles (the browser picks one for the screen)
+GALLERY_LONG = 2000                 # full-screen viewer: long side
+
+
+def gallery(pairs):
+    out_dir = ROOT / 'assets' / 'about' / 'gallery'
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for pair in pairs:
+        name, f = pair.split('=', 1)
+        im = ImageOps.exif_transpose(Image.open(f)).convert('RGB')
+        full = im.copy()
+        full.thumbnail((GALLERY_LONG, GALLERY_LONG), Image.LANCZOS)
+        sizes = [w for w in GALLERY_WIDTHS if w < full.width * 0.85] + [full.width]   # no near-duplicates
+        total = 0
+        for w in sizes:
+            v = full if w == full.width else full.resize((w, round(full.height * w / full.width)), Image.LANCZOS)
+            dest = out_dir / f'{name}-{w}.webp'
+            v.save(dest, 'WEBP', quality=80 if w == full.width else 78, method=6)
+            total += dest.stat().st_size
+        print(f'{name:22s} {full.width}x{full.height}  widths {sizes}  {total // 1024} KB')
+
+
 # Web fonts: (original in design/fonts, file in assets/fonts). Weights as used in src/styles.css.
 FONTS = [
     ('Anton-Regular.ttf', 'anton-400.woff2'),
@@ -170,6 +198,8 @@ if __name__ == '__main__':
         sponsors()
     elif args[:1] == ['fonts']:
         fonts()
+    elif args[:1] == ['gallery']:
+        gallery(args[1:])
     elif args[:1] == ['photos']:
         focus, use = 0.4, None
         if '--focus' in args:

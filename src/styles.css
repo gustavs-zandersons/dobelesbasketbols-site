@@ -2294,26 +2294,29 @@ body.no-scroll { overflow: hidden; }
 
 /* ---------- Sponsori page ---------- */
 /* ---------- Par mums ---------- */
-.ab-view { display: grid; gap: 48px; padding-block: 20px 72px; }
+.ab-view { display: grid; grid-template-columns: minmax(0, 1fr); gap: 48px; padding-block: 20px 72px; }
 /* The mission: one paragraph, one style, the full width of the page. */
 .ab-mission { font-size: 1.12rem; line-height: 1.65; color: var(--fg); }
 .ab-sub { color: var(--fg-muted); max-width: 62ch; margin: -4px 0 24px; }
 /* Any number of people, in rows centred on the page (a last single person
-   sits in the middle). */
-.ab-people { display: flex; flex-wrap: wrap; justify-content: center; gap: 28px 16px; }
-.ab-people > .ab-person { width: 140px; }
-@media (min-width: 900px) { .ab-people { gap: 28px 32px; } .ab-people > .ab-person { width: 160px; } }
+   sits in the middle). Square photos: the organizers large, the team smaller
+   (three in a row on phones). */
+.ab-people { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px 12px; }
+.ab-people > .ab-person { width: calc((100% - 24px) / 3); max-width: 200px; }
+@media (min-width: 600px) { .ab-people { gap: 28px 24px; } .ab-people > .ab-person { width: 170px; } }
+@media (min-width: 900px) { .ab-people { gap: 28px 32px; } .ab-people > .ab-person { width: 200px; } }
 /* The two organizers: side by side in the middle of the page, each with a quote. */
-.ab-people--lg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 760px; width: 100%; margin-inline: auto; gap: 32px 20px; }
-.ab-people--lg > .ab-person { width: auto; }
+.ab-people--lg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 760px; width: 100%; margin-inline: auto; gap: 32px 16px; }
+@media (min-width: 600px) { .ab-people--lg { gap: 32px 28px; } }
+.ab-people--lg > .ab-person { width: auto; max-width: none; }
 .ab-person { margin: 0; display: grid; justify-items: center; align-content: start; gap: 14px; text-align: center; }
 .ab-photo {
-  --ph: 128px;
-  width: var(--ph); max-width: 100%; aspect-ratio: 1;
-  border-radius: 50%; object-fit: cover;
-  box-shadow: 0 0 0 3px var(--title), 0 10px 26px rgba(0, 0, 0, 0.28);
+  width: 100%; aspect-ratio: 1;
+  border-radius: 12px; object-fit: cover;
+  box-shadow: 0 0 0 2px var(--title), 0 12px 28px rgba(0, 0, 0, 0.3);
 }
-.ab-people--lg .ab-photo { --ph: clamp(136px, 34vw, 196px); }
+.ab-people--lg .ab-photo { max-width: 320px; border-radius: 14px; }
+@media (max-width: 559px) { .ab-photo { border-radius: 10px; } }
 .ab-photo--empty {
   display: grid; place-items: center;
   background: var(--surface);
@@ -2323,6 +2326,7 @@ body.no-scroll { overflow: hidden; }
 .ab-photo--empty svg { width: 44%; fill: var(--fg-dim); }
 .ab-person figcaption { display: grid; gap: 3px; justify-items: center; }
 .ab-name { font-family: var(--font-cond); font-weight: 700; font-size: 1.2rem; letter-spacing: 0.02em; text-transform: uppercase; color: var(--fg); line-height: 1.15; }
+@media (max-width: 559px) { .ab-people--team .ab-name { font-size: 1rem; } .ab-people--team .ab-role { font-size: 0.72rem; letter-spacing: 0.06em; } }
 .ab-people--lg .ab-name { font-size: 1.45rem; }
 @media (max-width: 559px) { .ab-people--lg .ab-name { font-size: 1.08rem; } }
 .ab-role { font-family: var(--font-cond); font-weight: 600; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
@@ -2343,6 +2347,117 @@ body.no-scroll { overflow: hidden; }
 .ab-award-ico { grid-area: ico; width: 46px; height: 46px; fill: none; stroke: var(--title); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .ab-award-year { grid-area: year; font-family: var(--font-display); font-size: 2rem; line-height: 1.05; color: var(--title); font-variant-numeric: tabular-nums; }
 .ab-award-title { grid-area: title; font-family: var(--font-cond); font-weight: 700; font-size: 1.02rem; letter-spacing: 0.03em; text-transform: uppercase; line-height: 1.25; color: var(--fg); }
+/* Join us: who to write to and where to follow. */
+.ab-join {
+  display: grid; gap: 20px 40px; align-items: center;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+  padding: 24px 20px;
+}
+@media (min-width: 900px) { .ab-join { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); padding: 32px 36px; } }
+.ab-join-text p { margin: 0; font-size: 1.05rem; line-height: 1.6; color: var(--fg); max-width: 56ch; }
+.ab-join-contacts { display: grid; gap: 16px; }
+.ab-mail { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.ab-mail-link {
+  display: inline-flex; align-items: center; gap: 12px; min-height: 48px; min-width: 0;
+  font-weight: 700; font-size: 1.08rem; color: var(--fg); text-decoration: none; overflow-wrap: anywhere;
+}
+.ab-mail-link svg {
+  flex: none; width: 44px; height: 44px; padding: 11px; border-radius: 50%;
+  background: var(--accent-fill); fill: none; stroke: var(--on-accent); stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round;
+}
+.ab-mail-link:hover span { text-decoration: underline; text-underline-offset: 3px; }
+.ab-copy, .ab-soc {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 42px;
+  padding: 0 16px 0 12px; border-radius: 999px;
+  border: 1px solid var(--line-strong); background: transparent; color: var(--fg);
+  font: 600 0.92rem var(--font-body); text-decoration: none; cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.ab-copy:hover, .ab-soc:hover { background: var(--surface-hi); border-color: var(--fg-dim); }
+.ab-copy svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.ab-copy.is-done { border-color: var(--title); color: var(--title); }
+.ab-socs { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+.ab-soc svg { width: 18px; height: 18px; fill: currentColor; flex: none; }
+/* Gallery: a two-row mosaic strip that loops sideways (the previous-round
+   slider). Each photo keeps its own shape: a tall block is one photo, a
+   short block two wide photos on top of each other. Heights: GAL_H in app.js. */
+.ab-gal-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 0 18px; margin-bottom: 18px; }
+.ab-gal-head .ab-sub { margin: -4px 0 0; }
+.ab-gal-head .head-link { background: none; border: 0; padding: 0; cursor: pointer; }
+.gal {
+  --gh: 240px; --gap: 8px; --card-min: 100px;
+  position: relative; overflow: hidden; touch-action: pan-y;
+  margin-inline: calc(-1 * var(--gutter));
+}
+@media (min-width: 600px) { .gal { --gh: 320px; --gap: 10px; } }
+@media (min-width: 900px) { .gal { --gh: 400px; } }
+@media (min-width: 1121px) {
+  /* Wider than the page column: the strip fades out at both ends. */
+  .gal.is-sliding {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
+  }
+}
+.gal.is-sliding { cursor: grab; -webkit-user-select: none; user-select: none; }
+.gal.is-dragging { cursor: grabbing; }
+.gal-track { display: flex; gap: var(--gap); width: max-content; padding-inline: var(--gutter); }
+.gal.is-sliding .gal-track { will-change: transform; padding-inline: 0; }
+.gal-block { display: flex; flex-direction: column; gap: var(--gap); height: var(--gh); flex: none; }
+.gal-tile {
+  display: block; position: relative; flex: none;
+  height: var(--gh); padding: 0; border: 0; border-radius: 10px; overflow: hidden;
+  background: var(--surface); cursor: zoom-in;
+}
+.gal-tile--half { height: calc((var(--gh) - var(--gap)) / 2); }
+.gal.is-dragging .gal-tile { cursor: grabbing; }
+.gal-tile img {
+  display: block; width: 100%; height: 100%; object-fit: cover;
+  -webkit-user-drag: none; transition: transform 0.5s ease, filter 0.3s ease;
+}
+.gal-tile:hover img { transform: scale(1.04); filter: brightness(1.06); }
+.gal-tile:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
+@media (max-width: 559px) { .gal-tile { border-radius: 8px; } }
+@media (prefers-reduced-motion: reduce) { .gal-tile img { transition: none; } .gal-tile:hover img { transform: none; } }
+/* Full-screen photo viewer. */
+.lb { position: fixed; inset: 0; z-index: 90; background: #060a13; color: #fff; }
+.lb[hidden] { display: none; }
+.lb-stage { position: absolute; inset: 0; touch-action: pinch-zoom; }
+.lb-area { position: absolute; inset: 60px 12px 60px; display: grid; place-items: center; }
+@media (min-width: 760px) { .lb-area { inset: 64px 88px 40px; } }
+.lb-frame { position: relative; transition: transform 0.25s ease; }
+.lb-frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; -webkit-user-drag: none; user-select: none; }
+.lb-big { opacity: 0; transition: opacity 0.25s ease; }
+.lb-big.is-in { opacity: 1; }
+.lb-in-next { animation: lb-in-next 0.28s ease; }
+.lb-in-prev { animation: lb-in-prev 0.28s ease; }
+@keyframes lb-in-next { from { opacity: 0.2; transform: translateX(48px); } }
+@keyframes lb-in-prev { from { opacity: 0.2; transform: translateX(-48px); } }
+.lb-bar {
+  position: absolute; top: 0; left: 0; right: 0; height: 60px;
+  display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 18px;
+  pointer-events: none;
+}
+.lb-count { font-family: var(--font-cond); font-weight: 700; font-size: 1.05rem; letter-spacing: 0.06em; font-variant-numeric: tabular-nums; }
+.lb-btn {
+  pointer-events: auto; display: grid; place-items: center;
+  width: 48px; height: 48px; padding: 0; border: 0; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1); color: #fff; cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.lb-btn:hover { background: rgba(255, 255, 255, 0.22); }
+.lb-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.lb-btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.lb-nav { position: absolute; top: 50%; margin-top: -24px; }
+.lb-prev { left: 12px; }
+.lb-next { right: 12px; }
+.lb-next svg { transform: scaleX(-1); }
+@media (max-width: 759px) {
+  /* Phones: the arrows sit low, under the thumb; swiping works too. */
+  .lb-nav { top: auto; bottom: 6px; margin-top: 0; background: rgba(255, 255, 255, 0.14); }
+  .lb-prev { left: calc(50% - 58px); }
+  .lb-next { right: calc(50% - 58px); }
+}
+@media (prefers-reduced-motion: reduce) { .lb-in-next, .lb-in-prev { animation: none; } .lb-frame, .lb-big { transition: none; } }
 .ab-thanks {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 18px;
   padding-top: 18px; border-top: 1px solid var(--line); font-weight: 600; color: var(--fg);

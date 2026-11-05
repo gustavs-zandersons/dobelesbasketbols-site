@@ -340,6 +340,7 @@
         k.setAttribute('data-clone', '');
         k.setAttribute('aria-hidden', 'true');
         k.setAttribute('tabindex', '-1');
+        Array.prototype.forEach.call(k.querySelectorAll('a[href], button'), function (n) { n.setAttribute('tabindex', '-1'); });
         track.appendChild(k);
       });
       setW = track.children[cards.length].offsetLeft - track.children[0].offsetLeft;
@@ -405,10 +406,16 @@
     box.addEventListener('mouseleave', function () { hover = false; pause(1200); });
     box.addEventListener('focusin', function (e) {
       focused = true;
-      var card = e.target.closest ? e.target.closest('.res') : null;
-      if (on && card && !card.hasAttribute('data-clone')) {
-        x = card.offsetLeft - track.children[0].offsetLeft - cssPx('--gap', 12);
-        vel = 0; wrap(); paint();
+      var card = e.target;                          // the card (a child of the track) holding the focus
+      while (card && card.parentNode !== track) card = card.parentNode;
+      // Tabbing to a card that is (partly) out of view brings it in. Not on a
+      // tap or click: the row would jump under the finger and the tap miss.
+      if (on && card && usingKeyboard && !card.hasAttribute('data-clone')) {
+        var br = box.getBoundingClientRect(), cr = card.getBoundingClientRect();
+        if (cr.left < br.left || cr.right > br.right) {
+          x = card.offsetLeft - track.children[0].offsetLeft - cssPx('--gap', 12);
+          vel = 0; wrap(); paint();
+        }
       }
     });
     box.addEventListener('focusout', function () { focused = false; pause(); });
@@ -2684,8 +2691,90 @@
       { name: 'Vārds Uzvārds', role: 'Sekretariāts', photo: '' },
       { name: 'Vārds Uzvārds', role: 'Sekretariāts', photo: '' }
     ],
+    join: 'Vēlies pieteikt savu komandu vai atvest mūsu turnīru arī uz savu pilsētu vai novadu? Raksti mums, un pastāstīsim, kā pievienoties nākamajai sezonai.',
+    email: 'dobelesbasketbols@gmail.com',
+    gallerySub: 'Mirkļi no mūsu turnīriem',
     thanks: 'Paldies spēlētājiem, skatītājiem un atbalstītājiem. Tiekamies laukumā!'
   };
+  // Gallery: a mosaic of blocks that loops sideways (the same slider as the
+  // previous-round cards). A block is one photo the full height of the strip,
+  // or two wide photos on top of each other. The photos open full screen in
+  // this order. Files: assets/about/gallery/<f>-<width>.webp
+  // (tools/prepare_assets.py gallery); w × h = the largest copy.
+  var GALLERY = [
+    [{ f: 'kauss-pacelts', w: 2000, h: 1333, alt: 'Valauto spēlētājs paceļ čempionu kausu, komanda gavilē' }],
+    [{ f: 'kauss', w: 1333, h: 2000, alt: 'Dobeles basketbola čempionu kauss 2026' }],
+    [{ f: 'labakais-aizsargs', w: 2000, h: 1333, alt: 'Pamatturnīra labākais aizsardzības spēlētājs ar balvu' },
+     { f: 'pamatturnira-mvp', w: 2000, h: 1333, alt: 'Pamatturnīra MVP ar balvu' }],
+    [{ f: 'taktikas-tafele', w: 1333, h: 2000, alt: 'Taktikas tāfele un ūdens pudele laukuma malā' }],
+    [{ f: 'cempioni', w: 2000, h: 1333, alt: 'Valauto — čempioni ar kausu un medaļām' }],
+    [{ f: 'medala', w: 1333, h: 2000, alt: 'Simboliskā piecinieka medaļa kastītē' }],
+    [{ f: 'jaunpils', w: 2000, h: 1333, alt: 'Jaunpils komanda ar kausu' },
+     { f: 'bjss', w: 2000, h: 1333, alt: 'BJSS komanda pēc apbalvošanas' }],
+    [{ f: 'apbalvosana', w: 2000, h: 1333, alt: 'Apbalvošanas ceremonija laukumā' }],
+    [{ f: 'aizsardzibas-balva', w: 1333, h: 2000, alt: 'Stikla balva pamatturnīra labākajam aizsardzības spēlētājam' }],
+    [{ f: 'finalu-mvp', w: 2000, h: 1333, alt: 'Finālu MVP ar balvu' },
+     { f: 'doks-medalas', w: 2000, h: 1333, alt: 'Doks spēlētāji ar medaļām' }],
+    [{ f: 'kauss-un-lidzjuteji', w: 1333, h: 2000, alt: 'Čempionu kauss un jaunie līdzjutēji ar medaļām' }],
+    [{ f: 'kausa-pasniegsana', w: 2000, h: 1333, alt: 'Čempionu kausa pasniegšana komandai Valauto' }],
+    [{ f: 'davanu-karte', w: 1333, h: 2000, alt: 'Dāvanu karte pamatturnīra MVP' }],
+    [{ f: 'kopbilde', w: 2000, h: 1333, alt: 'Apbalvoto komandu kopbilde' }],
+    [{ f: 'valauto-ar-kausu', w: 1333, h: 2000, alt: 'Valauto spēlētāji ar čempionu kausu' }]
+  ];
+  var GAL_FLAT = [];
+  GALLERY.forEach(function (b) { b.forEach(function (p) { p.i = GAL_FLAT.length; GAL_FLAT.push(p); }); });
+  var GAL_WIDTHS = [400, 800, 1200];
+  // Height of the strip at each screen width (min-width, px) – same as .ab-gal in styles.css.
+  var GAL_H = [[900, 400, 10], [600, 320, 10], [0, 240, 8]];   // [from, height, gap]
+  function galFile(p, w) { return 'assets/about/gallery/' + p.f + '-' + w + '.webp'; }
+  function galSrcset(p) {
+    return GAL_WIDTHS.filter(function (w) { return w < p.w * 0.85; }).concat([p.w])
+      .map(function (w) { return galFile(p, w) + ' ' + w + 'w'; }).join(', ');
+  }
+  function galSizes(p, half) {   // the tile's width on screen, so the browser picks the right copy
+    return GAL_H.map(function (b) {
+      var h = half ? (b[1] - b[2]) / 2 : b[1], w = Math.round(h * p.w / p.h) + 'px';
+      return b[0] ? '(min-width: ' + b[0] + 'px) ' + w : w;
+    }).join(', ');
+  }
+  function galTile(p, half) {
+    return '<button type="button" class="gal-tile' + (half ? ' gal-tile--half' : '') + '" data-gal-i="' + p.i + '" ' +
+      'style="aspect-ratio:' + p.w + '/' + p.h + '" aria-label="Atvērt attēlu ' + (p.i + 1) + ' no ' + GAL_FLAT.length + ': ' + esc(p.alt) + '">' +
+      '<img src="' + galFile(p, 400) + '" srcset="' + galSrcset(p) + '" sizes="' + galSizes(p, half) + '" ' +
+      'alt="" width="' + p.w + '" height="' + p.h + '" loading="lazy" decoding="async" draggable="false"></button>';
+  }
+  function galleryHtml() {
+    return '<section class="ab-sec ab-gal" aria-labelledby="ab-gal">' +
+      '<div class="ab-gal-head"><div><h2 class="g-title" id="ab-gal">Galerija</h2><p class="ab-sub">' + esc(ABOUT.gallerySub) + '</p></div>' +
+      '<button type="button" class="head-link" data-gal-i="0">Skatīt visas ' + GAL_FLAT.length + ' ›</button></div>' +
+      '<div class="gal" data-gal-slider><div class="gal-track">' + GALLERY.map(function (b) {
+        return '<div class="gal-block">' + b.map(function (p) { return galTile(p, b.length > 1); }).join('') + '</div>';
+      }).join('') + '</div></div></section>';
+  }
+  var MAIL_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.2"/><path d="M3.8 7l8.2 6 8.2-6"/></svg>';
+  var COPY_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6.6a2 2 0 0 0-2-2H6.6a2 2 0 0 0-2 2v6.9a2 2 0 0 0 2 2h1.9"/></svg>';
+  var CHECK_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  // The tournament's own pages: the same links as the footer (sheet: Iestatījumi).
+  var ABOUT_SOCIAL = [
+    { key: 'facebook', label: 'Facebook', path: 'M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H7.8v3h2.6V21h3.1z' },
+    { key: 'instagram', label: 'Instagram', path: 'M12 7.3a4.7 4.7 0 1 0 0 9.4 4.7 4.7 0 0 0 0-9.4zm0 7.7a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm6-7.9a1.1 1.1 0 1 1-2.2 0 1.1 1.1 0 0 1 2.2 0zM16.8 3H7.2A4.2 4.2 0 0 0 3 7.2v9.6A4.2 4.2 0 0 0 7.2 21h9.6a4.2 4.2 0 0 0 4.2-4.2V7.2A4.2 4.2 0 0 0 16.8 3zm2.5 13.8a2.5 2.5 0 0 1-2.5 2.5H7.2a2.5 2.5 0 0 1-2.5-2.5V7.2a2.5 2.5 0 0 1 2.5-2.5h9.6a2.5 2.5 0 0 1 2.5 2.5v9.6z' },
+    { key: 'youtube', label: 'YouTube', path: 'M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2C2 8.8 2 12 2 12s0 3.2.4 4.8a2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8c.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8zM10 15V9l5.2 3L10 15z' },
+    { key: 'tiktok', label: 'TikTok', path: 'M16.6 3c.3 2.2 1.6 3.6 3.7 3.8v3.1a6.7 6.7 0 0 1-3.6-1.1v6.3a5.7 5.7 0 1 1-5.7-5.7l.9.1v3.2a2.6 2.6 0 1 0 1.7 2.4V3h3z' }
+  ];
+  function joinHtml() {
+    var links = SET.social || {};
+    var soc = ABOUT_SOCIAL.filter(function (s) { return links[s.key]; }).map(function (s) {
+      return '<li><a class="ab-soc" href="' + esc(links[s.key]) + '" target="_blank" rel="noopener">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + s.path + '"/></svg>' + s.label + '</a></li>';
+    }).join('');
+    return '<section class="ab-join" aria-labelledby="ab-join">' +
+      '<div class="ab-join-text"><h2 class="g-title" id="ab-join">Pievienojies mums</h2><p>' + esc(ABOUT.join) + '</p></div>' +
+      '<div class="ab-join-contacts">' +
+        '<div class="ab-mail"><a class="ab-mail-link" href="mailto:' + esc(ABOUT.email) + '">' + MAIL_ICON + '<span>' + esc(ABOUT.email) + '</span></a>' +
+        '<button type="button" class="ab-copy" data-copy="' + esc(ABOUT.email) + '" aria-label="Kopēt e-pasta adresi">' + COPY_ICON + '<span>Kopēt</span></button></div>' +
+        (soc ? '<ul class="ab-socs" aria-label="Mūsu sociālie tīkli">' + soc + '</ul>' : '') +
+      '</div></section>';
+  }
   var PERSON_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="4.2"/><path d="M3.8 21c.7-4.6 4-7.3 8.2-7.3s7.5 2.7 8.2 7.3z"/></svg>';
   var CUP_ICON = '<svg class="ab-award-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10v4.2a5 5 0 0 1-10 0z"/><path d="M7 5.2H4.2v1.3A3.6 3.6 0 0 0 7.6 10M17 5.2h2.8v1.3a3.6 3.6 0 0 1-3.4 3.5"/><path d="M12 12.7v3.6M8.2 20.5h7.6M9.3 16.3h5.4v4.2H9.3z"/></svg>';
   function aboutPerson(p) {
@@ -2709,9 +2798,173 @@
       }).join('') + '</ul></section>' +
       '<section class="ab-sec" aria-labelledby="ab-team"><h2 class="g-title" id="ab-team">Mūsu komanda</h2>' +
       '<p class="ab-sub">' + esc(ABOUT.teamSub) + '</p>' +
-      '<div class="ab-people">' + ABOUT.team.map(aboutPerson).join('') + '</div></section>' +
+      '<div class="ab-people ab-people--team">' + ABOUT.team.map(aboutPerson).join('') + '</div></section>' +
+      joinHtml() + galleryHtml() +
       '<p class="ab-thanks"><span>' + esc(ABOUT.thanks) + '</span><a class="head-link" href="' + toHref(cupPath(state.cup, 'sponsori')) + '">Mūsu atbalstītāji ›</a></p>';
     $('about-view').innerHTML = html;
+    stopGallery();
+    var gal = $('about-view').querySelector('[data-gal-slider]');
+    if (gal) galSlider = makeGallery(gal);
+  }
+  // The mosaic loops on its own; its small photos all load once the strip is
+  // near the screen (not one by one as they slide in).
+  var galSlider = null;
+  function stopGallery() { if (galSlider) { galSlider.destroy(); galSlider = null; } }
+  function makeGallery(box) {
+    var sl = makeSlider(box), io = null;
+    function eager() { Array.prototype.forEach.call(box.querySelectorAll('img[loading="lazy"]'), function (im) { im.loading = 'eager'; }); }
+    if (!window.__PRERENDER) {
+      if (window.IntersectionObserver) {
+        io = new IntersectionObserver(function (en) { if (en[0].isIntersecting) { eager(); io.disconnect(); io = null; } }, { rootMargin: '600px 0px' });
+        io.observe(box);
+      } else eager();
+    }
+    return { destroy: function () { sl.destroy(); if (io) io.disconnect(); } };
+  }
+
+  // ---------- Photo viewer (Par mums gallery) ----------
+  // Full screen, one photo at a time: arrows, swipe, ← → keys; ✕, Esc or a
+  // tap beside the photo closes it. The mosaic's small copy shows at once and
+  // the large copy fades in over it; the photos either side load ahead.
+  var viewer = null;
+  var LB_ARROW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg>';
+  var LB_CLOSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>';
+  function lbBuild() {
+    var el = document.createElement('div');
+    el.className = 'lb'; el.id = 'lb'; el.hidden = true;
+    el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Galerija');
+    el.innerHTML = '<div class="lb-stage"><div class="lb-area"></div></div>' +
+      '<div class="lb-bar"><span class="lb-count" aria-live="polite"></span>' +
+      '<button type="button" class="lb-btn lb-close" data-lb="close" aria-label="Aizvērt">' + LB_CLOSE + '</button></div>' +
+      '<button type="button" class="lb-btn lb-nav lb-prev" data-lb="prev" aria-label="Iepriekšējais attēls">' + LB_ARROW + '</button>' +
+      '<button type="button" class="lb-btn lb-nav lb-next" data-lb="next" aria-label="Nākamais attēls">' + LB_ARROW + '</button>';
+    document.body.appendChild(el);
+    var v = { el: el, area: el.querySelector('.lb-area'), count: el.querySelector('.lb-count'), frame: null, i: 0, ret: null, sw: null };
+    el.addEventListener('click', function (e) {
+      if (v.swiped) { v.swiped = false; return; }
+      var b = e.target.closest('[data-lb]');
+      if (b) { var a = b.getAttribute('data-lb'); if (a === 'close') closeViewer(); else lbGo(a === 'next' ? 1 : -1); return; }
+      if (!e.target.closest('.lb-frame')) closeViewer();   // a tap beside the photo
+    });
+    // Swipe: the photo follows the finger; far or fast enough = next / previous.
+    var stage = el.querySelector('.lb-stage');
+    stage.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      v.sw = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0, t: Date.now(), moved: false };
+    });
+    stage.addEventListener('pointermove', function (e) {
+      var sw = v.sw; if (!sw || e.pointerId !== sw.id) return;
+      sw.dx = e.clientX - sw.x0;
+      if (!sw.moved) {
+        if (Math.abs(sw.dx) < 8 || Math.abs(sw.dx) < Math.abs(e.clientY - sw.y0)) return;
+        sw.moved = true;
+        try { stage.setPointerCapture(e.pointerId); } catch (err) { /* older browsers */ }
+      }
+      if (v.frame) { v.frame.style.transition = 'none'; v.frame.style.transform = 'translateX(' + sw.dx + 'px)'; }
+    });
+    function swipeEnd(e) {
+      var sw = v.sw; if (!sw || (e && e.pointerId !== sw.id)) return;
+      v.sw = null;
+      if (!sw.moved) return;
+      v.swiped = true; setTimeout(function () { v.swiped = false; }, 0);
+      var fast = Math.abs(sw.dx) / Math.max(1, Date.now() - sw.t) > 0.45;
+      if (Math.abs(sw.dx) > 70 || (fast && Math.abs(sw.dx) > 24)) lbGo(sw.dx < 0 ? 1 : -1);
+      else if (v.frame) { v.frame.style.transition = ''; v.frame.style.transform = ''; }
+    }
+    stage.addEventListener('pointerup', swipeEnd);
+    stage.addEventListener('pointercancel', swipeEnd);
+    document.addEventListener('keydown', function (e) {
+      if (el.hidden) return;
+      if (e.key === 'ArrowRight') { e.preventDefault(); lbGo(1); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); lbGo(-1); }
+      else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeViewer(); }
+      else if (e.key === 'Tab') {                      // keep the focus inside the viewer
+        var bs = el.querySelectorAll('.lb-btn'), first = bs[0], last = bs[bs.length - 1], a = document.activeElement;
+        if (!el.contains(a)) { e.preventDefault(); first.focus(); }
+        else if (e.shiftKey && a === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && a === last) { e.preventDefault(); first.focus(); }
+      }
+    }, true);
+    window.addEventListener('resize', function () { if (!el.hidden) lbShow(v.i, 0); });
+    return v;
+  }
+  function lbLoad(p, px) {   // a detached image: the large copy for a box px wide
+    var im = new Image();
+    im.decoding = 'async'; im.sizes = Math.round(px) + 'px'; im.srcset = galSrcset(p); im.src = galFile(p, 800);
+    return im;
+  }
+  function lbShow(i, dir) {
+    var v = viewer, n = GAL_FLAT.length;
+    i = ((i % n) + n) % n; v.i = i;
+    var p = GAL_FLAT[i], W = v.area.clientWidth, H = v.area.clientHeight, r = p.w / p.h;
+    var w = Math.min(W, H * r), h = w / r;
+    var tile = document.querySelector('.gal-tile[data-gal-i="' + i + '"] img');
+    var small = (tile && tile.complete && tile.currentSrc) || galFile(p, 400);
+    var frame = document.createElement('div');
+    frame.className = 'lb-frame' + (dir > 0 ? ' lb-in-next' : dir < 0 ? ' lb-in-prev' : '');
+    frame.style.width = Math.round(w) + 'px'; frame.style.height = Math.round(h) + 'px';
+    frame.innerHTML = '<img class="lb-small" src="' + esc(small) + '" alt="">';
+    var big = lbLoad(p, w);
+    big.className = 'lb-big'; big.alt = p.alt;
+    if (big.complete) big.classList.add('is-in');
+    else big.onload = function () { big.classList.add('is-in'); };
+    frame.appendChild(big);
+    v.area.innerHTML = ''; v.area.appendChild(frame); v.frame = frame;
+    v.count.textContent = (i + 1) + ' / ' + n;
+    [1, -1].forEach(function (d) {   // the neighbours, ready for the next tap
+      var q = GAL_FLAT[(i + d + n) % n], qr = q.w / q.h;
+      lbLoad(q, Math.min(W, H * qr));
+    });
+  }
+  function lbGo(d) { lbShow(viewer.i + d, d); }
+  function openViewer(i, trigger) {
+    if (!viewer) viewer = lbBuild();
+    viewer.ret = trigger || null;
+    viewer.el.hidden = false;
+    document.body.classList.add('no-scroll');
+    lbShow(i, 0);
+    viewer.el.querySelector('.lb-close').focus({ preventScroll: true });
+  }
+  function closeViewer() {
+    if (!viewer || viewer.el.hidden) return;
+    viewer.el.hidden = true; viewer.area.innerHTML = ''; viewer.frame = null;
+    document.body.classList.remove('no-scroll');
+    var ret = viewer.ret; viewer.ret = null;
+    // Back to the photo for keyboard users; touch and mouse users just see the page again.
+    if (ret && document.body.contains(ret) && usingKeyboard) ret.focus({ preventScroll: true });
+    else if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest ? e.target.closest('[data-gal-i]') : null;
+    if (t) { openViewer(+t.getAttribute('data-gal-i'), t); return; }
+    var c = e.target.closest ? e.target.closest('[data-copy]') : null;
+    if (c) copyText(c);
+  });
+  function copyText(btn) {
+    var text = btn.getAttribute('data-copy'), label = btn.querySelector('span');
+    function done(ok) {
+      if (!ok) {                                       // no clipboard: select the address so it can be copied by hand
+        var sp = btn.parentNode.querySelector('.ab-mail-link span'), sel = window.getSelection && window.getSelection();
+        if (sp && sel) { var rg = document.createRange(); rg.selectNodeContents(sp); sel.removeAllRanges(); sel.addRange(rg); }
+        return;
+      }
+      btn.classList.add('is-done'); label.textContent = 'Nokopēts';
+      btn.querySelector('svg').outerHTML = CHECK_ICON;
+      clearTimeout(btn._t);
+      btn._t = setTimeout(function () {
+        btn.classList.remove('is-done'); label.textContent = 'Kopēt';
+        btn.querySelector('svg').outerHTML = COPY_ICON;
+      }, 2200);
+    }
+    function legacy() {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:-100px;opacity:0';
+      document.body.appendChild(ta); ta.select();
+      var ok = false; try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+      document.body.removeChild(ta); done(ok);
+    }
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(function () { done(true); }, legacy);
+    else legacy();
   }
 
   // ---------- Routing ----------
@@ -2934,7 +3187,7 @@
     var ab = state.view === 'about';
     $('sponsors-view').hidden = state.view !== 'sponsors';
     $('about-view').hidden = !ab;
-    if (!ab) $('about-view').innerHTML = '';
+    if (!ab) { stopGallery(); $('about-view').innerHTML = ''; }
     $('teams-view').hidden = !team;
     if (!team) $('teams-view').innerHTML = '';
     $('leaders-view').hidden = !ldr;

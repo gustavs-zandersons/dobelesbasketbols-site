@@ -147,7 +147,8 @@ def site_settings(sheet, sponsors):
         c = st['cups'][cup]
         cups[cup] = {'name': c['name'], 'mvpSponsor': mvp_sponsor(c.get('mvpSponsor', ''), by_name),
                      'monthMvpSponsor': mvp_sponsor(c.get('monthMvpSponsor', ''), by_name)}
-    return {'season': st['season'], 'cups': cups, 'sponsorsText': st.get('sponsorsText', '')}
+    return {'season': st['season'], 'cups': cups, 'sponsorsText': st.get('sponsorsText', ''),
+            'social': st.get('footer', {}).get('links', {})}   # the footer icons, also on "Par mums"
 
 
 def season_data(real):
