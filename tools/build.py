@@ -125,17 +125,22 @@ def socials_html(links):
 
 
 def mvp_sponsor(name, by_name):
-    """Round / monthly MVP sponsor for the dark strip above the MVP card: the
-    logo version made for dark backgrounds (assets/sponsors/mvp-<id>-white.webp,
-    or mvp-<id>.webp for a colour logo that already reads on dark), else the name."""
+    """Round / monthly MVP sponsor. logo: the version made for dark backgrounds
+    (assets/sponsors/mvp-<id>-white.webp, or mvp-<id>.webp for a colour logo
+    that already reads on dark) for the dark strip above the MVP card;
+    logoLight: the version for light backgrounds (mvp-<id>-dark.webp, mvp-<id>.webp
+    or the sponsor's own logo) for the light band of the MVP share images."""
     if not name:
         return None
-    sid, logo = by_name.get(name.casefold()), ''
-    for fn in (f'mvp-{sid}-white.webp', f'mvp-{sid}.webp') if sid else ():
-        if (ROOT / 'assets' / 'sponsors' / fn).exists():
-            logo = f'assets/sponsors/{fn}'
-            break
-    return {'name': name, 'logo': logo}
+    sid = by_name.get(name.casefold())
+
+    def first(*names):
+        for fn in names if sid else ():
+            if (ROOT / 'assets' / 'sponsors' / fn).exists():
+                return f'assets/sponsors/{fn}'
+        return ''
+    return {'name': name, 'id': sid or '', 'logo': first(f'mvp-{sid}-white.webp', f'mvp-{sid}.webp'),
+            'logoLight': first(f'mvp-{sid}-dark.webp', f'mvp-{sid}.webp', f'{sid}.webp')}
 
 
 def site_settings(sheet, sponsors):

@@ -3005,7 +3005,7 @@ a.plink:focus-visible, a.nm:focus-visible { outline: 2px solid currentColor; out
 .ld-1-v a.ld-game:hover, .ld-v a.ld-game:hover { text-decoration: underline; }
 
 /* Līderi: every round / monthly MVP so far, newest first. */
-.mvph-row { grid-template-columns: 52px minmax(0, 1fr) auto; grid-template-areas: "d m s"; }
+.mvph-row { grid-template-columns: 52px minmax(0, 1fr) auto 40px; grid-template-areas: "d m s b"; }
 .mvph-row .tm-row-d { grid-area: d; }
 .mvph-row .tm-row-m { grid-area: m; }
 .mvph-row--month .tm-row-d b { font-size: 1.25rem; text-transform: uppercase; }
@@ -3021,11 +3021,22 @@ a.plink:focus-visible, a.nm:focus-visible { outline: 2px solid currentColor; out
 .mvph-stats dd { margin: 0; font-family: var(--font-display); font-size: 1.35rem; line-height: 1; font-variant-numeric: tabular-nums; color: var(--accent); }
 .mvph-stats dt { font-family: var(--font-cond); font-weight: 700; font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-muted); margin-top: 3px; }
 @media (max-width: 480px) {
-  .mvph-row { grid-template-columns: 52px minmax(0, 1fr); grid-template-areas: "d m" "d s"; row-gap: 8px; }
+  .mvph-row { grid-template-columns: 52px minmax(0, 1fr) 40px; grid-template-areas: "d m b" "d s b"; row-gap: 8px; }
   .mvph-stats { justify-content: flex-start; gap: 18px; }
   .mvph-stats div { justify-items: start; min-width: 0; }
 }
 .mvph-wrap { display: grid; gap: 10px; min-width: 0; }
+/* Share icon on each MVP row: opens the pop-up with the two MVP images. */
+.mvph-share {
+  grid-area: b; justify-self: end; position: relative;
+  width: 40px; height: 40px; display: grid; place-items: center;
+  border: 1px solid var(--line-strong); border-radius: 50%; background: transparent; color: var(--fg); cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.mvph-share::before { content: ""; position: absolute; inset: -4px; }   /* 48 px to tap */
+.mvph-share:hover { background: var(--surface-hi); border-color: var(--fg-dim); }
+.mvph-share:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.mvph-share svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .mvph-wrap > .tm-list { min-width: 0; }
 .mvph-sp { border-radius: 14px; border-bottom: 1px solid var(--line); }
 @media (min-width: 760px) {

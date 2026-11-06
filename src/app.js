@@ -491,14 +491,16 @@
   }
   // The player's averages in that cup that month, from the box scores.
   function monthStats(cup, month, teamId, idx) {
-    var s = { gp: 0, pts: 0, reb: 0, ast: 0 };
+    var s = { gp: 0, pts: 0, reb: 0, ast: 0, stl: 0, blk: 0, eff: 0, p2: [0, 0], p3: [0, 0], ft: [0, 0] };
     ctx.games().filter(function (g) { return g.comp === cup && g.final && ym(g.date) === month; }).forEach(function (g) {
       var raw = RAW[g.id];
       if (!raw.box) return;
       [['h', g.home], ['a', g.away]].forEach(function (x) {
         if (ctx.resolve(cup, x[1]).team !== teamId) return;
         played(raw.box[x[0]]).forEach(function (r) {
-          if (r[0] === idx) { s.gp++; s.pts += r[3]; s.reb += r[10] + r[11]; s.ast += r[12]; }
+          if (r[0] !== idx) return;
+          s.gp++; s.pts += r[3]; s.reb += r[10] + r[11]; s.ast += r[12]; s.stl += r[13]; s.blk += r[14]; s.eff += r[17];
+          s.p2[0] += r[4]; s.p2[1] += r[5]; s.p3[0] += r[6]; s.p3[1] += r[7]; s.ft[0] += r[8]; s.ft[1] += r[9];
         });
       });
     });
@@ -1638,6 +1640,112 @@
       });
     });
   }
+  // ---------- MVP share images (Kopvērtējums → Kārtas / Mēneša MVP) ----------
+  // The award sponsor's colours, by the sponsor's id in the sheet; a sponsor
+  // not listed here gets the cup's colours.
+  var MVP_THEMES = {
+    tervete: { bg: '#1F2528', accent: '#E1A93A', paper: '#F4EEE3', ink: '#1F2528' },
+    jaunpils: { bg: '#18256E', accent: '#D4A35F', paper: '#F5F1EA', ink: '#141B45' }
+  };
+  var MVP_CUP_THEMES = {
+    dbck: { bg: '#14284D', accent: '#E9B716', paper: '#FFFFFF', ink: '#14284D' },
+    jssc: { bg: '#5E1224', accent: '#FFFFFF', paper: '#FFFFFF', ink: '#5E1224' }
+  };
+  function mvpDate(d) { var x = parse(d); return x.getDate() + '. ' + MONTH_NOM[x.getMonth()]; }
+  function mvpRoundName(g) {
+    var r = ctx.round(g.round);
+    if (g.comp === 'jssc') return groupTitle(r);
+    if (g.stage === 'group') return r.label;
+    if (g.stage === 'k') return 'Kvalifikācija · ' + r.label;
+    if (g.stage === 'hope') return 'Cerību kauss · ' + r.label;
+    return gameTag(g);
+  }
+  // key: 'round:<game id>' or 'month:<cup>:<YYYY-MM>'
+  function mvpShareSpec(key) {
+    var p = key.split(':'), m, cup, kind = p[0], spec;
+    if (kind === 'round') {
+      m = (DATA.mvps || []).filter(function (x) { return x.game === p[1]; })[0];
+      if (!m) return null;
+      cup = m.comp;
+      var g = RAW[m.game], st = { pts: m.pts, reb: m.reb, ast: m.ast, stl: '–', blk: '–', eff: m.eff == null ? '–' : m.eff }, line = '';
+      if (g) {
+        var hId = ctx.resolve(cup, g.home).team, side = hId === m.team ? 'h' : 'a';
+        var row = g.box && (g.box[side] || []).filter(function (r) { return r[0] === m.idx; })[0];
+        if (row) st = { pts: row[3], reb: row[10] + row[11], ast: row[12], stl: row[13], blk: row[14], eff: row[17], p2: [row[4], row[5]], p3: [row[6], row[7]], ft: [row[8], row[9]] };
+        var opp = side === 'h' ? ctx.resolve(cup, g.away).team : hId;
+        var mine = side === 'h' ? g.hs : g.as, theirs = side === 'h' ? g.as : g.hs;
+        if (opp) line = 'Pret ' + team(opp).short + (mine != null ? ' · ' + mine + ':' + theirs : '');
+      }
+      spec = { kind: kind, label: 'Kārtas MVP', sub: (g ? mvpRoundName(g) + ' · ' : '') + mvpDate(m.date), line: line, stats: st,
+        file: CUPS[cup].hash + '-' + m.date + '-kartas-mvp-' + slug(m.player) };
+    } else {
+      cup = p[1];
+      m = (DATA.monthMvps || []).filter(function (x) { return x.comp === cup && x.month === p[2]; })[0];
+      if (!m) return null;
+      var mi = +m.month.slice(5, 7) - 1, s = monthStats(cup, m.month, m.team, m.idx);
+      var a = function (v) { return s.gp ? fmt1(v / s.gp) : '–'; };
+      spec = { kind: kind, label: 'Mēneša MVP', sub: cap(MONTH_NOM[mi]) + ' ' + m.month.slice(0, 4),
+        line: s.gp ? games(s.gp) + ' ' + MONTH_LOC[mi] + ' · vidēji spēlē' : '',
+        stats: { pts: a(s.pts), reb: a(s.reb), ast: a(s.ast), stl: a(s.stl), blk: a(s.blk), eff: a(s.eff), p2: s.p2, p3: s.p3, ft: s.ft },
+        file: CUPS[cup].hash + '-' + m.month + '-menesa-mvp-' + slug(m.player) };
+    }
+    var sp = (kind === 'round' ? CUPS[cup].mvpSponsor : CUPS[cup].monthMvpSponsor) || {};
+    spec.cup = cup; spec.player = m.player; spec.seed = key;
+    spec.teamLogo = team(m.team).logo || '';
+    spec.sponsor = { name: sp.name || '', src: sp.logoLight || '', theme: MVP_THEMES[sp.id] || MVP_CUP_THEMES[cup] };
+    return spec;
+  }
+  function openMvpShare(trigger, key) {
+    var spec = mvpShareSpec(key);
+    if (!spec || typeof window.Poster === 'undefined' || !window.Poster.renderMvp) return;
+    releaseShare();
+    var token = share.token, canShare = canShareFiles();
+    var cards = POSTERS.map(function (f) {
+      return '<figure class="poster-card poster-card--' + f.key + '">' +
+        '<div class="poster-frame" data-poster-frame="' + f.key + '"><span class="poster-wait">Gatavo attēlu…</span></div>' +
+        '<figcaption class="poster-hint">' + esc(f.hint) + '</figcaption>' +
+        '<div class="poster-actions">' +
+        (canShare ? '<button type="button" class="btn btn--fill" data-poster-share="' + f.key + '" disabled>' + SHARE_ICON + 'Dalīties</button>' : '') +
+        '<a class="btn' + (canShare ? '' : ' btn--fill') + '" data-poster-dl="' + f.key + '" download="' + esc(spec.file + '-' + f.file + '.jpg') + '" aria-disabled="true">' + DL_ICON + 'Lejupielādēt</a>' +
+        '</div></figure>';
+    }).join('');
+    sheetReturn = trigger || null;
+    $('sheet').classList.add('sheet--share');
+    $('sheet').innerHTML = '<div class="sheet-grip" aria-hidden="true"></div>' +
+      '<div class="sheet-head"><h2 id="sheet-title">' + esc(spec.label + ' · ' + spec.player) + '</h2>' +
+      '<button type="button" class="icon-btn" data-sheet-close aria-label="Aizvērt"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>' +
+      '<div class="sheet-body"><div class="poster-grid">' + cards + '</div>' +
+      '<p class="poster-note">' + (canShare ? 'Spied „Dalīties”, lai publicētu attēlu sociālajos tīklos, vai lejupielādē to.' : 'Lejupielādē attēlu un publicē to sociālajos tīklos.') + '</p></div>';
+    $('sheet').hidden = false; $('sheet-scrim').hidden = false;
+    document.body.classList.add('no-scroll');
+    var cl = $('sheet').querySelector('[data-sheet-close]');
+    if (cl) cl.focus();
+    var srcs = [CUPS[spec.cup].logo, spec.teamLogo, spec.sponsor.src].filter(Boolean);
+    window.Poster.prepare(srcs, ['400 80px "Anton"', '700 40px "Barlow Condensed"']).then(function (imgs) {
+      if (token !== share.token) return;
+      var img = function (src) { var i = srcs.indexOf(src); return i < 0 ? null : imgs[i]; };
+      POSTERS.forEach(function (f) {
+        var canvas = window.Poster.renderMvp({
+          format: f.key, kind: spec.kind, label: spec.label, sub: spec.sub, line: spec.line, player: spec.player, seed: spec.seed,
+          cupLogo: img(CUPS[spec.cup].logo), team: { img: img(spec.teamLogo) }, stats: spec.stats,
+          sponsor: { name: spec.sponsor.name, light: img(spec.sponsor.src), theme: spec.sponsor.theme }
+        });
+        var preview = canvas.toDataURL('image/jpeg', 0.85);
+        canvas.toBlob(function (blob) {
+          if (token !== share.token || !blob) return;
+          share.files[f.key] = new File([blob], spec.file + '-' + f.file + '.jpg', { type: 'image/jpeg' });
+          var url = URL.createObjectURL(blob);
+          share.urls.push(url);
+          var frame = $('sheet').querySelector('[data-poster-frame="' + f.key + '"]');
+          if (frame) frame.innerHTML = '<img src="' + preview + '" alt="' + esc(spec.label + ' — ' + spec.player + ', ' + f.name) + '">';
+          var dl = $('sheet').querySelector('[data-poster-dl="' + f.key + '"]');
+          if (dl) { dl.href = url; dl.removeAttribute('aria-disabled'); }
+          var sb = $('sheet').querySelector('[data-poster-share="' + f.key + '"]');
+          if (sb) sb.disabled = false;
+        }, 'image/jpeg', 0.92);
+      });
+    });
+  }
   function sharePoster(key) {
     var file = share.files[key];
     if (!file) return;
@@ -2109,6 +2217,9 @@
   function mvpStatsHtml(items) {
     return '<dl class="mvph-stats">' + items.map(function (x) { return '<div><dd>' + x[0] + '</dd><dt>' + x[1] + '</dt></div>'; }).join('') + '</dl>';
   }
+  function mvpShareBtn(key, player) {
+    return '<button type="button" class="mvph-share" data-mvp-share="' + esc(key) + '" aria-label="MVP attēli sociālajiem tīkliem: ' + esc(player) + '">' + SHARE_ICON + '</button>';
+  }
   function mvpHistory(cup) {
     var html = '';
     var rounds = (DATA.mvps || []).filter(function (m) { return m.comp === cup && m.date <= ctx.today; })
@@ -2123,7 +2234,7 @@
             '<span class="tm-row-m"><span class="mvph-name">' + playerLink(m.team, m.idx, cup, 'plink') + '</span>' +
             '<span class="mvph-team">' + badge(m.team, 'sm') + '<span>' + esc(team(m.team).short) + '</span>' +
             (opp ? '<a class="mvph-game" href="' + gameHref(m.game) + '">pret ' + esc(team(opp).short) + ' ›</a>' : '') + '</span></span>' +
-            mvpStatsHtml([[m.pts, 'Pkt'], [m.reb, 'AB'], [m.ast, 'RP']]) + '</li>';
+            mvpStatsHtml([[m.pts, 'Pkt'], [m.reb, 'AB'], [m.ast, 'RP']]) + mvpShareBtn('round:' + m.game, m.player) + '</li>';
         }).join('') + '</ul></div></section>';
     }
     var months = (DATA.monthMvps || []).filter(function (m) { return m.comp === cup && monthRevealDate(cup, m.month) <= ctx.today; })
@@ -2138,7 +2249,7 @@
             '<span class="tm-row-m"><span class="mvph-name">' + playerLink(m.team, m.idx, cup, 'plink') + '</span>' +
             '<span class="mvph-team">' + badge(m.team, 'sm') + '<span>' + esc(team(m.team).short) + '</span>' +
             (st.gp ? '<span class="mvph-gp">' + games(st.gp) + ' ' + MONTH_LOC[mi] + '</span>' : '') + '</span></span>' +
-            mvpStatsHtml([[avg(st.pts), 'Pkt'], [avg(st.reb), 'AB'], [avg(st.ast), 'RP']]) + '</li>';
+            mvpStatsHtml([[avg(st.pts), 'Pkt'], [avg(st.reb), 'AB'], [avg(st.ast), 'RP']]) + mvpShareBtn('month:' + cup + ':' + m.month, m.player) + '</li>';
         }).join('') + '</ul></div><p class="note">Mēneša MVP — spēlētāja vidējie rādītāji tajā mēnesī.</p></section>';
     }
     return html;
@@ -3287,6 +3398,8 @@
     if (sr) { openShare(sr, 'next'); return; }
     var sres = e.target.closest('[data-share-results]');
     if (sres) { openShare(sres, 'results'); return; }
+    var smvp = e.target.closest('[data-mvp-share]');
+    if (smvp) { openMvpShare(smvp, smvp.getAttribute('data-mvp-share')); return; }
     var ps = e.target.closest('[data-poster-share]');
     if (ps) { sharePoster(ps.getAttribute('data-poster-share')); return; }
     var pd = e.target.closest('[data-poster-dl]');
