@@ -646,9 +646,10 @@
     return cache[src];
   }
   // Waits for the poster font (incl. Latvian letters) and the given images.
-  function prepare(srcs) {
+  function prepare(srcs, faces) {
+    var chars = 'ĀČĒĢĪĶĻŅŠŪŽāčēģīķļņšūž0123456789:/%,';
     var fonts = document.fonts && document.fonts.load
-      ? document.fonts.load('700 60px "Barlow Condensed"', 'ĀČĒĢĪĶĻŅŠŪŽāčēģīķļņšūž0123456789:/').catch(function () { return []; })
+      ? Promise.all((faces || ['700 60px "Barlow Condensed"']).map(function (f) { return document.fonts.load(f, chars); })).catch(function () { return []; })
       : Promise.resolve();
     var timeout = new Promise(function (r) { setTimeout(r, 4000); });
     return Promise.all([Promise.race([fonts, timeout])].concat(srcs.map(loadImage)))
@@ -769,5 +770,133 @@
     return c;
   }
 
-  window.Poster = { render: render, renderResults: renderResults, renderThumb: renderThumb, renderOverlay: renderOverlay, renderBreak: renderBreak, prepare: prepare, FORMATS: FORMATS };
+
+  // ---------- Round / month MVP share image (feed 1080×1350, story 1080×1920) ----------
+  // Solid ground in the award sponsor's colour, the cup logo + award top left,
+  // the team logo large and see-through in the top-right corner, the player's
+  // name as the headline, six numbers, shooting rings (2PT / 3PT / FT; a type
+  // with 0 % is left out) and "Balvu pasniedz" + the sponsor on a light band.
+  //
+  // spec = { format, kind: 'round'|'month', label, sub, line, cupLogo: img, player,
+  //          team: { img },
+  //          stats: { pts, reb, ast, stl, blk, eff (text), p2: [made, att], p3, ft },
+  //          sponsor: { light: img, theme: { bg, accent, paper, ink } }, seed }
+  var MV_ANTON = '"Anton", "Barlow Condensed", sans-serif';
+  var MV_COND = '"Barlow Condensed", "Arial Narrow", sans-serif';
+  var MV_LBL = { pts: 'Punkti', reb: 'Atl. bumbas', ast: 'Rez. piesp.', stl: 'Pārķ. bumbas', blk: 'Bloķ. metieni', eff: 'Efektivitāte' };
+  function mvFont(g, fam, px, w) { g.font = (w || 700) + ' ' + px + 'px ' + fam; }
+  function mvWidth(g, t, fam, px, w, track) {
+    mvFont(g, fam, px, w);
+    return g.measureText(t).width + (track ? track * (Array.from(t).length - 1) : 0);
+  }
+  function mvFit(g, t, fam, px, maxW, min, w, track) {
+    while (px > min && mvWidth(g, t, fam, px, w, track ? track * px : 0) > maxW) px -= 2;
+    return px;
+  }
+  function mvCap(g, fam, px, w) { mvFont(g, fam, px, w); return g.measureText('H').actualBoundingBoxAscent || px * 0.72; }
+  // Text on an alphabetic baseline; track = extra space between letters.
+  function mvText(g, t, x, y, fam, px, color, align, w, track) {
+    mvFont(g, fam, px, w);
+    g.fillStyle = color; g.textBaseline = 'alphabetic';
+    if (!track) { g.textAlign = align || 'left'; g.fillText(t, x, y); return; }
+    var ch = Array.from(t), ws = ch.map(function (c) { return g.measureText(c).width; });
+    var total = ws.reduce(function (a, b) { return a + b; }, 0) + track * (ch.length - 1);
+    var sx = align === 'center' ? x - total / 2 : align === 'right' ? x - total : x;
+    g.textAlign = 'left';
+    ch.forEach(function (c, i) { g.fillText(c, sx, y); sx += ws[i] + track; });
+  }
+  function mvContain(g, img, cx, cy, mw, mh) {
+    if (!img) return;
+    var iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+    var k = Math.min(mw / iw, mh / ih);
+    g.drawImage(img, cx - iw * k / 2, cy - ih * k / 2, iw * k, ih * k);
+  }
+  function mvRidge(g, W, y, amp, toY, color, rnd) {
+    var x = 0;
+    g.beginPath(); g.moveTo(0, toY); g.lineTo(0, y - rnd() * amp);
+    while (x < W) { x += 26 + rnd() * 46; g.lineTo(Math.min(W, x), y - rnd() * amp); }
+    g.lineTo(W, toY); g.closePath(); g.fillStyle = color; g.fill();
+  }
+  function mvRing(g, cx, cy, r, lw, f, color, track) {
+    g.save(); g.lineCap = 'round'; g.lineWidth = lw;
+    g.strokeStyle = track; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.stroke();
+    if (f > 0) {
+      g.strokeStyle = color; g.beginPath();
+      g.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, f)); g.stroke();
+    }
+    g.restore();
+  }
+  function renderMvp(spec) {
+    var story = spec.format === 'story', W = 1080, H = story ? 1920 : 1350;
+    var c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    var g = c.getContext('2d'), T = spec.sponsor.theme, st = spec.stats;
+    var SX = story ? 104 : 72, top = story ? 210 : 64, band = story ? 1640 : 1150;
+    g.fillStyle = T.bg; g.fillRect(0, 0, W, H);
+    // team logo, see-through, top-right corner (runs off the edge)
+    g.save(); g.globalAlpha = 0.16;
+    mvContain(g, spec.team.img, W - (story ? 150 : 140), story ? 330 : top + 270, story ? 600 : 620, story ? 600 : 620);
+    g.restore();
+    // header: cup logo + award + round and date
+    var ls = story ? 132 : 112, lx = SX + ls + 28;
+    mvContain(g, spec.cupLogo, SX + ls / 2, top + ls / 2, ls, ls);
+    mvText(g, up(spec.label), lx, top + ls * 0.52, MV_ANTON, story ? 70 : 62, '#FFFFFF', 'left', 400, 1);
+    var sub = up(spec.sub);
+    mvText(g, sub, lx, top + ls * 0.52 + (story ? 50 : 44), MV_COND, mvFit(g, sub, MV_COND, story ? 34 : 30, W - SX - lx, 18, 700, 0.07), T.accent, 'left', 700, 2);
+    // the name: as big as it fits, the last word on its own line; the gap
+    // between the lines is measured so Ā / Ņ marks never touch the other line
+    var parts = up(spec.player).split(' '), last = parts.length > 1 ? parts.pop() : '', first = parts.join(' ');
+    var lines = last ? [first, last] : [first];
+    var px = Math.min.apply(null, lines.map(function (l) { return mvFit(g, l, MV_ANTON, story ? 176 : 150, W - 2 * SX, 70, 400); }));
+    mvFont(g, MV_ANTON, px, 400);
+    var met = lines.map(function (l) { var m = g.measureText(l); return { a: Math.max(m.actualBoundingBoxAscent || 0, px * 0.72), d: m.actualBoundingBoxDescent || 0 }; });
+    var y = top + ls + (story ? 64 : 40) + met[0].a;
+    lines.forEach(function (l, i) {
+      if (i) y += met[i - 1].d + met[i].a + px * 0.1;
+      mvText(g, l, SX - 6, y, MV_ANTON, px, T.accent, 'left', 400);
+    });
+    // one quiet line: the opponent and score (round) or the games (month)
+    var line = up(spec.line || '');
+    if (line) mvText(g, line, SX, y + (story ? 66 : 54), MV_COND, mvFit(g, line, MV_COND, story ? 34 : 30, W - 2 * SX, 18, 700, 0.07), 'rgba(255,255,255,0.7)', 'left', 700, 2);
+    // six numbers: one row (feed) or 3 × 2 (story)
+    var keys = ['pts', 'reb', 'ast', 'stl', 'blk', 'eff'], cols = story ? 3 : 6;
+    var gT = y + (story ? 90 : 84), padT = story ? 36 : 26, padB = story ? 24 : 18;
+    var npx = story ? 104 : 82, ncap = mvCap(g, MV_ANTON, npx, 400), lgap = story ? 44 : 36;
+    var rowH = ncap + lgap + (story ? 42 : 14), cw = (W - 2 * SX) / cols, rows = keys.length / cols;
+    var gB = gT + padT + rowH * rows - (story ? 42 : 14) + padB + 14;
+    g.strokeStyle = 'rgba(255,255,255,0.16)'; g.lineWidth = 2;
+    g.beginPath(); g.moveTo(SX, gT); g.lineTo(W - SX, gT); g.moveTo(SX, gB); g.lineTo(W - SX, gB); g.stroke();
+    keys.forEach(function (k, i) {
+      var col = i % cols, row = Math.floor(i / cols), cx = SX + cw * col + cw / 2, ry = gT + padT + rowH * row;
+      if (col) { g.beginPath(); g.moveTo(SX + cw * col, ry - 6); g.lineTo(SX + cw * col, ry + ncap + lgap + 4); g.stroke(); }
+      var v = String(st[k]), vpx = mvFit(g, v, MV_ANTON, npx, cw - 22, 40, 400);
+      mvText(g, v, cx, ry + ncap, MV_ANTON, vpx, k === 'pts' ? T.accent : '#FFFFFF', 'center', 400);
+      var lb = up(MV_LBL[k]);
+      mvText(g, lb, cx, ry + ncap + lgap, MV_COND, mvFit(g, lb, MV_COND, story ? 27 : 22, cw - 14, 14, 700, 0.06), 'rgba(255,255,255,0.62)', 'center', 700, 1.5);
+    });
+    // shooting rings
+    var shots = [['2PT', st.p2], ['3PT', st.p3], ['FT', st.ft]].filter(function (x) { return x[1] && x[1][1] > 0 && x[1][0] > 0; });
+    var r = story ? 106 : 104, lw = story ? 24 : 22, cy = gB + (story ? 56 : 46) + r + lw / 2;
+    var slot = (W - 2 * SX) / 3, x0 = W / 2 - slot * (shots.length - 1) / 2;
+    shots.forEach(function (x, i) {
+      var cx = x0 + slot * i, f = x[1][0] / x[1][1];
+      mvRing(g, cx, cy, r, lw, f, T.accent, 'rgba(255,255,255,0.12)');
+      var pp = story ? 64 : 60, pc = mvCap(g, MV_ANTON, pp, 400);
+      mvText(g, Math.round(f * 100) + '%', cx, cy + pc / 2 - (story ? 10 : 8), MV_ANTON, pp, '#FFFFFF', 'center', 400);
+      mvText(g, x[1][0] + '/' + x[1][1], cx, cy + pc / 2 + (story ? 30 : 28), MV_COND, story ? 29 : 27, 'rgba(255,255,255,0.65)', 'center', 700, 1);
+      mvText(g, x[0], cx, cy + r + lw / 2 + (story ? 46 : 40), MV_COND, story ? 28 : 26, T.accent, 'center', 700, 2);
+    });
+    // light band: who presents the award
+    mvRidge(g, W, band, 34, H, T.paper, rng(spec.seed || spec.player));
+    var sTop = band + (story ? 44 : 18), sh = story ? 196 : H - sTop - 14;
+    mvText(g, up('Balvu pasniedz'), W / 2, sTop + 26, MV_COND, 26, T.ink, 'center', 700, 5);
+    if (spec.sponsor.light) mvContain(g, spec.sponsor.light, W / 2, sTop + 40 + (sh - 40) / 2, story ? 380 : 360, sh - 52);
+    else if (spec.sponsor.name) {
+      var nm = up(spec.sponsor.name);
+      mvText(g, nm, W / 2, sTop + 40 + (sh - 40) / 2 + 18, MV_ANTON, mvFit(g, nm, MV_ANTON, 56, W - 2 * SX, 28, 400), T.ink, 'center', 400);
+    }
+    return c;
+  }
+
+  window.Poster = { render: render, renderResults: renderResults, renderThumb: renderThumb, renderOverlay: renderOverlay, renderBreak: renderBreak, renderMvp: renderMvp, prepare: prepare, FORMATS: FORMATS };
 })();
