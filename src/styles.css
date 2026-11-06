@@ -2312,6 +2312,14 @@ body.no-scroll { overflow: hidden; }
 @media (min-width: 768px) { .ab-hero { padding-block: calc(var(--head-h) + 56px) 112px; } }
 .view-about:not(.is-scrolled) .topbar { background-color: transparent; border-bottom-color: transparent; }
 .view-about .topbar { transition: background-color 0.3s ease, border-color 0.3s ease; }
+/* The active cup on "Par mums": a see-through dark pill that matches the photo
+   (no cup-colour pill or ring while the header is see-through). */
+.view-about .cup-btn[aria-current="page"] { background: rgba(0, 0, 0, 0.3); }
+.view-about:not(.is-scrolled) .cup-btn[aria-current="page"] {
+  background: rgba(0, 0, 0, 0.45);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+}
+.view-about:not(.is-scrolled) .cup-btn[aria-current="page"] img { box-shadow: none; }
 .ab-hero-bg, .ab-hero-bg img { position: absolute; inset: 0; width: 100%; height: 100%; }
 .ab-hero-bg img { object-fit: cover; object-position: center bottom; }
 @media (min-width: 900px) { .ab-hero-bg img { object-position: center 62%; } }
