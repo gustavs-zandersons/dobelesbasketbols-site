@@ -1,5 +1,27 @@
 # Changelog
 
+## Round 33 — MVP share images
+
+- Kopvērtējums: every row in the **Kārtas MVP** and **Mēneša MVP** lists has a
+  small share icon on the right (not on the home page). It opens a pop-up like the
+  round posters with two images, **Ieraksts** (4:5, 1080×1350) and **Stāsts / Reels**
+  (9:16, 1080×1920), each with Lejupielādēt (and Dalīties where the phone can share
+  files). Files: `<cup>-<date>-kartas-mvp-<player>-ieraksts.jpg`, `…-menesa-mvp-…`.
+- The image: a solid ground in the award sponsor's colours, the cup logo with the
+  award and round / month top left, the team logo large and see-through in the
+  top-right corner, the player's name as the headline (the gap between the lines
+  is measured so Ā / Ņ marks never touch), one line with the opponent and score
+  (round) or the games that month, six numbers (points, rebounds, assists, steals,
+  blocks, efficiency), rings for 2PT / 3PT / FT with the percentage and made/attempted
+  (a type with 0 % is left out), and "Balvu pasniedz" with **only** the award's
+  sponsor on a light band. `src/poster.js` (`renderMvp`).
+- Round MVP: that game's box score. Month MVP: the player's averages over that
+  month's games, shooting rings from the month's totals (`monthStats`).
+- Sponsor colours by the sponsor's id (`MVP_THEMES` in `src/app.js`: Tērvete,
+  Jaunpils Pienotava); any other sponsor gets the cup's colours. The MVP sponsor
+  now also carries a logo for light backgrounds: `assets/sponsors/mvp-<id>-dark.webp`,
+  else `mvp-<id>.webp`, else `<id>.webp` (`tools/build.py`, `mvp_sponsor`).
+
 ## Round 32 — scene transitions to choose from, admin Settings
 
 - Four more transitions between what is on screen, next to the logo spin: **Slash**
