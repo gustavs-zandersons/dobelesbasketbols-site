@@ -2687,13 +2687,17 @@
     ],
     teamSub: 'Īpašs paldies cilvēkiem, bez kuriem neviena spēļu diena nenotiktu.',
     team: [
-      { name: 'Vārds Uzvārds', role: 'Galvenais tiesnesis', photo: '' },
-      { name: 'Vārds Uzvārds', role: 'Sekretariāts', photo: '' },
-      { name: 'Vārds Uzvārds', role: 'Sekretariāts', photo: '' }
+      { name: 'Juris Brūveris', role: 'Galvenais tiesnesis' },
+      { name: 'Nadīna Pahmurkina', role: 'Sekretariāts' },
+      { name: 'Žaklīna Frīdrihsone', role: 'Sekretariāts' },
+      { name: 'Gatis Kobzars', role: 'Organizatoriskā palīdzība' }
     ],
+    // Photos: tools/prepare_assets.py about <name>=<file> <widths> -> assets/about/<name>-<width>.webp
+    teamPhoto: { f: 'komanda', widths: [640, 960, 1400], w: 1400, h: 933, alt: 'Turnīra komanda basketbola laukumā' },
+    heroWide: { f: 'hero-wide', widths: [1280, 1920, 2560] },    // top band from 900 px wide
+    heroPhone: { f: 'hero-phone', widths: [800, 1200, 1600] },   // top band on phones and tablets
     join: 'Vēlies pieteikt savu komandu vai atvest mūsu turnīru arī uz savu pilsētu vai novadu? Raksti mums, un pastāstīsim, kā pievienoties nākamajai sezonai.',
     email: 'dobelesbasketbols@gmail.com',
-    gallerySub: 'Mirkļi no mūsu turnīriem',
     thanks: 'Paldies spēlētājiem, skatītājiem un atbalstītājiem. Tiekamies laukumā!'
   };
   // Gallery: a mosaic of blocks that loops sideways (the same slider as the
@@ -2744,16 +2748,12 @@
       'alt="" width="' + p.w + '" height="' + p.h + '" loading="lazy" decoding="async" draggable="false"></button>';
   }
   function galleryHtml() {
-    return '<section class="ab-sec ab-gal" aria-labelledby="ab-gal">' +
-      '<div class="ab-gal-head"><div><h2 class="g-title" id="ab-gal">Galerija</h2><p class="ab-sub">' + esc(ABOUT.gallerySub) + '</p></div>' +
-      '<button type="button" class="head-link" data-gal-i="0">Skatīt visas ' + GAL_FLAT.length + ' ›</button></div>' +
+    return '<section class="ab-gal" aria-label="Galerija">' +
       '<div class="gal" data-gal-slider><div class="gal-track">' + GALLERY.map(function (b) {
         return '<div class="gal-block">' + b.map(function (p) { return galTile(p, b.length > 1); }).join('') + '</div>';
       }).join('') + '</div></div></section>';
   }
   var MAIL_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.2"/><path d="M3.8 7l8.2 6 8.2-6"/></svg>';
-  var COPY_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6.6a2 2 0 0 0-2-2H6.6a2 2 0 0 0-2 2v6.9a2 2 0 0 0 2 2h1.9"/></svg>';
-  var CHECK_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
   // The tournament's own pages: the same links as the footer (sheet: Iestatījumi).
   var ABOUT_SOCIAL = [
     { key: 'facebook', label: 'Facebook', path: 'M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H7.8v3h2.6V21h3.1z' },
@@ -2761,20 +2761,34 @@
     { key: 'youtube', label: 'YouTube', path: 'M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2C2 8.8 2 12 2 12s0 3.2.4 4.8a2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8c.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8zM10 15V9l5.2 3L10 15z' },
     { key: 'tiktok', label: 'TikTok', path: 'M16.6 3c.3 2.2 1.6 3.6 3.7 3.8v3.1a6.7 6.7 0 0 1-3.6-1.1v6.3a5.7 5.7 0 1 1-5.7-5.7l.9.1v3.2a2.6 2.6 0 1 0 1.7 2.4V3h3z' }
   ];
+  function handle(url) {   // facebook.com/DobelesBasket/ -> @DobelesBasket
+    var seg = String(url).replace(/[?#].*$/, '').replace(/\/+$/, '').split('/').pop();
+    return seg ? (seg.charAt(0) === '@' ? seg : '@' + seg) : '';
+  }
+  function ridgeSvg(d, cls) {
+    return d ? '<svg class="ridge ' + cls + '" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true"><path d="' + esc(d) + '"/></svg>' : '';
+  }
+  // Last section: a band in the other cup colour that runs into the footer.
+  // Contacts: the tournament's pages (same links as the footer), then the e-mail.
   function joinHtml() {
     var links = SET.social || {};
-    var soc = ABOUT_SOCIAL.filter(function (s) { return links[s.key]; }).map(function (s) {
-      return '<li><a class="ab-soc" href="' + esc(links[s.key]) + '" target="_blank" rel="noopener">' +
-        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + s.path + '"/></svg>' + s.label + '</a></li>';
-    }).join('');
+    var rows = ABOUT_SOCIAL.filter(function (x) { return links[x.key]; }).map(function (x) {
+      return '<li><a class="ab-contact" href="' + esc(links[x.key]) + '" target="_blank" rel="noopener">' +
+        '<span class="ab-contact-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + x.path + '"/></svg></span>' +
+        '<span class="ab-contact-txt"><b>' + x.label + '</b><span>' + esc(handle(links[x.key])) + '</span></span></a></li>';
+    });
+    rows.push('<li><a class="ab-contact ab-contact--mail" href="mailto:' + esc(ABOUT.email) + '">' +
+      '<span class="ab-contact-ic">' + MAIL_ICON + '</span>' +
+      '<span class="ab-contact-txt"><b>E-pasts</b><span>' + esc(ABOUT.email) + '</span></span></a></li>');
     return '<section class="ab-join" aria-labelledby="ab-join">' +
-      '<div class="ab-join-text"><h2 class="g-title" id="ab-join">Pievienojies mums</h2><p>' + esc(ABOUT.join) + '</p></div>' +
-      '<div class="ab-join-contacts">' +
-        '<div class="ab-mail"><a class="ab-mail-link" href="mailto:' + esc(ABOUT.email) + '">' + MAIL_ICON + '<span>' + esc(ABOUT.email) + '</span></a>' +
-        '<button type="button" class="ab-copy" data-copy="' + esc(ABOUT.email) + '" aria-label="Kopēt e-pasta adresi">' + COPY_ICON + '<span>Kopēt</span></button></div>' +
-        (soc ? '<ul class="ab-socs" aria-label="Mūsu sociālie tīkli">' + soc + '</ul>' : '') +
+      ridgeSvg($('about-view').getAttribute('data-ridge-c'), 'ab-join-ridge') +
+      '<div class="wrap ab-join-in">' +
+        '<div class="ab-join-text"><h2 class="ab-join-title" id="ab-join">Pievienojies mums</h2><p>' + esc(ABOUT.join) + '</p></div>' +
+        '<ul class="ab-contacts" aria-label="Saziņai">' + rows.join('') + '</ul>' +
+        '<p class="ab-thanks"><span>' + esc(ABOUT.thanks) + '</span><a href="' + toHref(cupPath(state.cup, 'sponsori')) + '">Mūsu atbalstītāji ›</a></p>' +
       '</div></section>';
   }
+
   var PERSON_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="4.2"/><path d="M3.8 21c.7-4.6 4-7.3 8.2-7.3s7.5 2.7 8.2 7.3z"/></svg>';
   var CUP_ICON = '<svg class="ab-award-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10v4.2a5 5 0 0 1-10 0z"/><path d="M7 5.2H4.2v1.3A3.6 3.6 0 0 0 7.6 10M17 5.2h2.8v1.3a3.6 3.6 0 0 1-3.4 3.5"/><path d="M12 12.7v3.6M8.2 20.5h7.6M9.3 16.3h5.4v4.2H9.3z"/></svg>';
   function aboutPerson(p) {
@@ -2785,22 +2799,41 @@
       '<span class="ab-role">' + esc(p.role) + '</span>' +
       (p.quote ? '<q class="ab-quote">' + esc(p.quote) + '</q>' : '') + '</figcaption></figure>';
   }
+  function aboutSrcset(ph) {
+    return ph.widths.map(function (w) { return 'assets/about/' + ph.f + '-' + w + '.webp ' + w + 'w'; }).join(', ');
+  }
   function renderAbout() {
-    var html = '<div class="page-head"><p class="eyebrow">Dobeles basketbols</p><h1 class="page-title">Par mums</h1></div>' +
-      '<section class="ab-sec" aria-labelledby="ab-mission"><h2 class="g-title" id="ab-mission">Mūsu misija</h2>' +
-      '<p class="ab-mission">' + esc(ABOUT.mission) + '</p></section>' +
+    var tp = ABOUT.teamPhoto;
+    // Top band like the cup home pages: group photo under a dark cup-colour veil, ridge into the page.
+    var html = '<section class="ab-hero" aria-labelledby="ab-title">' +
+      '<picture class="ab-hero-bg">' +
+        '<source media="(min-width: 900px)" srcset="' + aboutSrcset(ABOUT.heroWide) + '" sizes="100vw">' +
+        '<img src="assets/about/' + ABOUT.heroPhone.f + '-' + ABOUT.heroPhone.widths[0] + '.webp" srcset="' + aboutSrcset(ABOUT.heroPhone) + '" sizes="150vw" alt="" decoding="async" fetchpriority="high">' +
+      '</picture>' +
+      '<div class="wrap ab-hero-in"><p class="eyebrow">Dobeles basketbols</p><h1 class="page-title" id="ab-title">Par mums</h1>' +
+        '<h2 class="g-title ab-hero-sub">Mūsu misija</h2><p class="ab-mission">' + esc(ABOUT.mission) + '</p></div>' +
+      ridgeSvg($('about-view').getAttribute('data-ridge-a'), 'ab-hero-ridge') +
+      '</section>' +
+      '<div class="wrap ab-body">' +
       // The two organizers: photo, name, title and a quote (no section title).
       '<section class="ab-people ab-people--lg" aria-label="Turnīra organizatori">' + ABOUT.organizers.map(aboutPerson).join('') + '</section>' +
+      galleryHtml() +
       '<section class="ab-sec" aria-labelledby="ab-awards"><h2 class="g-title" id="ab-awards">Sasniegumi</h2>' +
       '<ul class="ab-awards">' + ABOUT.awards.map(function (a) {
         return '<li class="ab-award">' + CUP_ICON + '<span class="ab-award-year">' + esc(a.year) + '</span>' +
           '<span class="ab-award-title">' + esc(a.title) + '</span></li>';
       }).join('') + '</ul></section>' +
-      '<section class="ab-sec" aria-labelledby="ab-team"><h2 class="g-title" id="ab-team">Mūsu komanda</h2>' +
-      '<p class="ab-sub">' + esc(ABOUT.teamSub) + '</p>' +
-      '<div class="ab-people ab-people--team">' + ABOUT.team.map(aboutPerson).join('') + '</div></section>' +
-      joinHtml() + galleryHtml() +
-      '<p class="ab-thanks"><span>' + esc(ABOUT.thanks) + '</span><a class="head-link" href="' + toHref(cupPath(state.cup, 'sponsori')) + '">Mūsu atbalstītāji ›</a></p>';
+      // The team: one group photo, and the people with their roles beside it.
+      '<section class="ab-team" aria-labelledby="ab-team">' +
+        '<div class="ab-team-head"><h2 class="g-title" id="ab-team">Mūsu komanda</h2><p class="ab-sub">' + esc(ABOUT.teamSub) + '</p></div>' +
+        '<img class="ab-team-photo" src="assets/about/' + tp.f + '-' + tp.widths[1] + '.webp" srcset="' + aboutSrcset(tp) + '" ' +
+          'sizes="(min-width: 1121px) 600px, (min-width: 900px) 55vw, 100vw" width="' + tp.w + '" height="' + tp.h + '" alt="' + esc(tp.alt) + '" loading="lazy" decoding="async">' +
+        '<ul class="ab-crew">' + ABOUT.team.map(function (p) {
+          return '<li><span class="ab-crew-name">' + esc(p.name) + '</span><span class="ab-crew-role">' + esc(p.role) + '</span></li>';
+        }).join('') + '</ul>' +
+      '</section>' +
+      '</div>' +
+      joinHtml();
     $('about-view').innerHTML = html;
     stopGallery();
     var gal = $('about-view').querySelector('[data-gal-slider]');
@@ -2936,36 +2969,8 @@
   }
   document.addEventListener('click', function (e) {
     var t = e.target.closest ? e.target.closest('[data-gal-i]') : null;
-    if (t) { openViewer(+t.getAttribute('data-gal-i'), t); return; }
-    var c = e.target.closest ? e.target.closest('[data-copy]') : null;
-    if (c) copyText(c);
+    if (t) openViewer(+t.getAttribute('data-gal-i'), t);
   });
-  function copyText(btn) {
-    var text = btn.getAttribute('data-copy'), label = btn.querySelector('span');
-    function done(ok) {
-      if (!ok) {                                       // no clipboard: select the address so it can be copied by hand
-        var sp = btn.parentNode.querySelector('.ab-mail-link span'), sel = window.getSelection && window.getSelection();
-        if (sp && sel) { var rg = document.createRange(); rg.selectNodeContents(sp); sel.removeAllRanges(); sel.addRange(rg); }
-        return;
-      }
-      btn.classList.add('is-done'); label.textContent = 'Nokopēts';
-      btn.querySelector('svg').outerHTML = CHECK_ICON;
-      clearTimeout(btn._t);
-      btn._t = setTimeout(function () {
-        btn.classList.remove('is-done'); label.textContent = 'Kopēt';
-        btn.querySelector('svg').outerHTML = COPY_ICON;
-      }, 2200);
-    }
-    function legacy() {
-      var ta = document.createElement('textarea');
-      ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:-100px;opacity:0';
-      document.body.appendChild(ta); ta.select();
-      var ok = false; try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
-      document.body.removeChild(ta); done(ok);
-    }
-    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(function () { done(true); }, legacy);
-    else legacy();
-  }
 
   // ---------- Routing ----------
   // Paths: / and /jelgava/ (cup home), /kalendars/, /par-mums/, /speles/<season>/<game id>/,

@@ -210,6 +210,7 @@ def render(preview, real):
             .replace('{{SPONSORS_HTML}}', sponsors_html(sponsors))
             .replace('{{RIDGE_A}}', ridge(7))
             .replace('{{RIDGE_B}}', ridge(11, base=36, amp=24))
+            .replace('{{RIDGE_C}}', ridge(23, base=36, amp=22))
             .replace('{{NOTICE}}', '' if preview or real else NOTICE))
     head, body = page.split('<!--BODY-->', 1)
     if preview:
@@ -237,6 +238,7 @@ def site_parts():
            .replace('{{SPONSORS_HTML}}', sponsors_html(sponsors))
            .replace('{{RIDGE_A}}', ridge(7))
            .replace('{{RIDGE_B}}', ridge(11, base=36, amp=24))
+           .replace('{{RIDGE_C}}', ridge(23, base=36, amp=22))
            .replace('{{NOTICE}}', ''))
     head, body = tpl.split('<!--BODY-->', 1)
     body = body[:body.index('<script id="season-data"')].rstrip() + '\n'

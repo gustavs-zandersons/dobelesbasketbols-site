@@ -24,6 +24,10 @@
         on the long side for the full-screen viewer. The order, the mosaic
         blocks and the descriptions are set in src/app.js (GALLERY).
 
+    python3 tools/prepare_assets.py about <name>=<file> <width>[,<width>...]
+        Other "Par mums" photos (top band background, team photo)
+        ->  assets/about/<name>-<width>.webp, one file per width.
+
     python3 tools/prepare_assets.py fonts
         design/fonts/*.ttf  ->  assets/fonts/*.woff2  (+ their licences)
         The site serves its own fonts: one file per weight holding every
@@ -148,6 +152,18 @@ def gallery(pairs):
         print(f'{name:22s} {full.width}x{full.height}  widths {sizes}  {total // 1024} KB')
 
 
+def about_photo(pair, widths):
+    name, f = pair.split('=', 1)
+    im = ImageOps.exif_transpose(Image.open(f)).convert('RGB')
+    out_dir = ROOT / 'assets' / 'about'
+    for w in sorted(int(x) for x in widths.split(',')):
+        w = min(w, im.width)
+        v = im if w == im.width else im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
+        dest = out_dir / f'{name}-{w}.webp'
+        v.save(dest, 'WEBP', quality=76, method=6)
+        print(f'{dest.relative_to(ROOT)}  {v.width}x{v.height}  {dest.stat().st_size // 1024} KB')
+
+
 # Web fonts: (original in design/fonts, file in assets/fonts). Weights as used in src/styles.css.
 FONTS = [
     ('Anton-Regular.ttf', 'anton-400.woff2'),
@@ -198,6 +214,8 @@ if __name__ == '__main__':
         sponsors()
     elif args[:1] == ['fonts']:
         fonts()
+    elif args[:1] == ['about'] and len(args) == 3:
+        about_photo(args[1], args[2])
     elif args[:1] == ['gallery']:
         gallery(args[1:])
     elif args[:1] == ['photos']:
