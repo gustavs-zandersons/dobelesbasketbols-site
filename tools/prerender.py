@@ -35,7 +35,8 @@ LIST_JS = r"""() => {
   const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Riga' });
   const ctx = window.Engine.create(D, today);
   const slug = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-  const out = ['/', '/jelgava/', '/kalendars/', '/par-mums/'];
+  // Shared pages straight after the front page: saved in the Dobele colours, as they open.
+  const out = ['/', '/kalendars/', '/par-mums/', '/jelgava/'];
   for (const c of ['dobele', 'jelgava']) {
     for (const s of ['kopvertejums', 'komandas', 'lideri', 'statistika', 'statistika/komandas', 'sponsori']) out.push('/' + c + '/' + s + '/');
     for (const t of D.teams) {

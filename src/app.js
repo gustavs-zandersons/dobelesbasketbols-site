@@ -2696,7 +2696,7 @@
     teamPhoto: { f: 'komanda', widths: [640, 960, 1400], w: 1400, h: 933, alt: 'Turnīra komanda basketbola laukumā' },
     heroWide: { f: 'hero-wide', widths: [1280, 1920, 2560] },    // top band from 900 px wide
     heroPhone: { f: 'hero-phone', widths: [800, 1200, 1600] },   // top band on phones and tablets
-    join: 'Vēlies pieteikt savu komandu vai atvest mūsu turnīru arī uz savu pilsētu vai novadu? Raksti mums, un pastāstīsim, kā pievienoties nākamajai sezonai.',
+    join: 'Vēlies pieteikt savu komandu vai atvest mūsu turnīru arī uz savu pilsētu vai novadu? Varbūt vēlies atbalstīt turnīru un pievienoties mūsu atbalstītāju pulkam? Raksti mums, un pastāstīsim, kā pievienoties nākamajai sezonai.',
     email: 'dobelesbasketbols@gmail.com',
     thanks: 'Paldies spēlētājiem, skatītājiem un atbalstītājiem. Tiekamies laukumā!'
   };
@@ -2842,6 +2842,12 @@
   // The mosaic loops on its own; its small photos all load once the strip is
   // near the screen (not one by one as they slide in).
   var galSlider = null;
+  // "Par mums": the header is see-through over the top photo and turns solid
+  // again as soon as the page is scrolled.
+  function headScrolled() {
+    document.documentElement.classList.toggle('is-scrolled', (window.scrollY || window.pageYOffset || 0) > 24);
+  }
+  window.addEventListener('scroll', headScrolled, { passive: true });
   function stopGallery() { if (galSlider) { galSlider.destroy(); galSlider = null; } }
   function makeGallery(box) {
     var sl = makeSlider(box), io = null;
@@ -3192,6 +3198,8 @@
     var ab = state.view === 'about';
     $('sponsors-view').hidden = state.view !== 'sponsors';
     $('about-view').hidden = !ab;
+    document.documentElement.classList.toggle('view-about', ab);   // see-through header over the top photo
+    headScrolled();
     if (!ab) { stopGallery(); $('about-view').innerHTML = ''; }
     $('teams-view').hidden = !team;
     if (!team) $('teams-view').innerHTML = '';
