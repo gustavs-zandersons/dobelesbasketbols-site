@@ -182,7 +182,11 @@ Today the site reads four tabs:
 
 Kalendārs, MVP and Lēmumi are not read yet (demo games until the real calendar).
 
-**Run it:** GitHub → Actions → **Atjaunot datus no tabulas** → Run workflow. It
+**When it runs:** the season sheet starts it (`apps-script/site.gs`): Sundays
+every 15 minutes 09:00–18:00, other days once at 12:00 (Riga time), and at once
+from the sheet's menu **Mājaslapa → Atjaunot mājaslapu tagad**. By hand on GitHub:
+Actions → **Atjaunot datus no tabulas** → Run workflow. GitHub's own timer runs it
+once a day as a backup (it skips too many slots to be the main timer). It
 downloads the sheet (repository secret `SHEET_URL`: the "Publish to web" link, or
 a link to a sheet shared with "Anyone with the link"), checks it, downloads new
 logos, regenerates the demo games, builds and checks the site, commits the data

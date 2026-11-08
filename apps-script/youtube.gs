@@ -17,6 +17,7 @@
  *   Izveidot straumes tagad   – the same run as on Mondays, at once
  *   Testa straume             – one unlisted test stream (check it in OBS), then delete it
  *   Ieslēgt / Izslēgt pirmdienu palaišanu
+ * (onOpen also adds the "Mājaslapa" menu from site.gs, the site refresh.)
  *
  * Safe to run again at any time: a game that already has a stream is updated,
  * never duplicated. Streams that are live or finished are never touched.
@@ -57,6 +58,8 @@ var NEVER_LIVE = ['created', 'ready'];
 // ---------- menu ----------
 
 function onOpen() {
+  // The "Mājaslapa" menu (site refresh) lives in site.gs, the second file of this project.
+  if (typeof siteMenu_ === 'function') siteMenu_();
   SpreadsheetApp.getUi().createMenu('YouTube')
     .addItem('Izveidot straumes tagad (nākamās 7 dienas)', 'menuSyncNow')
     .addSeparator()
