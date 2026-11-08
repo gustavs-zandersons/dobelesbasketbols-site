@@ -185,18 +185,18 @@
    "pool": "B grupa",
    "round": "Kārta: 2",
    "type": "REGULAR",
-   "status": "IN_PROGRESS",
+   "status": "CONFIRMED",
    "home": {
     "name": "BK Buki/Sandramebeles.lv",
     "code": "BKBUK",
     "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
-    "score": 53
+    "score": 80
    },
    "away": {
     "name": "Jelgava BJSS U19",
     "code": "JEL19",
     "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
-    "score": 61
+    "score": 93
    }
   },
   {
