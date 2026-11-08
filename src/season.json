@@ -5678,6 +5678,18 @@
    "reb": 28,
    "ast": 2,
    "eff": 68
+  },
+  {
+   "comp": "dbck",
+   "date": "2026-11-08",
+   "game": "dbck-gr-08",
+   "team": "bjss-u19",
+   "idx": 13,
+   "player": "Roberts Kļava",
+   "pts": 10,
+   "reb": 12,
+   "ast": 1,
+   "eff": 17
   }
  ],
  "monthMvps": [],
