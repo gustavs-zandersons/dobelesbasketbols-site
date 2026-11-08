@@ -113,18 +113,18 @@
    "pool": "A grupa",
    "round": "Kārta: 2",
    "type": "REGULAR",
-   "status": "SCHEDULED",
+   "status": "IN_PROGRESS",
    "home": {
     "name": "Doks",
     "code": "DOK",
     "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
-    "score": null
+    "score": 53
    },
    "away": {
     "name": "Jaunpils",
     "code": "JPL",
     "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
-    "score": null
+    "score": 13
    }
   },
   {
