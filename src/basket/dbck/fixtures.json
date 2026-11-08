@@ -113,18 +113,18 @@
    "pool": "A grupa",
    "round": "Kārta: 2",
    "type": "REGULAR",
-   "status": "IN_PROGRESS",
+   "status": "CONFIRMED",
    "home": {
     "name": "Doks",
     "code": "DOK",
     "entity": "ee72d82c-1250-11ed-b434-53e2bb4a12aa",
-    "score": 53
+    "score": 135
    },
    "away": {
     "name": "Jaunpils",
     "code": "JPL",
     "entity": "1f0ae8f8-1251-11ed-9f36-699474f7d571",
-    "score": 13
+    "score": 59
    }
   },
   {
@@ -142,13 +142,13 @@
     "name": "Jelgava BJSS U17",
     "code": "JEL17",
     "entity": "e6c96dec-cc5e-11f1-9a80-230bf3341049",
-    "score": null
+    "score": 0
    },
    "away": {
     "name": "Vilki",
     "code": "VILKI",
     "entity": "2fde6aa7-a58b-11ee-a1bb-53085d4fc416",
-    "score": null
+    "score": 0
    }
   },
   {
