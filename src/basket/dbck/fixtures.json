@@ -161,18 +161,18 @@
    "pool": "B grupa",
    "round": "Kārta: 2",
    "type": "REGULAR",
-   "status": "IN_PROGRESS",
+   "status": "CONFIRMED",
    "home": {
     "name": "Lietus",
     "code": "LIETS",
     "entity": "b3dcb543-a9c5-11f0-a119-3b4e344d910a",
-    "score": 29
+    "score": 63
    },
    "away": {
     "name": "Īle/Penkule",
     "code": "ILEPE",
     "entity": "e36bd894-a58a-11ee-92dd-4700fd236e08",
-    "score": 31
+    "score": 80
    }
   },
   {
@@ -185,18 +185,18 @@
    "pool": "B grupa",
    "round": "Kārta: 2",
    "type": "REGULAR",
-   "status": "SCHEDULED",
+   "status": "IN_PROGRESS",
    "home": {
     "name": "BK Buki/Sandramebeles.lv",
     "code": "BKBUK",
     "entity": "49b5b7fa-a58b-11ee-9bbf-b587e0dceb6d",
-    "score": null
+    "score": 0
    },
    "away": {
     "name": "Jelgava BJSS U19",
     "code": "JEL19",
     "entity": "06031cc2-cc5f-11f1-a1f7-458ebd1151f8",
-    "score": null
+    "score": 0
    }
   },
   {
