@@ -1,5 +1,41 @@
 # Changelog
 
+## Round 34 — the season sheet starts the data refresh; one lighter run updates and publishes
+
+GitHub's own timer started only 14 and 13 of the 37 Sunday runs on 1 and 8 Nov
+and skipped the rest without an error (so no emails); the weekday 12:00 run came
+28–56 minutes late. Runs started on request begin within seconds.
+
+- New `apps-script/site.gs`, a second file in the season sheet's Apps Script
+  project. A Google timer checks every 15 minutes and starts **Atjaunot datus no
+  tabulas** through GitHub's API: Sundays every 15 minutes 09:00–18:00, other
+  days once after 12:00, in Riga time (no summer-time change needed). Times in
+  `SITE` at the top of the file.
+- Sheet menu **Mājaslapa**: Atjaunot mājaslapu tagad (any organiser), Ieslēgt /
+  Izslēgt automātisko atjaunošanu, Iestatīt GitHub atslēgu… (checked with GitHub
+  before saving), Statuss.
+- Uses a fine-grained GitHub token limited to this repository with Actions: Read
+  and write, kept in the script's properties. If GitHub refuses a start (expired
+  token, no permission), the account that switched it on gets an email at once
+  (a GitHub outage after 45 minutes), at most every 6 hours, and one more when it
+  works again.
+- `sync.yml`: GitHub's own timer is now a once-a-day backup at 20:47 Riga winter
+  time (18:47 UTC).
+- `youtube.gs`: `onOpen` also adds the Mājaslapa menu. Install steps in
+  `apps-script/README.md`; the season template's "Kā lietot" tab mentions the menu.
+- After the account suspension (9–10 Nov), the update does less on GitHub:
+  - `sync.yml` now builds, checks and publishes to Pages itself, and only when the
+    inputs changed (`tools/site_version.py`: a fingerprint of `src/`, `assets/` and
+    `tools/` against the live `/version.json`; Netlify's copy has none, so the
+    first run publishes).
+  - **No more "Dati no tabulas" commits.** The sheet and basket.lv are read
+    afresh every run; basket.lv's box scores are kept in the Actions cache.
+  - It also runs on every push to `main`, so code goes live with fresh data.
+    `pages.yml` ("Build and check") only checks pull requests.
+  - Run by hand with "force" to publish without changes.
+  - `tools/obs_page.py`: the OBS ZIPs get a fixed file date, so a rebuild with the
+    same pictures gives the same files.
+
 ## Round 33 — MVP share images
 
 - Kopvērtējums: every row in the **Kārtas MVP** and **Mēneša MVP** lists has a
