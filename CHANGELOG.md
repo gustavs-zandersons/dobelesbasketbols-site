@@ -1,6 +1,6 @@
 # Changelog
 
-## Round 34 — the season sheet starts the data refresh
+## Round 34 — the season sheet starts the data refresh; one lighter run updates and publishes
 
 GitHub's own timer started only 14 and 13 of the 37 Sunday runs on 1 and 8 Nov
 and skipped the rest without an error (so no emails); the weekday 12:00 run came
@@ -23,6 +23,18 @@ and skipped the rest without an error (so no emails); the weekday 12:00 run came
   time (18:47 UTC).
 - `youtube.gs`: `onOpen` also adds the Mājaslapa menu. Install steps in
   `apps-script/README.md`; the season template's "Kā lietot" tab mentions the menu.
+- After the account suspension (9–10 Nov), the update does less on GitHub:
+  - `sync.yml` now builds, checks and publishes to Pages itself, and only when the
+    inputs changed (`tools/site_version.py`: a fingerprint of `src/`, `assets/` and
+    `tools/` against the live `/version.json`; Netlify's copy has none, so the
+    first run publishes).
+  - **No more "Dati no tabulas" commits.** The sheet and basket.lv are read
+    afresh every run; basket.lv's box scores are kept in the Actions cache.
+  - It also runs on every push to `main`, so code goes live with fresh data.
+    `pages.yml` ("Build and check") only checks pull requests.
+  - Run by hand with "force" to publish without changes.
+  - `tools/obs_page.py`: the OBS ZIPs get a fixed file date, so a rebuild with the
+    same pictures gives the same files.
 
 ## Round 33 — MVP share images
 

@@ -144,7 +144,9 @@ node tools/gen-season.js > src/sample-data.json   # regenerate the demo season
 python3 tools/sheet_sync.py --file sheet.xlsx      # import a downloaded copy of the sheet
 ```
 
-The sync workflow commits data to `main`, so pull before working locally.
+The update workflow doesn't commit data (since round 34), so the data in the repository is
+only a starting point. For current data locally, import a downloaded copy of the sheet
+(above) and run `python3 tools/basket_sync.py`.
 
 ## Sponsors and poster photos
 
@@ -189,9 +191,13 @@ Actions → **Atjaunot datus no tabulas** → Run workflow. GitHub's own timer r
 once a day as a backup (it skips too many slots to be the main timer). It
 downloads the sheet (repository secret `SHEET_URL`: the "Publish to web" link, or
 a link to a sheet shared with "Anyone with the link"), checks it, downloads new
-logos, regenerates the demo games, builds and checks the site, commits the data
-to `main` and starts the Pages deploy. If the sheet has errors, nothing is
-committed; the run fails and its summary lists tab, row and what to fix (in
+logos, reads basket.lv, regenerates the demo games, and builds and checks the site.
+Then it publishes to GitHub Pages in the same run, but only if the data or code
+changed: `tools/site_version.py` compares a fingerprint of `src/`, `assets/` and
+`tools/` with the live `/version.json`. It commits nothing. basket.lv's box scores
+are kept between runs in GitHub's Actions cache. Every push to `main` runs it too,
+so code changes go live with fresh data. If the sheet has errors, nothing changes
+on the site; the run fails and its summary lists tab, row and what to fix (in
 Latvian). Logos: a Google Drive file link (shared "Anyone with the link") or any
 https link to a PNG/JPG/WebP; an empty cell keeps the logo the site has.
 
@@ -200,8 +206,10 @@ template and the importer can't drift apart.
 
 ## Deployment
 
-Every push to `main` builds the site, runs the checks and publishes it to GitHub
-Pages. Pull requests only build and check.
+**Atjaunot datus no tabulas** (`sync.yml`) publishes to GitHub Pages. It runs from
+the sheet's timer, by hand, once a day as a backup, and on every push to `main`.
+Each run reads the sheet and basket.lv, builds, checks, and publishes only when
+something changed. Pull requests only build and check (`pages.yml`, "Build and check").
 
 One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 
