@@ -2790,8 +2790,8 @@
       'Tāpēc vēlamies amatieru komandām un spēlētājiem no dažādām Latvijas pilsētām un novadiem dot iespēju sacensties, noskaidrot labākos šajā skaistajā spēlē un pēc garas darba vai studiju nedēļas aktīvi un jēgpilni pavadīt laiku.',
     organizers: [
       // quote: '…' adds a quote under the photo (none for now)
-      { name: 'Gustavs Zandersons', role: 'Turnīra organizators', role2: '„Dobeles basketbols” dibinātājs', photo: 'assets/about/gustavs-zandersons.jpg' },
-      { name: 'Artūrs Turiks', role: 'Turnīra organizators', photo: 'assets/about/arturs-turiks.jpg' }
+      { name: 'Artūrs Turiks', role: 'Turnīra organizators', photo: 'assets/about/arturs-turiks.jpg' },
+      { name: 'Gustavs Zandersons', role: 'Turnīra organizators', role2: '„Dobeles basketbols” dibinātājs', photo: 'assets/about/gustavs-zandersons.jpg' }
     ],
     awards: [
       { year: '2025', title: 'Dobeles novada „Labākais atklātais sporta čempionāts”' },
