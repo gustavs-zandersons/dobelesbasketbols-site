@@ -340,6 +340,7 @@
         k.setAttribute('data-clone', '');
         k.setAttribute('aria-hidden', 'true');
         k.setAttribute('tabindex', '-1');
+        Array.prototype.forEach.call(k.querySelectorAll('a[href], button'), function (n) { n.setAttribute('tabindex', '-1'); });
         track.appendChild(k);
       });
       setW = track.children[cards.length].offsetLeft - track.children[0].offsetLeft;
@@ -405,10 +406,16 @@
     box.addEventListener('mouseleave', function () { hover = false; pause(1200); });
     box.addEventListener('focusin', function (e) {
       focused = true;
-      var card = e.target.closest ? e.target.closest('.res') : null;
-      if (on && card && !card.hasAttribute('data-clone')) {
-        x = card.offsetLeft - track.children[0].offsetLeft - cssPx('--gap', 12);
-        vel = 0; wrap(); paint();
+      var card = e.target;                          // the card (a child of the track) holding the focus
+      while (card && card.parentNode !== track) card = card.parentNode;
+      // Tabbing to a card that is (partly) out of view brings it in. Not on a
+      // tap or click: the row would jump under the finger and the tap miss.
+      if (on && card && usingKeyboard && !card.hasAttribute('data-clone')) {
+        var br = box.getBoundingClientRect(), cr = card.getBoundingClientRect();
+        if (cr.left < br.left || cr.right > br.right) {
+          x = card.offsetLeft - track.children[0].offsetLeft - cssPx('--gap', 12);
+          vel = 0; wrap(); paint();
+        }
       }
     });
     box.addEventListener('focusout', function () { focused = false; pause(); });
@@ -2733,7 +2740,7 @@
     return { w: Math.round(w), h: Math.round(h) };
   }
   function renderSponsors() {
-    var html = '<div class="page-head"><p class="eyebrow">Sezona ' + esc(SEASON_LABEL) + '</p><h1 class="page-title">Sponsori</h1>' +
+    var html = '<div class="page-head"><p class="eyebrow">Sezona ' + esc(SEASON_LABEL) + '</p><h1 class="page-title">Sponsori un atbalstītāji</h1>' +
       (SET.sponsorsText ? '<p class="page-sub">' + esc(SET.sponsorsText) + '</p>' : '') + '</div>';
     LEVELS.forEach(function (lv) {
       var list = SPONSORS.filter(function (sp) { return sp.level === lv.key; });
@@ -2772,8 +2779,320 @@
     if (cl) cl.focus();
   }
 
+  // ---------- Par mums (about) ----------
+  // One page for both cups. Text, names, roles, quotes and awards live here for
+  // now; photos go to assets/about/<file> (square, at least 400 px) — until then
+  // a round placeholder.
+  var ABOUT = {
+    mission: 'Mūsu mērķis ir ienest amatieru basketbolā to, ko redzam arī profesionāļu spēlēs: godīgu un kvalitatīvu tiesāšanu, spēļu tiešraides, sīvu konkurenci laukumā un aktīvu turnīra dzīvi sociālajos tīklos. ' +
+      'To visu darām aiz tīra entuziasma un aizrautības ar basketbolu. ' +
+      'Mūsu mājas ir Dobele, taču esam pārliecināti, ka basketbolam nav robežu. ' +
+      'Tāpēc vēlamies amatieru komandām un spēlētājiem no dažādām Latvijas pilsētām un novadiem dot iespēju sacensties, noskaidrot labākos šajā skaistajā spēlē un pēc garas darba vai studiju nedēļas aktīvi un jēgpilni pavadīt laiku.',
+    organizers: [
+      // quote: '…' adds a quote under the photo (none for now)
+      { name: 'Artūrs Turiks', role: 'Turnīra organizators', photo: 'assets/about/arturs-turiks.jpg' },
+      { name: 'Gustavs Zandersons', role: 'Turnīra organizators', role2: '„Dobeles basketbols” dibinātājs', photo: 'assets/about/gustavs-zandersons.jpg' }
+    ],
+    awards: [
+      { year: '2025', title: 'Dobeles novada „Labākais atklātais sporta čempionāts”' },
+      { year: '2024', title: 'Dobeles novada „Populārākais tautas sporta pasākums”' }
+    ],
+    teamSub: 'Īpašs paldies cilvēkiem, bez kuriem neviena spēļu diena nenotiktu.',
+    team: [
+      { name: 'Juris Brūveris', role: 'Galvenais tiesnesis' },
+      { name: 'Nadīna Pahmurkina', role: 'Sekretariāts' },
+      { name: 'Žaklīna Frīdrihsone', role: 'Sekretariāts' },
+      { name: 'Gatis Kobzars', role: 'Organizatoriskā palīdzība' }
+    ],
+    // Photos: tools/prepare_assets.py about <name>=<file> <widths> -> assets/about/<name>-<width>.webp
+    teamPhoto: { f: 'komanda', widths: [640, 960, 1400], w: 1400, h: 933, alt: 'Turnīra komanda basketbola laukumā' },
+    heroWide: { f: 'hero-wide', widths: [1280, 1920, 2560] },    // top band from 900 px wide
+    heroPhone: { f: 'hero-phone', widths: [800, 1200, 1600] },   // top band on phones and tablets
+    join: 'Vēlies pieteikt savu komandu vai atvest mūsu turnīru arī uz savu pilsētu vai novadu? Varbūt vēlies atbalstīt turnīru un pievienoties mūsu atbalstītāju pulkam? Raksti mums, un pastāstīsim, kā pievienoties nākamajai sezonai.',
+    email: 'dobelesbasketbols@gmail.com',
+    thanks: 'Paldies spēlētājiem, skatītājiem un atbalstītājiem. Tiekamies laukumā!'
+  };
+  // Gallery: a mosaic of blocks that loops sideways (the same slider as the
+  // previous-round cards). A block is one photo the full height of the strip,
+  // or two wide photos on top of each other. The photos open full screen in
+  // this order. Files: assets/about/gallery/<f>-<width>.webp
+  // (tools/prepare_assets.py gallery); w × h = the largest copy.
+  var GALLERY = [
+    [{ f: 'kauss-pacelts', w: 2000, h: 1333, alt: 'Valauto spēlētājs paceļ čempionu kausu, komanda gavilē' }],
+    [{ f: 'kauss', w: 1333, h: 2000, alt: 'Dobeles basketbola čempionu kauss 2026' }],
+    [{ f: 'labakais-aizsargs', w: 2000, h: 1333, alt: 'Pamatturnīra labākais aizsardzības spēlētājs ar balvu' },
+     { f: 'pamatturnira-mvp', w: 2000, h: 1333, alt: 'Pamatturnīra MVP ar balvu' }],
+    [{ f: 'taktikas-tafele', w: 1333, h: 2000, alt: 'Taktikas tāfele un ūdens pudele laukuma malā' }],
+    [{ f: 'cempioni', w: 2000, h: 1333, alt: 'Valauto — čempioni ar kausu un medaļām' }],
+    [{ f: 'medala', w: 1333, h: 2000, alt: 'Simboliskā piecinieka medaļa kastītē' }],
+    [{ f: 'jaunpils', w: 2000, h: 1333, alt: 'Jaunpils komanda ar kausu' },
+     { f: 'bjss', w: 2000, h: 1333, alt: 'BJSS komanda pēc apbalvošanas' }],
+    [{ f: 'apbalvosana', w: 2000, h: 1333, alt: 'Apbalvošanas ceremonija laukumā' }],
+    [{ f: 'aizsardzibas-balva', w: 1333, h: 2000, alt: 'Stikla balva pamatturnīra labākajam aizsardzības spēlētājam' }],
+    [{ f: 'finalu-mvp', w: 2000, h: 1333, alt: 'Finālu MVP ar balvu' },
+     { f: 'doks-medalas', w: 2000, h: 1333, alt: 'Doks spēlētāji ar medaļām' }],
+    [{ f: 'kauss-un-lidzjuteji', w: 1333, h: 2000, alt: 'Čempionu kauss un jaunie līdzjutēji ar medaļām' }],
+    [{ f: 'kausa-pasniegsana', w: 2000, h: 1333, alt: 'Čempionu kausa pasniegšana komandai Valauto' }],
+    [{ f: 'davanu-karte', w: 1333, h: 2000, alt: 'Dāvanu karte pamatturnīra MVP' }],
+    [{ f: 'kopbilde', w: 2000, h: 1333, alt: 'Apbalvoto komandu kopbilde' }],
+    [{ f: 'valauto-ar-kausu', w: 1333, h: 2000, alt: 'Valauto spēlētāji ar čempionu kausu' }]
+  ];
+  var GAL_FLAT = [];
+  GALLERY.forEach(function (b) { b.forEach(function (p) { p.i = GAL_FLAT.length; GAL_FLAT.push(p); }); });
+  var GAL_WIDTHS = [400, 800, 1200];
+  // Height of the strip at each screen width (min-width, px) – same as .ab-gal in styles.css.
+  var GAL_H = [[900, 400, 10], [600, 320, 10], [0, 240, 8]];   // [from, height, gap]
+  function galFile(p, w) { return 'assets/about/gallery/' + p.f + '-' + w + '.webp'; }
+  function galSrcset(p) {
+    return GAL_WIDTHS.filter(function (w) { return w < p.w * 0.85; }).concat([p.w])
+      .map(function (w) { return galFile(p, w) + ' ' + w + 'w'; }).join(', ');
+  }
+  function galSizes(p, half) {   // the tile's width on screen, so the browser picks the right copy
+    return GAL_H.map(function (b) {
+      var h = half ? (b[1] - b[2]) / 2 : b[1], w = Math.round(h * p.w / p.h) + 'px';
+      return b[0] ? '(min-width: ' + b[0] + 'px) ' + w : w;
+    }).join(', ');
+  }
+  function galTile(p, half) {
+    return '<button type="button" class="gal-tile' + (half ? ' gal-tile--half' : '') + '" data-gal-i="' + p.i + '" ' +
+      'style="aspect-ratio:' + p.w + '/' + p.h + '" aria-label="Atvērt attēlu ' + (p.i + 1) + ' no ' + GAL_FLAT.length + ': ' + esc(p.alt) + '">' +
+      '<img src="' + galFile(p, 400) + '" srcset="' + galSrcset(p) + '" sizes="' + galSizes(p, half) + '" ' +
+      'alt="" width="' + p.w + '" height="' + p.h + '" loading="lazy" decoding="async" draggable="false"></button>';
+  }
+  function galleryHtml() {
+    return '<section class="ab-gal" aria-label="Galerija">' +
+      '<div class="gal" data-gal-slider><div class="gal-track">' + GALLERY.map(function (b) {
+        return '<div class="gal-block">' + b.map(function (p) { return galTile(p, b.length > 1); }).join('') + '</div>';
+      }).join('') + '</div></div></section>';
+  }
+  var MAIL_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.2"/><path d="M3.8 7l8.2 6 8.2-6"/></svg>';
+  // The tournament's own pages: the same links as the footer (sheet: Iestatījumi).
+  var ABOUT_SOCIAL = [
+    { key: 'facebook', label: 'Facebook', path: 'M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H7.8v3h2.6V21h3.1z' },
+    { key: 'instagram', label: 'Instagram', path: 'M12 7.3a4.7 4.7 0 1 0 0 9.4 4.7 4.7 0 0 0 0-9.4zm0 7.7a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm6-7.9a1.1 1.1 0 1 1-2.2 0 1.1 1.1 0 0 1 2.2 0zM16.8 3H7.2A4.2 4.2 0 0 0 3 7.2v9.6A4.2 4.2 0 0 0 7.2 21h9.6a4.2 4.2 0 0 0 4.2-4.2V7.2A4.2 4.2 0 0 0 16.8 3zm2.5 13.8a2.5 2.5 0 0 1-2.5 2.5H7.2a2.5 2.5 0 0 1-2.5-2.5V7.2a2.5 2.5 0 0 1 2.5-2.5h9.6a2.5 2.5 0 0 1 2.5 2.5v9.6z' },
+    { key: 'youtube', label: 'YouTube', path: 'M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2C2 8.8 2 12 2 12s0 3.2.4 4.8a2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8c.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8zM10 15V9l5.2 3L10 15z' },
+    { key: 'tiktok', label: 'TikTok', path: 'M16.6 3c.3 2.2 1.6 3.6 3.7 3.8v3.1a6.7 6.7 0 0 1-3.6-1.1v6.3a5.7 5.7 0 1 1-5.7-5.7l.9.1v3.2a2.6 2.6 0 1 0 1.7 2.4V3h3z' }
+  ];
+  function handle(url) {   // facebook.com/DobelesBasket/ -> @DobelesBasket
+    var seg = String(url).replace(/[?#].*$/, '').replace(/\/+$/, '').split('/').pop();
+    return seg ? (seg.charAt(0) === '@' ? seg : '@' + seg) : '';
+  }
+  function ridgeSvg(d, cls) {
+    return d ? '<svg class="ridge ' + cls + '" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true"><path d="' + esc(d) + '"/></svg>' : '';
+  }
+  // Last section: a band in the other cup colour that runs into the footer.
+  // Contacts: the tournament's pages (same links as the footer), then the e-mail.
+  function joinHtml() {
+    var links = SET.social || {};
+    var rows = ABOUT_SOCIAL.filter(function (x) { return links[x.key]; }).map(function (x) {
+      return '<li><a class="ab-contact" href="' + esc(links[x.key]) + '" target="_blank" rel="noopener">' +
+        '<span class="ab-contact-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + x.path + '"/></svg></span>' +
+        '<span class="ab-contact-txt"><b>' + x.label + '</b><span>' + esc(handle(links[x.key])) + '</span></span></a></li>';
+    });
+    rows.push('<li><a class="ab-contact ab-contact--mail" href="mailto:' + esc(ABOUT.email) + '">' +
+      '<span class="ab-contact-ic">' + MAIL_ICON + '</span>' +
+      '<span class="ab-contact-txt"><b>E-pasts</b><span>' + esc(ABOUT.email) + '</span></span></a></li>');
+    return '<section class="ab-join" aria-labelledby="ab-join">' +
+      ridgeSvg($('about-view').getAttribute('data-ridge-c'), 'ab-join-ridge') +
+      '<div class="wrap ab-join-in">' +
+        '<div class="ab-join-text"><h2 class="ab-join-title" id="ab-join">Pievienojies mums</h2><p>' + esc(ABOUT.join) + '</p></div>' +
+        '<ul class="ab-contacts" aria-label="Saziņai">' + rows.join('') + '</ul>' +
+        '<p class="ab-thanks"><span>' + esc(ABOUT.thanks) + '</span><a href="' + toHref(cupPath(state.cup, 'sponsori')) + '">Mūsu atbalstītāji ›</a></p>' +
+      '</div></section>';
+  }
+
+  var PERSON_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.2" r="4.2"/><path d="M3.8 21c.7-4.6 4-7.3 8.2-7.3s7.5 2.7 8.2 7.3z"/></svg>';
+  var CUP_ICON = '<svg class="ab-award-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10v4.2a5 5 0 0 1-10 0z"/><path d="M7 5.2H4.2v1.3A3.6 3.6 0 0 0 7.6 10M17 5.2h2.8v1.3a3.6 3.6 0 0 1-3.4 3.5"/><path d="M12 12.7v3.6M8.2 20.5h7.6M9.3 16.3h5.4v4.2H9.3z"/></svg>';
+  function aboutPerson(p) {
+    var photo = p.photo
+      ? '<img class="ab-photo" src="' + esc(p.photo) + '" alt="' + esc(p.name) + '" loading="lazy">'
+      : '<span class="ab-photo ab-photo--empty" aria-hidden="true">' + PERSON_ICON + '</span>';
+    return '<figure class="ab-person">' + photo + '<figcaption><span class="ab-name">' + esc(p.name) + '</span>' +
+      '<span class="ab-role">' + esc(p.role) + '</span>' +
+      (p.role2 ? '<span class="ab-role ab-role--2">' + esc(p.role2) + '</span>' : '') +
+      (p.quote ? '<q class="ab-quote">' + esc(p.quote) + '</q>' : '') + '</figcaption></figure>';
+  }
+  function aboutSrcset(ph) {
+    return ph.widths.map(function (w) { return 'assets/about/' + ph.f + '-' + w + '.webp ' + w + 'w'; }).join(', ');
+  }
+  function renderAbout() {
+    var tp = ABOUT.teamPhoto;
+    // Top band like the cup home pages: group photo under a dark cup-colour veil, ridge into the page.
+    var html = '<section class="ab-hero" aria-labelledby="ab-title">' +
+      '<picture class="ab-hero-bg">' +
+        '<source media="(min-width: 900px)" srcset="' + aboutSrcset(ABOUT.heroWide) + '" sizes="100vw">' +
+        '<img src="assets/about/' + ABOUT.heroPhone.f + '-' + ABOUT.heroPhone.widths[0] + '.webp" srcset="' + aboutSrcset(ABOUT.heroPhone) + '" sizes="150vw" alt="" decoding="async" fetchpriority="high">' +
+      '</picture>' +
+      '<div class="wrap ab-hero-in"><p class="eyebrow">Dobeles basketbols</p><h1 class="page-title" id="ab-title">Par mums</h1>' +
+        '<h2 class="g-title ab-hero-sub">Mūsu misija</h2><p class="ab-mission">' + esc(ABOUT.mission) + '</p></div>' +
+      ridgeSvg($('about-view').getAttribute('data-ridge-a'), 'ab-hero-ridge') +
+      '</section>' +
+      '<div class="wrap ab-body">' +
+      // The two organizers: photo, name, title and a quote (no section title).
+      '<section class="ab-people ab-people--lg" aria-label="Turnīra organizatori">' + ABOUT.organizers.map(aboutPerson).join('') + '</section>' +
+      galleryHtml() +
+      '<section class="ab-sec" aria-labelledby="ab-awards"><h2 class="g-title" id="ab-awards">Sasniegumi</h2>' +
+      '<ul class="ab-awards">' + ABOUT.awards.map(function (a) {
+        return '<li class="ab-award">' + CUP_ICON + '<span class="ab-award-year">' + esc(a.year) + '</span>' +
+          '<span class="ab-award-title">' + esc(a.title) + '</span></li>';
+      }).join('') + '</ul></section>' +
+      // The team: one group photo, and the people with their roles beside it.
+      '<section class="ab-team" aria-labelledby="ab-team">' +
+        '<div class="ab-team-head"><h2 class="g-title" id="ab-team">Mūsu komanda</h2><p class="ab-sub">' + esc(ABOUT.teamSub) + '</p></div>' +
+        '<img class="ab-team-photo" src="assets/about/' + tp.f + '-' + tp.widths[1] + '.webp" srcset="' + aboutSrcset(tp) + '" ' +
+          'sizes="(min-width: 1121px) 600px, (min-width: 900px) 55vw, 100vw" width="' + tp.w + '" height="' + tp.h + '" alt="' + esc(tp.alt) + '" loading="lazy" decoding="async">' +
+        '<ul class="ab-crew">' + ABOUT.team.map(function (p) {
+          return '<li><span class="ab-crew-name">' + esc(p.name) + '</span><span class="ab-crew-role">' + esc(p.role) + '</span></li>';
+        }).join('') + '</ul>' +
+      '</section>' +
+      '</div>' +
+      joinHtml();
+    $('about-view').innerHTML = html;
+    stopGallery();
+    var gal = $('about-view').querySelector('[data-gal-slider]');
+    if (gal) galSlider = makeGallery(gal);
+  }
+  // The mosaic loops on its own; its small photos all load once the strip is
+  // near the screen (not one by one as they slide in).
+  var galSlider = null;
+  // "Par mums": the header is see-through over the top photo and turns solid
+  // again as soon as the page is scrolled.
+  function headScrolled() {
+    document.documentElement.classList.toggle('is-scrolled', (window.scrollY || window.pageYOffset || 0) > 24);
+  }
+  window.addEventListener('scroll', headScrolled, { passive: true });
+  function stopGallery() { if (galSlider) { galSlider.destroy(); galSlider = null; } }
+  function makeGallery(box) {
+    var sl = makeSlider(box), io = null;
+    function eager() { Array.prototype.forEach.call(box.querySelectorAll('img[loading="lazy"]'), function (im) { im.loading = 'eager'; }); }
+    if (!window.__PRERENDER) {
+      if (window.IntersectionObserver) {
+        io = new IntersectionObserver(function (en) { if (en[0].isIntersecting) { eager(); io.disconnect(); io = null; } }, { rootMargin: '600px 0px' });
+        io.observe(box);
+      } else eager();
+    }
+    return { destroy: function () { sl.destroy(); if (io) io.disconnect(); } };
+  }
+
+  // ---------- Photo viewer (Par mums gallery) ----------
+  // Full screen, one photo at a time: arrows, swipe, ← → keys; ✕, Esc or a
+  // tap beside the photo closes it. The mosaic's small copy shows at once and
+  // the large copy fades in over it; the photos either side load ahead.
+  var viewer = null;
+  var LB_ARROW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5L8 12l6.5 6.5"/></svg>';
+  var LB_CLOSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>';
+  function lbBuild() {
+    var el = document.createElement('div');
+    el.className = 'lb'; el.id = 'lb'; el.hidden = true;
+    el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Galerija');
+    el.innerHTML = '<div class="lb-stage"><div class="lb-area"></div></div>' +
+      '<div class="lb-bar"><span class="lb-count" aria-live="polite"></span>' +
+      '<button type="button" class="lb-btn lb-close" data-lb="close" aria-label="Aizvērt">' + LB_CLOSE + '</button></div>' +
+      '<button type="button" class="lb-btn lb-nav lb-prev" data-lb="prev" aria-label="Iepriekšējais attēls">' + LB_ARROW + '</button>' +
+      '<button type="button" class="lb-btn lb-nav lb-next" data-lb="next" aria-label="Nākamais attēls">' + LB_ARROW + '</button>';
+    document.body.appendChild(el);
+    var v = { el: el, area: el.querySelector('.lb-area'), count: el.querySelector('.lb-count'), frame: null, i: 0, ret: null, sw: null };
+    el.addEventListener('click', function (e) {
+      if (v.swiped) { v.swiped = false; return; }
+      var b = e.target.closest('[data-lb]');
+      if (b) { var a = b.getAttribute('data-lb'); if (a === 'close') closeViewer(); else lbGo(a === 'next' ? 1 : -1); return; }
+      if (!e.target.closest('.lb-frame')) closeViewer();   // a tap beside the photo
+    });
+    // Swipe: the photo follows the finger; far or fast enough = next / previous.
+    var stage = el.querySelector('.lb-stage');
+    stage.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      v.sw = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0, t: Date.now(), moved: false };
+    });
+    stage.addEventListener('pointermove', function (e) {
+      var sw = v.sw; if (!sw || e.pointerId !== sw.id) return;
+      sw.dx = e.clientX - sw.x0;
+      if (!sw.moved) {
+        if (Math.abs(sw.dx) < 8 || Math.abs(sw.dx) < Math.abs(e.clientY - sw.y0)) return;
+        sw.moved = true;
+        try { stage.setPointerCapture(e.pointerId); } catch (err) { /* older browsers */ }
+      }
+      if (v.frame) { v.frame.style.transition = 'none'; v.frame.style.transform = 'translateX(' + sw.dx + 'px)'; }
+    });
+    function swipeEnd(e) {
+      var sw = v.sw; if (!sw || (e && e.pointerId !== sw.id)) return;
+      v.sw = null;
+      if (!sw.moved) return;
+      v.swiped = true; setTimeout(function () { v.swiped = false; }, 0);
+      var fast = Math.abs(sw.dx) / Math.max(1, Date.now() - sw.t) > 0.45;
+      if (Math.abs(sw.dx) > 70 || (fast && Math.abs(sw.dx) > 24)) lbGo(sw.dx < 0 ? 1 : -1);
+      else if (v.frame) { v.frame.style.transition = ''; v.frame.style.transform = ''; }
+    }
+    stage.addEventListener('pointerup', swipeEnd);
+    stage.addEventListener('pointercancel', swipeEnd);
+    document.addEventListener('keydown', function (e) {
+      if (el.hidden) return;
+      if (e.key === 'ArrowRight') { e.preventDefault(); lbGo(1); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); lbGo(-1); }
+      else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeViewer(); }
+      else if (e.key === 'Tab') {                      // keep the focus inside the viewer
+        var bs = el.querySelectorAll('.lb-btn'), first = bs[0], last = bs[bs.length - 1], a = document.activeElement;
+        if (!el.contains(a)) { e.preventDefault(); first.focus(); }
+        else if (e.shiftKey && a === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && a === last) { e.preventDefault(); first.focus(); }
+      }
+    }, true);
+    window.addEventListener('resize', function () { if (!el.hidden) lbShow(v.i, 0); });
+    return v;
+  }
+  function lbLoad(p, px) {   // a detached image: the large copy for a box px wide
+    var im = new Image();
+    im.decoding = 'async'; im.sizes = Math.round(px) + 'px'; im.srcset = galSrcset(p); im.src = galFile(p, 800);
+    return im;
+  }
+  function lbShow(i, dir) {
+    var v = viewer, n = GAL_FLAT.length;
+    i = ((i % n) + n) % n; v.i = i;
+    var p = GAL_FLAT[i], W = v.area.clientWidth, H = v.area.clientHeight, r = p.w / p.h;
+    var w = Math.min(W, H * r), h = w / r;
+    var tile = document.querySelector('.gal-tile[data-gal-i="' + i + '"] img');
+    var small = (tile && tile.complete && tile.currentSrc) || galFile(p, 400);
+    var frame = document.createElement('div');
+    frame.className = 'lb-frame' + (dir > 0 ? ' lb-in-next' : dir < 0 ? ' lb-in-prev' : '');
+    frame.style.width = Math.round(w) + 'px'; frame.style.height = Math.round(h) + 'px';
+    frame.innerHTML = '<img class="lb-small" src="' + esc(small) + '" alt="">';
+    var big = lbLoad(p, w);
+    big.className = 'lb-big'; big.alt = p.alt;
+    if (big.complete) big.classList.add('is-in');
+    else big.onload = function () { big.classList.add('is-in'); };
+    frame.appendChild(big);
+    v.area.innerHTML = ''; v.area.appendChild(frame); v.frame = frame;
+    v.count.textContent = (i + 1) + ' / ' + n;
+    [1, -1].forEach(function (d) {   // the neighbours, ready for the next tap
+      var q = GAL_FLAT[(i + d + n) % n], qr = q.w / q.h;
+      lbLoad(q, Math.min(W, H * qr));
+    });
+  }
+  function lbGo(d) { lbShow(viewer.i + d, d); }
+  function openViewer(i, trigger) {
+    if (!viewer) viewer = lbBuild();
+    viewer.ret = trigger || null;
+    viewer.el.hidden = false;
+    document.body.classList.add('no-scroll');
+    lbShow(i, 0);
+    viewer.el.querySelector('.lb-close').focus({ preventScroll: true });
+  }
+  function closeViewer() {
+    if (!viewer || viewer.el.hidden) return;
+    viewer.el.hidden = true; viewer.area.innerHTML = ''; viewer.frame = null;
+    document.body.classList.remove('no-scroll');
+    var ret = viewer.ret; viewer.ret = null;
+    // Back to the photo for keyboard users; touch and mouse users just see the page again.
+    if (ret && document.body.contains(ret) && usingKeyboard) ret.focus({ preventScroll: true });
+    else if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest ? e.target.closest('[data-gal-i]') : null;
+    if (t) openViewer(+t.getAttribute('data-gal-i'), t);
+  });
+
   // ---------- Routing ----------
-  // Paths: / and /jelgava/ (cup home), /kalendars/, /speles/<season>/<game id>/,
+  // Paths: / and /jelgava/ (cup home), /kalendars/, /par-mums/, /speles/<season>/<game id>/,
   // /<cup>/kopvertejums/, /<cup>/komandas/[<team>/], /<cup>/lideri/,
   // /<cup>/statistika/[komandas/], /<cup>/speletaji/<team>/<player>/, /<cup>/sponsori/
   // (<cup> = dobele | jelgava).
@@ -2817,6 +3136,8 @@
       // Fresh visit: current month, all games (no team picked).
       if (state.view !== 'calendar') { state.cal.month = null; state.cal.team = ''; }
       state.view = 'calendar';
+    } else if (parts.length === 1 && a === 'par-mums') {
+      state.view = 'about';               // one page for both cups (keeps the cup colours)
     } else if (a === 'speles' && parts.length === 3 && b === SEASON_ID && RAW[parts[2]]) {
       state.view = 'game'; state.gameId = parts[2]; state.cup = RAW[parts[2]].comp;
     } else if ((a === 'dobele' || a === 'jelgava') && b) {
@@ -2852,6 +3173,7 @@
     if (state.notFound) return null;
     if (v === 'home') return cupHome(c);
     if (v === 'calendar') return '/kalendars/';
+    if (v === 'about') return '/par-mums/';
     if (v === 'game') return '/speles/' + SEASON_ID + '/' + state.gameId + '/';
     if (v === 'teams') return cupPath(c, 'komandas');
     if (v === 'team') return cupPath(c, 'komandas/' + state.teamId);
@@ -2932,6 +3254,11 @@
         m.desc = pl.name + ' — ' + tp.name + ' spēlētājs, ' + cupName + ' ' + season + '. Statistika parādīsies pēc pirmās spēles.';
         m.index = false;                 // no games in this cup yet: nothing to rank
       }
+    } else if (v === 'about') {
+      m.title = 'Par mums — ' + SITE_NAME;
+      m.desc = 'Cilvēki, kas rīko ' + CUPS.dbck.name.replace(/kauss$/, 'kausu') + ' un ' + CUPS.jssc.name.replace(/kauss$/, 'kausu') +
+        ': organizatori, galvenais tiesnesis un sekretariāts. Dobelē basketbols nekad neguļ.';
+      m.image = SITE_URL + '/assets/og/dobele.png';
     } else if (v === 'sponsors') {
       m.title = 'Sponsori un atbalstītāji — ' + SITE_NAME;
       m.desc = 'Uzņēmumi un organizācijas, kas atbalsta ' + CUPS.dbck.name + ' un ' + CUPS.jssc.name + ' sezonā ' + season + '.';
@@ -2970,7 +3297,7 @@
       b.setAttribute('aria-pressed', String(b.getAttribute('data-demo') === state.demo));
     });
     var hero = document.querySelector('.hero');
-    var NAVV = { home: ['home'], cal: ['calendar'], std: ['standings'], sp: ['sponsors'], tm: ['teams', 'team'], ld: ['leaders'], sts: ['stats', 'player'] };
+    var NAVV = { home: ['home'], cal: ['calendar'], std: ['standings'], sp: ['sponsors'], ab: ['about'], tm: ['teams', 'team'], ld: ['leaders'], sts: ['stats', 'player'] };
     document.querySelectorAll('[data-nav]').forEach(function (n) {
       if ((NAVV[n.getAttribute('data-nav')] || []).indexOf(state.view) >= 0) n.setAttribute('aria-current', 'page'); else n.removeAttribute('aria-current');
     });
@@ -2979,18 +3306,25 @@
     });
     document.querySelectorAll('a[data-cup]').forEach(function (a) { a.setAttribute('href', toHref(cupHome(a.getAttribute('data-cup')))); });
     document.querySelectorAll('a[data-nav="cal"]').forEach(function (a) { a.setAttribute('href', toHref('/kalendars/')); });
+    document.querySelectorAll('a[data-nav="ab"]').forEach(function (a) { a.setAttribute('href', toHref('/par-mums/')); });
     var team = state.view === 'teams' || state.view === 'team', ldr = state.view === 'leaders', sts = state.view === 'stats' || state.view === 'player';
+    var ab = state.view === 'about';
     $('sponsors-view').hidden = state.view !== 'sponsors';
+    $('about-view').hidden = !ab;
+    document.documentElement.classList.toggle('view-about', ab);   // see-through header over the top photo
+    headScrolled();
+    if (!ab) { stopGallery(); $('about-view').innerHTML = ''; }
     $('teams-view').hidden = !team;
     if (!team) $('teams-view').innerHTML = '';
     $('leaders-view').hidden = !ldr;
     if (!ldr) $('leaders-view').innerHTML = '';
     $('stats-view').hidden = !sts;
     if (!sts) $('stats-view').innerHTML = '';
-    if (state.view === 'sponsors' || team || ldr || sts) {
+    if (state.view === 'sponsors' || ab || team || ldr || sts) {
       hero.hidden = true; $('main').hidden = true; $('game-view').hidden = true;
       $('calendar-view').hidden = true; $('standings-view').hidden = true; $('standings-view').innerHTML = '';
       if (state.view === 'sponsors') renderSponsors();
+      else if (ab) renderAbout();
       else if (ldr) renderLeaders();
       else if (state.view === 'stats') renderStats();
       else if (state.view === 'player') renderPlayer();

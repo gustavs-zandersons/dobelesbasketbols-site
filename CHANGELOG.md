@@ -1,5 +1,38 @@
 # Changelog
 
+## Round 36 — "Par mums" page; menu "Sponsori un atbalstītāji"
+
+(Round 35 was the GitLab + Netlify standby plan; it never went into this repository.)
+
+- New page **Par mums** (`/par-mums/`, menu item after the sponsors; shared by both cups,
+  in the colours of the cup the visitor came from):
+  - **Top band** like the cup home pages: the all-teams group photo (its own phone
+    version) under a dark veil, the title, **Mūsu misija** and the mission text, a
+    jagged edge into the page. The header is see-through over the photo and turns
+    solid once the page is scrolled; the active cup shows as a dark see-through pill.
+  - **Organizers:** Artūrs Turiks and Gustavs Zandersons, large square photos with a
+    thin gold frame; Gustavs also "„Dobeles basketbols” dibinātājs". No quotes for now
+    (`quote` in `ABOUT.organizers` brings them back).
+  - **Gallery:** 18 photos in a two-row mosaic that loops sideways (drag, swipe,
+    trackpad); a tap opens a full-screen viewer (arrows, swipe, ← → keys, counter,
+    Esc). Small copies load once the strip is near; the large one when opened.
+  - **Sasniegumi:** 2025 Dobeles novada „Labākais atklātais sporta čempionāts”,
+    2024 Dobeles novada „Populārākais tautas sporta pasākums”.
+  - **Mūsu komanda:** one group photo, with Juris Brūveris (galvenais tiesnesis),
+    Nadīna Pahmurkina and Žaklīna Frīdrihsone (sekretariāts) and Gatis Kobzars
+    (organizatoriskā palīdzība) beside it.
+  - **Pievienojies mums:** a band in the other cup colour (yellow / black on Čempionu
+    kauss, blue / white on Izaicinājuma kauss) running into the footer: the invitation
+    for teams, towns and supporters; Facebook, Instagram, YouTube (the footer's links)
+    and dobelesbasketbols@gmail.com; the thanks line with "Mūsu atbalstītāji ›".
+- Menu and sponsors page: **Sponsori un atbalstītāji** (the address stays `/sponsori/`).
+- Looping slider (previous-round cards and the gallery): only keyboard focus scrolls a
+  card into view, so a tap or click no longer makes the row jump and miss.
+- Shared pages (`/kalendars/`, `/par-mums/`) are saved in the Dobele colours they open
+  with, so they no longer flash burgundy first (`tools/prerender.py` order).
+- Tools: `tools/prepare_assets.py gallery …` and `about …` make the page's photo sizes;
+  `tools/share_page.py` makes a one-file copy of a page to send for checking.
+
 ## Round 34 — the season sheet starts the data refresh; one lighter run updates and publishes
 
 GitHub's own timer started only 14 and 13 of the 37 Sunday runs on 1 and 8 Nov

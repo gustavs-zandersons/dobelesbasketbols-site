@@ -3,3 +3,4 @@ dist-preview/
 __pycache__/
 .DS_Store
 dist-preview-live/
+share/

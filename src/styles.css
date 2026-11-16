@@ -41,6 +41,10 @@
   --ink-muted: #5B6478;
   --demo-bg: #0C1322;
   --focus: #FFFFFF;
+  --join-bg: var(--accent-fill);   /* "Par mums" last band: the other cup colour */
+  --join-fg: #101114;
+  --join-muted: rgba(16, 17, 20, 0.7);
+  --join-line: rgba(16, 17, 20, 0.18);
 
   --font-display: 'Anton', Impact, 'Arial Narrow Bold', sans-serif;
   --font-body: 'Barlow', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -71,6 +75,9 @@
   --on-accent-muted: #C9D6FF;
   --ink: #2B0F17;
   --ink-muted: #6F5660;
+  --join-fg: #FFFFFF;
+  --join-muted: rgba(255, 255, 255, 0.78);
+  --join-line: rgba(255, 255, 255, 0.24);
 }
 
 @media (min-width: 768px) {
@@ -2293,6 +2300,235 @@ body.no-scroll { overflow: hidden; }
 }
 
 /* ---------- Sponsori page ---------- */
+/* ---------- Par mums ---------- */
+/* Top band like the cup home pages: a group photo under a dark veil in the
+   cup colour (a different photo on phones), a ridge into the page. */
+.ab-hero {
+  position: relative; overflow: hidden; background: #0b0d12;
+  /* Starts behind the header, which is see-through until the page is scrolled. */
+  margin-top: calc(-1 * (var(--head-h) + 1px));
+  padding-block: calc(var(--head-h) + 36px) 76px;
+}
+@media (min-width: 768px) { .ab-hero { padding-block: calc(var(--head-h) + 56px) 112px; } }
+.view-about:not(.is-scrolled) .topbar { background-color: transparent; border-bottom-color: transparent; }
+.view-about .topbar { transition: background-color 0.3s ease, border-color 0.3s ease; }
+/* The active cup on "Par mums": a see-through dark pill that matches the photo
+   (no cup-colour pill or ring while the header is see-through). */
+.view-about .cup-btn[aria-current="page"] { background: rgba(0, 0, 0, 0.3); }
+.view-about:not(.is-scrolled) .cup-btn[aria-current="page"] {
+  background: rgba(0, 0, 0, 0.45);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+}
+.view-about:not(.is-scrolled) .cup-btn[aria-current="page"] img { box-shadow: none; }
+.ab-hero-bg, .ab-hero-bg img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ab-hero-bg img { object-fit: cover; object-position: center bottom; }
+@media (min-width: 900px) { .ab-hero-bg img { object-position: center 62%; } }
+.ab-hero::before {
+  content: ""; position: absolute; inset: 0; z-index: 1;
+  /* Black, a little darker behind the header and at the ridge. */
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.82) 0, rgba(0, 0, 0, 0.62) 34%, rgba(0, 0, 0, 0.62) 72%, rgba(0, 0, 0, 0.72) 100%);
+}
+.ab-hero-in { position: relative; z-index: 2; display: grid; }
+.ab-hero-in .page-title { margin-top: 0.12em; }
+.ab-hero-sub { margin: 26px 0 10px; }
+.ab-hero .ab-mission, .ab-hero .page-title, .ab-hero .g-title { text-shadow: 0 1px 14px rgba(0, 0, 0, 0.45); }
+.ab-hero .ridge { z-index: 3; }
+/* The mission: one paragraph, one style, the full width of the page. */
+.ab-mission { margin: 0; font-size: 1.12rem; line-height: 1.65; color: var(--fg); }
+.ab-sub { color: var(--fg-muted); max-width: 62ch; margin: -4px 0 24px; }
+.ab-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 56px; padding-block: 32px 104px; }
+@media (min-width: 768px) { .ab-body { padding-block: 40px 128px; } }
+/* Any number of people, in rows centred on the page (a last single person
+   sits in the middle). Square photos: the organizers large, the team smaller
+   (three in a row on phones). */
+.ab-people { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px 12px; }
+.ab-people > .ab-person { width: calc((100% - 24px) / 3); max-width: 200px; }
+@media (min-width: 600px) { .ab-people { gap: 28px 24px; } .ab-people > .ab-person { width: 170px; } }
+@media (min-width: 900px) { .ab-people { gap: 28px 32px; } .ab-people > .ab-person { width: 200px; } }
+/* The two organizers: side by side in the middle of the page, each with a quote. */
+.ab-people--lg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 760px; width: 100%; margin-inline: auto; gap: 32px 16px; }
+@media (min-width: 600px) { .ab-people--lg { gap: 32px 28px; } }
+.ab-people--lg > .ab-person { width: auto; max-width: none; }
+.ab-person { margin: 0; display: grid; justify-items: center; align-content: start; gap: 14px; text-align: center; }
+.ab-photo {
+  width: 100%; aspect-ratio: 1;
+  border-radius: 12px; object-fit: cover;
+  box-shadow: 0 0 0 2px var(--title), 0 12px 28px rgba(0, 0, 0, 0.3);
+}
+.ab-people--lg .ab-photo { max-width: 320px; border-radius: 14px; }
+@media (max-width: 559px) { .ab-photo { border-radius: 10px; } }
+.ab-photo--empty {
+  display: grid; place-items: center;
+  background: var(--surface);
+  border: 2px dashed var(--line-strong);
+  box-shadow: none;
+}
+.ab-photo--empty svg { width: 44%; fill: var(--fg-dim); }
+.ab-person figcaption { display: grid; gap: 3px; justify-items: center; }
+.ab-name { font-family: var(--font-cond); font-weight: 700; font-size: 1.2rem; letter-spacing: 0.02em; text-transform: uppercase; color: var(--fg); line-height: 1.15; }
+.ab-people--lg .ab-name { font-size: 1.45rem; }
+@media (max-width: 559px) { .ab-people--lg .ab-name { font-size: 1.08rem; } }
+.ab-role { font-family: var(--font-cond); font-weight: 600; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+.ab-quote {
+  display: block; margin-top: 10px; max-width: 34ch;
+  font-style: italic; font-size: 1rem; line-height: 1.5; color: var(--fg-muted);
+  quotes: "„" "”";
+}
+@media (max-width: 559px) { .ab-quote { font-size: 0.92rem; } }
+/* Achievements: one card per season, newest first. */
+.ab-awards { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+@media (min-width: 600px) { .ab-awards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.ab-award {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "ico year" "ico title";
+  column-gap: 16px; row-gap: 2px; align-items: center;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px;
+}
+.ab-award-ico { grid-area: ico; width: 46px; height: 46px; fill: none; stroke: var(--title); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.ab-award-year { grid-area: year; font-family: var(--font-display); font-size: 2rem; line-height: 1.05; color: var(--title); font-variant-numeric: tabular-nums; }
+.ab-award-title { grid-area: title; font-family: var(--font-cond); font-weight: 700; font-size: 1.02rem; letter-spacing: 0.03em; text-transform: uppercase; line-height: 1.25; color: var(--fg); }
+/* The team: one group photo; names and roles beside it (on phones: title,
+   photo, list). */
+.ab-team { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "photo" "list"; }
+.ab-team-head { grid-area: head; }
+.ab-team-photo {
+  grid-area: photo; display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover;
+  border-radius: 14px; box-shadow: 0 0 0 2px var(--title), 0 14px 34px rgba(0, 0, 0, 0.3);
+}
+.ab-crew { grid-area: list; list-style: none; margin: 22px 0 0; padding: 0; }
+.ab-crew li { display: grid; gap: 2px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.ab-crew li:first-child { border-top: 1px solid var(--line); }
+.ab-crew-name { font-family: var(--font-cond); font-weight: 700; font-size: 1.35rem; letter-spacing: 0.02em; text-transform: uppercase; line-height: 1.15; color: var(--fg); }
+.ab-crew-role { font-family: var(--font-cond); font-weight: 600; font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+@media (min-width: 900px) {
+  .ab-team {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); column-gap: 48px;
+    grid-template-rows: 1fr auto auto 1fr; grid-template-areas: "photo ." "photo head" "photo list" "photo .";
+  }
+  .ab-team-photo { align-self: center; }
+  .ab-team-head .ab-sub { margin-bottom: 6px; }
+}
+/* Join us: the last band, in the other cup colour, rising from the page with
+   a ridge and running into the footer (whose own ridge sits on it). */
+.ab-join { position: relative; background: var(--join-bg); color: var(--join-fg); padding-block: 26px 76px; }
+@media (min-width: 768px) { .ab-join { padding-block: 40px 104px; } }
+.ab-join-ridge { bottom: auto; top: 1px; transform: translateY(-100%); height: 30px; }
+.ab-join-ridge path { fill: var(--join-bg); }
+@media (min-width: 768px) { .ab-join-ridge { height: 48px; } }
+#about-view:not([hidden]) ~ .sponsors { margin-top: 0; }
+.ab-join-in { display: grid; gap: 26px 56px; align-items: center; }
+@media (min-width: 900px) { .ab-join-in { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); } }
+.ab-join-title {
+  font-family: var(--font-display); font-weight: 400; text-transform: uppercase;
+  font-size: clamp(2rem, 5.4vw, 3rem); line-height: 1.05; letter-spacing: 0.01em; color: var(--join-fg);
+  margin: 0.12em 0 14px;
+}
+.ab-join-text p { margin: 0; font-size: 1.1rem; line-height: 1.6; max-width: 52ch; color: var(--join-fg); }
+.ab-contacts { list-style: none; margin: 0; padding: 0; }
+.ab-contacts li + li { border-top: 1px solid var(--join-line); }
+.ab-contact {
+  display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 8px 0;
+  color: var(--join-fg); text-decoration: none;
+}
+.ab-contact-ic {
+  flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%;
+  background: var(--join-fg); color: var(--join-bg); transition: transform 0.15s ease;
+}
+.ab-contact-ic svg { width: 21px; height: 21px; fill: currentColor; }
+.ab-contact--mail .ab-contact-ic svg { fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.ab-contact-txt { display: grid; min-width: 0; line-height: 1.25; }
+.ab-contact-txt b { font-family: var(--font-cond); font-weight: 700; font-size: 1.15rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.ab-contact-txt span { font-weight: 600; font-size: 0.98rem; color: var(--join-muted); overflow-wrap: anywhere; }
+.ab-contact:hover .ab-contact-ic { transform: scale(1.08); }
+.ab-contact:hover .ab-contact-txt span { color: var(--join-fg); text-decoration: underline; text-underline-offset: 3px; }
+.ab-contact:focus-visible { outline: 2px solid var(--join-fg); outline-offset: 4px; border-radius: 8px; }
+.ab-thanks {
+  grid-column: 1 / -1;
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px;
+  margin: 8px 0 0; padding-top: 18px; border-top: 1px solid var(--join-line); font-weight: 600; color: var(--join-fg);
+}
+.ab-thanks a {
+  font-family: var(--font-cond); font-weight: 700; font-size: 0.95rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--join-fg); text-decoration: none;
+}
+.ab-thanks a:hover { text-decoration: underline; text-underline-offset: 3px; }
+/* Gallery: a two-row mosaic strip that loops sideways (the previous-round
+   slider). Each photo keeps its own shape: a tall block is one photo, a
+   short block two wide photos on top of each other. Heights: GAL_H in app.js. */
+.gal {
+  --gh: 240px; --gap: 8px; --card-min: 100px;
+  position: relative; overflow: hidden; touch-action: pan-y;
+  margin-inline: calc(-1 * var(--gutter));
+}
+@media (min-width: 600px) { .gal { --gh: 320px; --gap: 10px; } }
+@media (min-width: 900px) { .gal { --gh: 400px; } }
+@media (min-width: 1121px) {
+  /* Wider than the page column: the strip fades out at both ends. */
+  .gal.is-sliding {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
+  }
+}
+.gal.is-sliding { cursor: grab; -webkit-user-select: none; user-select: none; }
+.gal.is-dragging { cursor: grabbing; }
+.gal-track { display: flex; gap: var(--gap); width: max-content; padding-inline: var(--gutter); }
+.gal.is-sliding .gal-track { will-change: transform; padding-inline: 0; }
+.gal-block { display: flex; flex-direction: column; gap: var(--gap); height: var(--gh); flex: none; }
+.gal-tile {
+  display: block; position: relative; flex: none;
+  height: var(--gh); padding: 0; border: 0; border-radius: 10px; overflow: hidden;
+  background: var(--surface); cursor: zoom-in;
+}
+.gal-tile--half { height: calc((var(--gh) - var(--gap)) / 2); }
+.gal.is-dragging .gal-tile { cursor: grabbing; }
+.gal-tile img {
+  display: block; width: 100%; height: 100%; object-fit: cover;
+  -webkit-user-drag: none; transition: transform 0.5s ease, filter 0.3s ease;
+}
+.gal-tile:hover img { transform: scale(1.04); filter: brightness(1.06); }
+.gal-tile:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
+@media (max-width: 559px) { .gal-tile { border-radius: 8px; } }
+@media (prefers-reduced-motion: reduce) { .gal-tile img { transition: none; } .gal-tile:hover img { transform: none; } }
+/* Full-screen photo viewer. */
+.lb { position: fixed; inset: 0; z-index: 90; background: #060a13; color: #fff; }
+.lb[hidden] { display: none; }
+.lb-stage { position: absolute; inset: 0; touch-action: pinch-zoom; }
+.lb-area { position: absolute; inset: 60px 12px 60px; display: grid; place-items: center; }
+@media (min-width: 760px) { .lb-area { inset: 64px 88px 40px; } }
+.lb-frame { position: relative; transition: transform 0.25s ease; }
+.lb-frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; -webkit-user-drag: none; user-select: none; }
+.lb-big { opacity: 0; transition: opacity 0.25s ease; }
+.lb-big.is-in { opacity: 1; }
+.lb-in-next { animation: lb-in-next 0.28s ease; }
+.lb-in-prev { animation: lb-in-prev 0.28s ease; }
+@keyframes lb-in-next { from { opacity: 0.2; transform: translateX(48px); } }
+@keyframes lb-in-prev { from { opacity: 0.2; transform: translateX(-48px); } }
+.lb-bar {
+  position: absolute; top: 0; left: 0; right: 0; height: 60px;
+  display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 18px;
+  pointer-events: none;
+}
+.lb-count { font-family: var(--font-cond); font-weight: 700; font-size: 1.05rem; letter-spacing: 0.06em; font-variant-numeric: tabular-nums; }
+.lb-btn {
+  pointer-events: auto; display: grid; place-items: center;
+  width: 48px; height: 48px; padding: 0; border: 0; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1); color: #fff; cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.lb-btn:hover { background: rgba(255, 255, 255, 0.22); }
+.lb-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.lb-btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.lb-nav { position: absolute; top: 50%; margin-top: -24px; }
+.lb-prev { left: 12px; }
+.lb-next { right: 12px; }
+.lb-next svg { transform: scaleX(-1); }
+@media (max-width: 759px) {
+  /* Phones: the arrows sit low, under the thumb; swiping works too. */
+  .lb-nav { top: auto; bottom: 6px; margin-top: 0; background: rgba(255, 255, 255, 0.14); }
+  .lb-prev { left: calc(50% - 58px); }
+  .lb-next { right: calc(50% - 58px); }
+}
+@media (prefers-reduced-motion: reduce) { .lb-in-next, .lb-in-prev { animation: none; } .lb-frame, .lb-big { transition: none; } }
+
 .sp-view { display: grid; gap: 36px; padding-block: 20px 72px; }
 .sp-grid {
   --k: 0.82;

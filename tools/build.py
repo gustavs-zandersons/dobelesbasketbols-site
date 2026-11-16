@@ -152,7 +152,8 @@ def site_settings(sheet, sponsors):
         c = st['cups'][cup]
         cups[cup] = {'name': c['name'], 'mvpSponsor': mvp_sponsor(c.get('mvpSponsor', ''), by_name),
                      'monthMvpSponsor': mvp_sponsor(c.get('monthMvpSponsor', ''), by_name)}
-    return {'season': st['season'], 'cups': cups, 'sponsorsText': st.get('sponsorsText', '')}
+    return {'season': st['season'], 'cups': cups, 'sponsorsText': st.get('sponsorsText', ''),
+            'social': st.get('footer', {}).get('links', {})}   # the footer icons, also on "Par mums"
 
 
 def season_data(real):
@@ -165,7 +166,8 @@ def season_data(real):
 
 SITE_URL = 'https://dobelesbasketbols.lv'
 PAGE_LINKS = {'HOME': '/', 'JELGAVA': '/jelgava/', 'CAL': '/kalendars/', 'STD': '/dobele/kopvertejums/',
-              'TM': '/dobele/komandas/', 'LD': '/dobele/lideri/', 'STS': '/dobele/statistika/', 'SP': '/dobele/sponsori/'}
+              'TM': '/dobele/komandas/', 'LD': '/dobele/lideri/', 'STS': '/dobele/statistika/', 'SP': '/dobele/sponsori/',
+              'AB': '/par-mums/'}
 
 
 def fill_links(page, paths):
@@ -213,6 +215,7 @@ def render(preview, real):
             .replace('{{SPONSORS_HTML}}', sponsors_html(sponsors))
             .replace('{{RIDGE_A}}', ridge(7))
             .replace('{{RIDGE_B}}', ridge(11, base=36, amp=24))
+            .replace('{{RIDGE_C}}', ridge(23, base=36, amp=22))
             .replace('{{NOTICE}}', '' if preview or real else NOTICE))
     head, body = page.split('<!--BODY-->', 1)
     if preview:
@@ -240,6 +243,7 @@ def site_parts():
            .replace('{{SPONSORS_HTML}}', sponsors_html(sponsors))
            .replace('{{RIDGE_A}}', ridge(7))
            .replace('{{RIDGE_B}}', ridge(11, base=36, amp=24))
+           .replace('{{RIDGE_C}}', ridge(23, base=36, amp=22))
            .replace('{{NOTICE}}', ''))
     head, body = tpl.split('<!--BODY-->', 1)
     body = body[:body.index('<script id="season-data"')].rstrip() + '\n'
