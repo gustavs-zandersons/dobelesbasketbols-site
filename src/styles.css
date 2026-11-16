@@ -2326,7 +2326,7 @@ body.no-scroll { overflow: hidden; }
 .ab-hero::before {
   content: ""; position: absolute; inset: 0; z-index: 1;
   /* Black, a little darker behind the header and at the ridge. */
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.72) 0, rgba(0, 0, 0, 0.52) 34%, rgba(0, 0, 0, 0.52) 72%, rgba(0, 0, 0, 0.62) 100%);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.82) 0, rgba(0, 0, 0, 0.62) 34%, rgba(0, 0, 0, 0.62) 72%, rgba(0, 0, 0, 0.72) 100%);
 }
 .ab-hero-in { position: relative; z-index: 2; display: grid; }
 .ab-hero-in .page-title { margin-top: 0.12em; }

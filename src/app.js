@@ -2740,7 +2740,7 @@
     return { w: Math.round(w), h: Math.round(h) };
   }
   function renderSponsors() {
-    var html = '<div class="page-head"><p class="eyebrow">Sezona ' + esc(SEASON_LABEL) + '</p><h1 class="page-title">Sponsori</h1>' +
+    var html = '<div class="page-head"><p class="eyebrow">Sezona ' + esc(SEASON_LABEL) + '</p><h1 class="page-title">Sponsori un atbalstītāji</h1>' +
       (SET.sponsorsText ? '<p class="page-sub">' + esc(SET.sponsorsText) + '</p>' : '') + '</div>';
     LEVELS.forEach(function (lv) {
       var list = SPONSORS.filter(function (sp) { return sp.level === lv.key; });
@@ -2789,12 +2789,13 @@
       'Mūsu mājas ir Dobele, taču esam pārliecināti, ka basketbolam nav robežu. ' +
       'Tāpēc vēlamies amatieru komandām un spēlētājiem no dažādām Latvijas pilsētām un novadiem dot iespēju sacensties, noskaidrot labākos šajā skaistajā spēlē un pēc garas darba vai studiju nedēļas aktīvi un jēgpilni pavadīt laiku.',
     organizers: [
-      { name: 'Gustavs Zandersons', role: 'Turnīra organizators', photo: 'assets/about/gustavs-zandersons.jpg', quote: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore.' },
-      { name: 'Artūrs Turiks', role: 'Turnīra organizators', photo: 'assets/about/arturs-turiks.jpg', quote: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam, quis nostrud exercitation.' }
+      // quote: '…' adds a quote under the photo (none for now)
+      { name: 'Gustavs Zandersons', role: 'Turnīra organizators', role2: '„Dobeles basketbols” dibinātājs', photo: 'assets/about/gustavs-zandersons.jpg' },
+      { name: 'Artūrs Turiks', role: 'Turnīra organizators', photo: 'assets/about/arturs-turiks.jpg' }
     ],
     awards: [
-      { year: '2024', title: 'Dobeles novada populārākais amatieru sporta turnīrs' },
-      { year: '2023', title: 'Dobeles novada populārākais amatieru sporta turnīrs' }
+      { year: '2025', title: 'Dobeles novada „Labākais atklātais sporta čempionāts”' },
+      { year: '2024', title: 'Dobeles novada „Populārākais tautas sporta pasākums”' }
     ],
     teamSub: 'Īpašs paldies cilvēkiem, bez kuriem neviena spēļu diena nenotiktu.',
     team: [
@@ -2908,6 +2909,7 @@
       : '<span class="ab-photo ab-photo--empty" aria-hidden="true">' + PERSON_ICON + '</span>';
     return '<figure class="ab-person">' + photo + '<figcaption><span class="ab-name">' + esc(p.name) + '</span>' +
       '<span class="ab-role">' + esc(p.role) + '</span>' +
+      (p.role2 ? '<span class="ab-role ab-role--2">' + esc(p.role2) + '</span>' : '') +
       (p.quote ? '<q class="ab-quote">' + esc(p.quote) + '</q>' : '') + '</figcaption></figure>';
   }
   function aboutSrcset(ph) {
