@@ -1,17 +1,14 @@
-name: Build and deploy
+name: Build and check
 
 # Pull requests: build the site and run the checks (no deploy).
-# Push to main: build, check and publish to GitHub Pages.
+# Publishing is done by "Atjaunot datus no tabulas" (sync.yml), which also runs
+# on every push to main, so the site always gets fresh data from the sheet and
+# basket.lv, not the copy saved in the repository.
 on:
   pull_request:
-  push:
-    branches: [main]
-  workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages-${{ github.ref }}
@@ -40,20 +37,3 @@ jobs:
         run: python3 tools/build.py
       - name: Run checks
         run: node tools/check.js
-      - name: Upload site
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-  deploy:
-    if: github.event_name != 'pull_request'
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4

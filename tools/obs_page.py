@@ -110,7 +110,9 @@ def build(out, games, made, breaks=None):
         day_games = sorted(by_day[day], key=lambda g: g['time'])
         with zipfile.ZipFile(d / f'{day}.zip', 'w', zipfile.ZIP_STORED) as z:   # PNGs are compressed already
             for g in day_games:
-                z.writestr(file_name(g), made[g['id']])
+                # A fixed file date: the same pictures make the same ZIP, so a
+                # rebuild without new data changes nothing on the site.
+                z.writestr(zipfile.ZipInfo(file_name(g), date_time=(2026, 1, 1, 0, 0, 0)), made[g['id']])
         halls = ', '.join(dict.fromkeys(g.get('venue') or '' for g in day_games if g.get('venue')))
         cards = []
         for g in day_games:
